@@ -2,19 +2,15 @@
 pragma solidity 0.6.9;
 
 import "./openzeppelin/utils/Pausable.sol";
-import { PerpFiOwnableUpgrade } from "./utils/PerpFiOwnableUpgrade.sol";
+import "./openzeppelin/access/Ownable.sol";
 
-contract OwnerPausableUpgradeSafe is PerpFiOwnableUpgrade, Pausable {
-    // solhint-disable func-name-mixedcase
-    function __OwnerPausable_init() internal initializer {
-        __Ownable_init();
-    }
+contract OwnerPausable is Ownable, Pausable {
 
     function pause() public onlyOwner {
-        _pause();
+      _pause();
     }
 
     function unpause() public onlyOwner {
-        _unpause();
+      _unpause();
     }
 }

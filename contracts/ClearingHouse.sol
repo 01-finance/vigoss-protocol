@@ -12,14 +12,14 @@ import { Context } from "./openzeppelin/GSN/Context.sol";
 // prettier-ignore
 // solhint-disable-next-line
 import { ReentrancyGuard } from "./openzeppelin/utils/ReentrancyGuard.sol";
-import { OwnerPausableUpgradeSafe } from "./OwnerPausable.sol";
+import { OwnerPausable } from "./OwnerPausable.sol";
 import { IAmm } from "./interface/IAmm.sol";
 import { IInsuranceFund } from "./interface/IInsuranceFund.sol";
 import { IMultiTokenRewardRecipient } from "./interface/IMultiTokenRewardRecipient.sol";
 
 contract ClearingHouse is
     DecimalERC20,
-    OwnerPausableUpgradeSafe,
+    OwnerPausable,
     ReentrancyGuard,
     BlockContext
 {
@@ -185,22 +185,14 @@ contract ClearingHouse is
     //◥◤◥◤◥◤◥◤◥◤◥◤◥◤◥◤ add state variables below ◥◤◥◤◥◤◥◤◥◤◥◤◥◤◥◤//
     Decimal.decimal public partialLiquidationRatio;
 
-    //◢◣◢◣◢◣◢◣◢◣◢◣◢◣◢◣ add state variables above ◢◣◢◣◢◣◢◣◢◣◢◣◢◣◢◣//
-    //
-
     // FUNCTIONS
-    //
-    // openzeppelin doesn't support struct input
-    // https://github.com/OpenZeppelin/openzeppelin-sdk/issues/1523
-    function initialize(
+    constructor(
         uint256 _initMarginRatio,
         uint256 _maintenanceMarginRatio,
         uint256 _liquidationFeeRatio,
         IInsuranceFund _insuranceFund
-    ) public initializer {
+    ) public {
         require(address(_insuranceFund) != address(0), "Invalid IInsuranceFund");
-
-        __OwnerPausable_init();
 
         initMarginRatio = Decimal.decimal(_initMarginRatio);
         maintenanceMarginRatio = Decimal.decimal(_maintenanceMarginRatio);

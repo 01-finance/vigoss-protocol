@@ -6,13 +6,14 @@ import { BlockContext } from "./utils/BlockContext.sol";
 import { IPriceFeed } from "./interface/IPriceFeed.sol";
 import { SafeMath } from "./openzeppelin/math/SafeMath.sol";
 import { IERC20 } from "./openzeppelin/token/ERC20/IERC20.sol";
+import { Ownable } from "./openzeppelin/access/Ownable.sol";
 import { Decimal } from "./utils/Decimal.sol";
 import { SignedDecimal } from "./utils/SignedDecimal.sol";
 import { MixedDecimal } from "./utils/MixedDecimal.sol";
-import { PerpFiOwnableUpgrade } from "./utils/PerpFiOwnableUpgrade.sol";
+
 import { IAmm } from "./interface/IAmm.sol";
 
-contract Amm is IAmm, PerpFiOwnableUpgrade, BlockContext {
+contract Amm is IAmm, Ownable, BlockContext {
     using SafeMath for uint256;
     using Decimal for Decimal.decimal;
     using SignedDecimal for SignedDecimal.signedDecimal;
@@ -135,20 +136,9 @@ contract Amm is IAmm, PerpFiOwnableUpgrade, BlockContext {
     IERC20 public override quoteAsset;
     IPriceFeed public priceFeed;
     bool public override open;
-    uint256[50] private __gap;
 
-    //**********************************************************//
-    //    The above state variables can not change the order    //
-    //**********************************************************//
 
-    //◥◤◥◤◥◤◥◤◥◤◥◤◥◤◥◤ add state variables below ◥◤◥◤◥◤◥◤◥◤◥◤◥◤◥◤//
-
-    //◢◣◢◣◢◣◢◣◢◣◢◣◢◣◢◣ add state variables above ◢◣◢◣◢◣◢◣◢◣◢◣◢◣◢◣//
-
-    //
-    // FUNCTIONS
-    //
-    function initialize(
+    constructor (
         uint256 _quoteAssetReserve,
         uint256 _baseAssetReserve,
         uint256 _tradeLimitRatio,
@@ -159,7 +149,7 @@ contract Amm is IAmm, PerpFiOwnableUpgrade, BlockContext {
         uint256 _fluctuationLimitRatio,
         uint256 _tollRatio,
         uint256 _spreadRatio
-    ) public initializer {
+    ) public {
         require(
             _quoteAssetReserve != 0 &&
                 _tradeLimitRatio != 0 &&
@@ -169,8 +159,6 @@ contract Amm is IAmm, PerpFiOwnableUpgrade, BlockContext {
                 _quoteAsset != address(0),
             "invalid input"
         );
-        __Ownable_init();
-
         quoteAssetReserve = Decimal.decimal(_quoteAssetReserve);
         baseAssetReserve = Decimal.decimal(_baseAssetReserve);
         tradeLimitRatio = Decimal.decimal(_tradeLimitRatio);

@@ -2,10 +2,12 @@
 pragma solidity 0.6.9;
 pragma experimental ABIEncoderV2;
 
-import { PerpFiOwnableUpgrade } from "./utils/PerpFiOwnableUpgrade.sol";
+
+
 import {
     ReentrancyGuard
 } from "./openzeppelin/utils/ReentrancyGuard.sol";
+import { Ownable } from "./openzeppelin/access/Ownable.sol";
 import { IERC20 } from "./openzeppelin/token/ERC20/IERC20.sol";
 import { Decimal } from "./utils/Decimal.sol";
 import { IExchangeWrapper } from "./interface/IExchangeWrapper.sol";
@@ -16,7 +18,7 @@ import { IMinter } from "./interface/IMinter.sol";
 import { IAmm } from "./interface/IAmm.sol";
 import { IInflationMonitor } from "./interface/IInflationMonitor.sol";
 
-contract InsuranceFund is IInsuranceFund, PerpFiOwnableUpgrade, BlockContext, ReentrancyGuard, DecimalERC20 {
+contract InsuranceFund is IInsuranceFund, Ownable, BlockContext, ReentrancyGuard, DecimalERC20 {
     using Decimal for Decimal.decimal;
 
     //
@@ -46,21 +48,12 @@ contract InsuranceFund is IInsuranceFund, PerpFiOwnableUpgrade, BlockContext, Re
     IInflationMonitor public inflationMonitor;
     address private beneficiary;
 
-    //**********************************************************//
-    //    The above state variables can not change the order    //
-    //**********************************************************//
-
-    //◥◤◥◤◥◤◥◤◥◤◥◤◥◤◥◤ add state variables below ◥◤◥◤◥◤◥◤◥◤◥◤◥◤◥◤//
-
-    //◢◣◢◣◢◣◢◣◢◣◢◣◢◣◢◣ add state variables above ◢◣◢◣◢◣◢◣◢◣◢◣◢◣◢◣//
-    uint256[50] private __gap;
 
     //
     // FUNCTIONS
     //
 
-    function initialize() external initializer {
-        __Ownable_init();
+    constructor() public {
     }
 
     /**

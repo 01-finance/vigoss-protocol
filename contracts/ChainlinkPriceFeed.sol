@@ -5,36 +5,20 @@ pragma experimental ABIEncoderV2;
 import { AggregatorV3Interface } from "./chainlink/v0.6/interfaces/AggregatorV3Interface.sol";
 import { IPriceFeed } from "./interface/IPriceFeed.sol";
 import { BlockContext } from "./utils/BlockContext.sol";
-import { PerpFiOwnableUpgrade } from "./utils/PerpFiOwnableUpgrade.sol";
+import { Ownable } from "./openzeppelin/access/Ownable.sol";
 import { Decimal, SafeMath } from "./utils/Decimal.sol";
 
-contract ChainlinkPriceFeed is IPriceFeed, PerpFiOwnableUpgrade, BlockContext {
+contract ChainlinkPriceFeed is IPriceFeed, Ownable, BlockContext {
     using SafeMath for uint256;
 
     uint256 private constant TOKEN_DIGIT = 10**18;
-
-    //**********************************************************//
-    //    The below state variables can not change the order    //
-    //**********************************************************//
 
     // key by currency symbol, eg ETH
     mapping(bytes32 => AggregatorV3Interface) public priceFeedMap;
     bytes32[] public priceFeedKeys;
     mapping(bytes32 => uint8) public priceFeedDecimalMap;
-    //**********************************************************//
-    //    The above state variables can not change the order    //
-    //**********************************************************//
 
-    //◥◤◥◤◥◤◥◤◥◤◥◤◥◤◥◤ add state variables below ◥◤◥◤◥◤◥◤◥◤◥◤◥◤◥◤//
-
-    //◢◣◢◣◢◣◢◣◢◣◢◣◢◣◢◣ add state variables above ◢◣◢◣◢◣◢◣◢◣◢◣◢◣◢◣//
-    uint256[50] private __gap;
-
-    //
-    // FUNCTIONS
-    //
-    function initialize() public initializer {
-        __Ownable_init();
+    constructor() public {
     }
 
     function addAggregator(bytes32 _priceFeedKey, address _aggregator) external onlyOwner {

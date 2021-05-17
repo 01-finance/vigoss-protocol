@@ -2,7 +2,7 @@
 pragma solidity 0.6.9;
 pragma experimental ABIEncoderV2;
 
-import { PerpFiOwnableUpgrade } from "../utils/PerpFiOwnableUpgrade.sol";
+import { Ownable } from "../openzeppelin/access/Ownable.sol";
 import { IERC20 } from "../openzeppelin/token/ERC20/IERC20.sol";
 import { CErc20 } from "./Compound/CTokenInterface.sol";
 import { BPool } from "./Balancer/BPool.sol";
@@ -12,7 +12,7 @@ import { Decimal, SafeMath } from "../utils/Decimal.sol";
 
 // USDC/USDT decimal 6
 // cUSDC/cUSDT decimal 8
-contract ExchangeWrapper is PerpFiOwnableUpgrade, IExchangeWrapper, DecimalERC20 {
+contract ExchangeWrapper is Ownable, IExchangeWrapper, DecimalERC20 {
     using Decimal for Decimal.decimal;
     using SafeMath for *;
 
@@ -35,25 +35,16 @@ contract ExchangeWrapper is PerpFiOwnableUpgrade, IExchangeWrapper, DecimalERC20
     CErc20 public compoundCUsdt;
     IERC20 private perpToken;
     IERC20 private usdtToken;
-    //**********************************************************//
-    //    The above state variables can not change the order    //
-    //**********************************************************//
 
-    //◥◤◥◤◥◤◥◤◥◤◥◤◥◤◥◤ add state variables below ◥◤◥◤◥◤◥◤◥◤◥◤◥◤◥◤//
-
-    //◢◣◢◣◢◣◢◣◢◣◢◣◢◣◢◣ add state variables above ◢◣◢◣◢◣◢◣◢◣◢◣◢◣◢◣//
-    uint256[50] private __gap;
 
     //
     // FUNCTIONS
     //
-    function initialize(
+    constructor(
         address _balancerPool,
         address _compoundCUsdt,
         address _perpToken
-    ) external initializer {
-        __Ownable_init();
-
+    ) public {
         perpToken = IERC20(_perpToken);
         setBalancerPool(_balancerPool);
         setCompoundCUsdt(_compoundCUsdt);
