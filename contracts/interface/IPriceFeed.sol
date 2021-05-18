@@ -3,15 +3,9 @@ pragma solidity 0.6.9;
 
 interface IPriceFeed {
     // get latest price
-    function getPrice(address token) external view returns (uint256) {
-
-    }
+    function getPrice(address token) external view returns (uint256);
 
     // get twap price depending on _period
-    function getTwapPrice(address token, uint256 _interval) external view returns (uint256) {
-
-      require(_interval != 0, "interval can't be 0");
-
-    }
+    function getTwapPrice(address token, uint256 _interval) external view returns (uint256);
 
 }

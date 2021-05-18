@@ -35,9 +35,6 @@ contract SimplePriceOracle is IPriceOracle, Ownable {
 
     /// @dev 授权喂价
     mapping(address => bool) public feeders;
-
-
-
     struct Underlying {
         uint256 lastUpdateTs;
         uint256 lastPriceMan;
@@ -74,7 +71,7 @@ contract SimplePriceOracle is IPriceOracle, Ownable {
         uint256 old = round >= 1 ? 0 : roundPrices[token][round.sub(1)].lastPriceMan;
         
         Underlying storage info = roundPrices[token][round];
-        info.lastUpdate = block.timestamp;
+        info.lastUpdateTs = block.timestamp;
         info.lastPriceMan = priceMan;
 
         rounds[token] = round.add(1); 

@@ -102,6 +102,8 @@ interface IAmm {
     // overridden by state variable
     function quoteAsset() external view returns (IERC20);
 
+    function baseAsset() external view returns (IERC20);
+
     function open() external view returns (bool);
 
     // can not be overridden by state variable due to type `Deciaml.decimal`

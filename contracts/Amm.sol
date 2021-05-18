@@ -128,13 +128,16 @@ contract Amm is IAmm, Ownable, BlockContext {
     uint256 public fundingPeriod;
     uint256 public fundingBufferPeriod;
     uint256 public nextFundingTime;
-    bytes32 public priceFeedKey;
     ReserveSnapshot[] public reserveSnapshots;
 
     address private counterParty;
     address public globalShutdown;
+
     IERC20 public override quoteAsset;
+    IERC20 public override baseAsset;
+
     IPriceFeed public priceFeed;
+
     bool public override open;
 
 
@@ -144,8 +147,8 @@ contract Amm is IAmm, Ownable, BlockContext {
         uint256 _tradeLimitRatio,
         uint256 _fundingPeriod,
         IPriceFeed _priceFeed,
-        bytes32 _priceFeedKey,
         address _quoteAsset,
+        address _baseAsset,
         uint256 _fluctuationLimitRatio,
         uint256 _tollRatio,
         uint256 _spreadRatio
@@ -156,7 +159,8 @@ contract Amm is IAmm, Ownable, BlockContext {
                 _baseAssetReserve != 0 &&
                 _fundingPeriod != 0 &&
                 address(_priceFeed) != address(0) &&
-                _quoteAsset != address(0),
+                _quoteAsset != address(0) &&
+                _baseAsset != address(0),
             "invalid input"
         );
         quoteAssetReserve = Decimal.decimal(_quoteAssetReserve);
@@ -168,8 +172,8 @@ contract Amm is IAmm, Ownable, BlockContext {
         fundingPeriod = _fundingPeriod;
         fundingBufferPeriod = _fundingPeriod.div(2);
         spotPriceTwapInterval = 1 hours;
-        priceFeedKey = _priceFeedKey;
-        quoteAsset = IERC20(_quoteAsset);
+        baseAsset = IERC20(_baseAsset);
+        quoteAsset =IERC20(_quoteAsset);
         priceFeed = _priceFeed;
         cumulativePositionMultiplier = Decimal.one();
         liquidityChangedSnapshots.push(
@@ -509,7 +513,7 @@ contract Amm is IAmm, Ownable, BlockContext {
      * @return underlying price
      */
     function getUnderlyingPrice() public view override returns (Decimal.decimal memory) {
-        return Decimal.decimal(priceFeed.getPrice(priceFeedKey));
+        return Decimal.decimal(priceFeed.getPrice(address(baseAsset)));
     }
 
     /**
@@ -517,7 +521,7 @@ contract Amm is IAmm, Ownable, BlockContext {
      * @return underlying price
      */
     function getUnderlyingTwapPrice(uint256 _intervalInSeconds) public view returns (Decimal.decimal memory) {
-        return Decimal.decimal(priceFeed.getTwapPrice(priceFeedKey, _intervalInSeconds));
+        return Decimal.decimal(priceFeed.getTwapPrice(address(baseAsset), _intervalInSeconds));
     }
 
     /**
