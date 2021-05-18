@@ -4,6 +4,8 @@
 pragma solidity 0.6.9;
 
 import { Ownable } from "./openzeppelin/access/Ownable.sol";
+import { SafeMath } from "./openzeppelin/math/SafeMath.sol";
+
 
 /**
     @title 价格预言机
@@ -25,13 +27,19 @@ interface IPriceOracle {
     @dev 价格来源于管理员自行更新价格
  */
 contract SimplePriceOracle is IPriceOracle, Ownable {
-    ///@notice 各借贷市场的价格信息
-    mapping(address => Underlying) public prices;
-    // @notice 授权喂价
+  using SafeMath for uint256;
+
+    ///@dev 各借贷市场的价格信息
+    mapping(address => mapping(uint => Underlying)) roundPrices;
+    mapping(address => uint) rounds;
+
+    /// @dev 授权喂价
     mapping(address => bool) public feeders;
 
+
+
     struct Underlying {
-        uint256 lastUpdate;
+        uint256 lastUpdateTs;
         uint256 lastPriceMan;
     }
 
@@ -43,8 +51,13 @@ contract SimplePriceOracle is IPriceOracle, Ownable {
       @notice 获取指定借贷市场中资产的价格
       @param token 资产
      */
-    function getPriceMan(address token) external view override returns (uint256) {
-        return prices[token].lastPriceMan;
+    function getPriceMan(address token) public view override returns (uint256) {
+        uint round = rounds[token];
+        if(round == 0) {
+          return 0;
+        }
+
+        return roundPrices[token][round.sub(1)].lastPriceMan;
     }
 
     /**
@@ -55,11 +68,16 @@ contract SimplePriceOracle is IPriceOracle, Ownable {
      *  如 一个比特币价格为 10242.04 USDT，那么此时 priceMan 为 10242.04 *1e18
      */
     function _setPrice(address token, uint256 priceMan) private {
-        Underlying storage info = prices[token];
         require(priceMan > 0, "ORACLE_INVALID_PRICE");
-        uint256 old = info.lastPriceMan;
-        info.lastUpdate = block.number;
+
+        uint round = rounds[token];
+        uint256 old = round >= 1 ? 0 : roundPrices[token][round.sub(1)].lastPriceMan;
+        
+        Underlying storage info = roundPrices[token][round];
+        info.lastUpdate = block.timestamp;
         info.lastPriceMan = priceMan;
+
+        rounds[token] = round.add(1); 
         emit PriceChanged(token, old, priceMan);
     }
 
