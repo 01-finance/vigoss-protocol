@@ -5,7 +5,7 @@ pragma solidity 0.6.9;
 
 import { Ownable } from "./openzeppelin/access/Ownable.sol";
 import { SafeMath } from "./openzeppelin/math/SafeMath.sol";
-
+import "hardhat/console.sol";
 
 /**
     @title 价格预言机
@@ -31,7 +31,7 @@ contract SimplePriceOracle is IPriceOracle, Ownable {
 
     ///@dev 各借贷市场的价格信息
     mapping(address => mapping(uint => Underlying)) roundPrices;
-    mapping(address => uint) rounds;
+    mapping(address => uint) public rounds;
 
     /// @dev 授权喂价
     mapping(address => bool) public feeders;
@@ -50,6 +50,7 @@ contract SimplePriceOracle is IPriceOracle, Ownable {
      */
     function getPriceMan(address token) public view override returns (uint256) {
         uint round = rounds[token];
+        console.log("round:", round);
         if(round == 0) {
           return 0;
         }
@@ -68,7 +69,7 @@ contract SimplePriceOracle is IPriceOracle, Ownable {
         require(priceMan > 0, "ORACLE_INVALID_PRICE");
 
         uint round = rounds[token];
-        uint256 old = round >= 1 ? 0 : roundPrices[token][round.sub(1)].lastPriceMan;
+        uint256 old = round >= 1 ? roundPrices[token][round.sub(1)].lastPriceMan : 0;
         
         Underlying storage info = roundPrices[token][round];
         info.lastUpdateTs = block.timestamp;
