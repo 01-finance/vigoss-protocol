@@ -3,7 +3,7 @@ pragma solidity 0.6.9;
 
 import { IPriceFeed } from "./interface/IPriceFeed.sol";
 import { Decimal, SafeMath } from "./utils/Decimal.sol";
-import {SimplePriceOracle} from "./PriceOracle.sol";
+import { SimplePriceOracle } from "./PriceOracle.sol";
 
 contract SimpleUSDPriceFeed is SimplePriceOracle {
 
@@ -15,7 +15,7 @@ contract SimpleUSDPriceFeed is SimplePriceOracle {
       getPriceMan(token);
     }
 
-    function getLatestRoundData(address token) public view returns (uint256 latestRound,uint256 latestPrice, uint256 latestTimestamp ) {
+    function getLatestRoundData(address token) internal view returns (uint256 latestRound,uint256 latestPrice, uint256 latestTimestamp ) {
         latestRound = rounds[token].sub(1);
         Underlying memory u = roundPrices[token][latestRound];
         latestPrice = u.lastPriceMan;

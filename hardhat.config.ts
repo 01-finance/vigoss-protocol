@@ -2,7 +2,7 @@ import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
-
+import "hardhat-deploy";
 import "./tasks/accounts";
 import "./tasks/clean";
 
@@ -78,6 +78,11 @@ const config: HardhatUserConfig = {
     cache: "./cache",
     sources: "./contracts",
     tests: "./test",
+  },
+  namedAccounts: {
+    deployer: {
+      default: 0,
+    },
   },
   solidity: {
     version: "0.6.9",
