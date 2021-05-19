@@ -54,7 +54,7 @@ contract SimplePriceOracle is IPriceOracle, Ownable {
         if(round == 0) {
           return 0;
         }
-
+        console.log("round - 1:", round.sub(1));
         return roundPrices[token][round.sub(1)].lastPriceMan;
     }
 

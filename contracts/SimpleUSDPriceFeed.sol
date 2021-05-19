@@ -12,7 +12,7 @@ contract SimpleUSDPriceFeed is SimplePriceOracle {
 
     // get latest price
     function getPrice(address token) external view returns (uint256) {
-      getPriceMan(token);
+      return getPriceMan(token);
     }
 
     function getLatestRoundData(address token) internal view returns (uint256 latestRound,uint256 latestPrice, uint256 latestTimestamp ) {
@@ -22,12 +22,11 @@ contract SimpleUSDPriceFeed is SimplePriceOracle {
         latestTimestamp = u.lastUpdateTs;
     }
 
-    function getRoundData(address token, uint round) internal view returns (uint256, uint256, uint256 ) {
+    function getRoundData(address token, uint round) public view returns (uint256, uint256, uint256 ) {
         Underlying memory u = roundPrices[token][round];
         return (round, u.lastPriceMan, u.lastUpdateTs);
     }
 
-    // TODO: NEED TEST
     // get twap price depending on _period
     function getTwapPrice(address token, uint256 _interval) external view returns (uint256) {
       require(_interval != 0, "interval can't be 0");
