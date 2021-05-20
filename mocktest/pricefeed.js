@@ -24,7 +24,7 @@ module.exports = async function(callback) {
   }
 
   try {
-    await feed.setPrice(ethMock.address, web3.utils.toWei("110"));
+    await feed.setPrice(ethMock.address, web3.utils.toWei("210"));
     await delay(10);
   } catch (e) {
     console.log(e)
@@ -33,7 +33,7 @@ module.exports = async function(callback) {
   const currPrice = await feed.getPrice(ethMock.address)
   console.log("currPrice:" + web3.utils.fromWei(currPrice));
 
-  await feed.setPrice(ethMock.address, web3.utils.toWei("120"));
+  await feed.setPrice(ethMock.address, web3.utils.toWei("220"));
   await delay(10);
   const twapPrice = await feed.getTwapPrice(ethMock.address, 11);
   
