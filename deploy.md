@@ -21,3 +21,15 @@ _spreadRatio:  toWei("0.001")
 ## Addr online
 
 https://metadata.perp.exchange/production.json
+
+
+
+## PMM
+real swap to virtual swap(Change reserve don't transfer?)
+
+real swap code(DODO v2):
+DVMTrader::sellBase
+DVMTrader::sellQuote
+
+virtual swap code:
+Amm
