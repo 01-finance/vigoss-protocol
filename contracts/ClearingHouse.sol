@@ -17,6 +17,8 @@ import { IAmm } from "./interface/IAmm.sol";
 import { IInsuranceFund } from "./interface/IInsuranceFund.sol";
 import { IMultiTokenRewardRecipient } from "./interface/IMultiTokenRewardRecipient.sol";
 
+import "hardhat/console.sol";
+
 contract ClearingHouse is
     DecimalERC20,
     OwnerPausable,
@@ -436,7 +438,7 @@ contract ClearingHouse is
                     false
                 );
             }
-
+            console.log("CH:openPosition:setPosition");
             // update the position state
             setPosition(_amm, trader, positionResp.position);
             // if opening the exact position size as the existing one == closePosition, can skip the margin ratio check
@@ -451,13 +453,19 @@ contract ClearingHouse is
 
             // transfer the actual token between trader and vault
             IERC20 quoteToken = _amm.quoteAsset();
+
+            console.log("CH:openPosition:quoteToken:", address(quoteToken));
+
             if (positionResp.marginToVault.toInt() > 0) {
+                console.log("CH:openPosition:tranferQuote:", _toUint(quoteToken, positionResp.marginToVault.abs()));
                 _transferFrom(quoteToken, trader, address(this), positionResp.marginToVault.abs());
             } else if (positionResp.marginToVault.toInt() < 0) {
                 withdraw(quoteToken, trader, positionResp.marginToVault.abs());
             }
+            
         }
 
+        console.log("CH:openPosition:transferFee");
         // calculate fee and transfer token for fees
         //@audit - can optimize by changing amm.swapInput/swapOutput's return type to (exchangedAmount, quoteToll, quoteSpread, quoteReserve, baseReserve) (@wraecca)
         Decimal.decimal memory transferredFee = transferFee(trader, _amm, positionResp.exchangedQuoteAssetAmount);
@@ -1124,16 +1132,22 @@ contract ClearingHouse is
         (Decimal.decimal memory toll, Decimal.decimal memory spread) = _amm.calcFee(_positionNotional);
         bool hasToll = toll.toUint() > 0;
         bool hasSpread = spread.toUint() > 0;
+
+        console.log("CH:transferFee", hasToll, hasSpread);
+
         if (hasToll || hasSpread) {
             IERC20 quoteAsset = _amm.quoteAsset();
 
             // transfer spread to insurance fund
             if (hasSpread) {
+                console.log("CH:transferFee:spread:",  _toUint(quoteAsset, spread));
                 _transferFrom(quoteAsset, _from, address(insuranceFund), spread);
             }
 
             // transfer toll to feePool
             if (hasToll) {
+                console.log("CH:transferFee:feePool:", address(feePool));
+                console.log("CH:transferFee:toll:",  _toUint(quoteAsset, toll));
                 require(address(feePool) != address(0), "Invalid feePool");
                 _transferFrom(quoteAsset, _from, address(feePool), toll);
             }

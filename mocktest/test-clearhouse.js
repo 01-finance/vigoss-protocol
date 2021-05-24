@@ -14,6 +14,8 @@ module.exports = async function(callback) {
     var accounts = await web3.eth.getAccounts()
     var house = await ClearingHouse.deployed();
     let USDC = require(`../front/abis/USDC.${network}.json`);
+    console.log("USDC addr:" + USDC.address)
+
     var usdcMock = await MockToken.at(USDC.address)
 
     let ETHUSDCPair = require(`../front/abis/Amm:ETH-USDC.${network}.json`);
@@ -22,17 +24,17 @@ module.exports = async function(callback) {
     console.log("init contract error", e)
   }
 
-  await approve(usdcMock, accounts[0], house.address, web3.utils.toWei("100"));
+  await approve(usdcMock, accounts[0], house.address, web3.utils.toWei("100.2"));
 
-  await openPosition(house, 
-    ETHUSDCAmm.address, 
-    0,   // buy long 
-    web3.utils.toWei("100"),  // 100 usdc
-    web3.utils.toWei("2"),    // 2 leverage
-    web3.utils.toWei("0"),  //minBaseamount( for slippage)
-    accounts[0],
-    web3
-  )
+  // await openPosition(house, 
+  //   ETHUSDCAmm.address, 
+  //   0,   // buy long 
+  //   web3.utils.toWei("100"),  // 100 usdc
+  //   web3.utils.toWei("2"),    // 2 leverage
+  //   web3.utils.toWei("0"),  //minBaseamount( for slippage)
+  //   accounts[0],
+  //   web3
+  // )
 
   try {
     await getPosition(house, ETHUSDCAmm.address, accounts[0], web3 )
