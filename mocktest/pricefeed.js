@@ -1,7 +1,7 @@
 const { advanceTime, advanceBlock  } = require('./delay.js');
 
 var SimpleUSDPriceFeed = artifacts.require("SimpleUSDPriceFeed");
-var MockETHToken = artifacts.require("MockETHToken");
+var MockToken = artifacts.require("MockToken");
 
 var accounts;
 var feed;
@@ -17,7 +17,10 @@ module.exports = async function(callback) {
   try {
     accounts = await web3.eth.getAccounts()
     feed = await SimpleUSDPriceFeed.deployed()
-    ethMock = await MockETHToken.deployed()
+
+    let WETH = require(`../front/abis/WETH.hardhat.json`);
+
+    ethMock = await MockToken.at(WETH.address)
 
   } catch (e) {
     console.log(e)

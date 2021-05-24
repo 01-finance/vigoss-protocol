@@ -186,6 +186,7 @@ contract Amm is IAmm, Ownable, BlockContext {
         );
         reserveSnapshots.push(ReserveSnapshot(quoteAssetReserve, baseAssetReserve, _blockTimestamp(), _blockNumber()));
         emit ReserveSnapshotted(quoteAssetReserve.toUint(), baseAssetReserve.toUint(), _blockTimestamp());
+
     }
 
     /**
