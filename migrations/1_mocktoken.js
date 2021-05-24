@@ -1,8 +1,17 @@
-const MockETHToken = artifacts.require("MockETHToken");
-const MockUSDCToken = artifacts.require("MockUSDCToken");
+const MockToken = artifacts.require("MockToken");
 
-module.exports = async function (deployer) {
-  await deployer.deploy(MockUSDCToken, "USDC", 18, web3.utils.toWei("100000000"));
-  await deployer.deploy(MockETHToken, "WETH", 18, web3.utils.toWei("1000000"));
+const { writeAbis } = require('./log');
+
+module.exports = async function (deployer, network, accounts) {
+  await deployer.deploy(MockToken, "USDC", 18, web3.utils.toWei("100000000"));
+  await writeAbis(MockToken, "USDC", network);
+
+  await deployer.deploy(MockToken, "WETH", 18, web3.utils.toWei("1000000"));
+  await writeAbis(MockToken, 'WETH', network);
+
+
+  
+
+
 };
 

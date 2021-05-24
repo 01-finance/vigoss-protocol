@@ -3,6 +3,8 @@ const SimpleUSDPriceFeed = artifacts.require("SimpleUSDPriceFeed");
 const MockETHToken = artifacts.require("MockETHToken");
 const MockUSDCToken = artifacts.require("MockUSDCToken");
 
+const { writeAbis } = require('./log');
+
 module.exports = async function(deployer, network, accounts) {
   const feed = await  SimpleUSDPriceFeed.deployed();
   const ethMock = await MockETHToken.deployed();
@@ -27,4 +29,6 @@ module.exports = async function(deployer, network, accounts) {
     fluctuationLimitRatio,
     tollRatio,
     spreadRatio);
+
+  await writeAbis(Amm, 'Amm:ETH-USDC', network);
 }

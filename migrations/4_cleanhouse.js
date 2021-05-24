@@ -1,6 +1,8 @@
 const ClearingHouse = artifacts.require("ClearingHouse");
 const InsuranceFund = artifacts.require("InsuranceFund");
 
+const { writeAbis } = require('./log');
+
 module.exports = async function(deployer, network, accounts) {
   const fund = await InsuranceFund.deployed();
   const initMarginRatio = web3.utils.toWei("0.1") // 10% -> 10x
@@ -9,4 +11,6 @@ module.exports = async function(deployer, network, accounts) {
   await deployer.deploy(ClearingHouse, 
       initMarginRatio , maintenanceMarginRatio, liquidationFeeRatio, 
       fund.address);
+
+  await writeAbis(ClearingHouse, 'ClearingHouse', network);
 }

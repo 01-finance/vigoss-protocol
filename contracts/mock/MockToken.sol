@@ -4,7 +4,7 @@ pragma solidity ^0.6.0;
 import "../openzeppelin/access/Ownable.sol";
 import '../openzeppelin/token/ERC20/ERC20.sol';
 
-contract MockUSDCToken is ERC20, Ownable {
+contract MockToken is ERC20, Ownable {
     /**
      * @notice Constructs the HERC-20 contract.
      */

@@ -8,6 +8,8 @@ doc
 .env
 .serverless
 .secret
+artifacts/*
+cache/*
 .openzeppelin/mainnet.json
 .openzeppelin/unknown-100.json
 .openzeppelin/.session
@@ -19,6 +21,7 @@ system-local.json
 /.serverless
 /.env.staging
 /typechain
+/typechain/*
 
 /typechain
 
