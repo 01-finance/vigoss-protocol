@@ -13,22 +13,39 @@ async function openPosition(house, amm, buyOrSell, qAmount, leverage, minBaseAmo
   }
 }
 
+
+function printPosition(position, web3) {
+  console.log("Pos baseAsset:" + web3.utils.fromWei(position.size.toString()))
+  console.log("Pos margin:" + web3.utils.fromWei(position.margin.toString()))
+  console.log("Pos openNotional:" + web3.utils.fromWei(position.openNotional.toString()))
+  console.log("Pos lastUpdatedCumulativePremiumFraction:" + web3.utils.fromWei(position.lastUpdatedCumulativePremiumFraction.toString()))
+  console.log("Pos index:" + position.liquidityHistoryIndex)
+  console.log("Pos blockNumber:" +position.blockNumber)
+}
+
 async function getPosition(house, amm, user, web3) {
   try {
     let position = await house.getUnadjustedPosition(amm, user);
-    console.log("baseAsset:" + web3.utils.fromWei(position.size.toString()))
-    console.log("margin:" + web3.utils.fromWei(position.margin.toString()))
-    console.log("openNotional:" + web3.utils.fromWei(position.openNotional.toString()))
-    console.log("lastUpdatedCumulativePremiumFraction:" + web3.utils.fromWei(position.lastUpdatedCumulativePremiumFraction.toString()))
-    console.log("index:" + position.liquidityHistoryIndex)
-    console.log("blockNumber:" +position.blockNumber)
+    printPosition(position, web3)
   }  catch (e) {
     console.log("getPosition error", e)
   }
-
 }
+
+async function getPersonalPositionWithFundingPayment(houseViewer, amm, user, web3) {
+  try {
+    let position = await houseViewer.getPersonalPositionWithFundingPayment(amm, user);
+    printPosition(position, web3)
+  }  catch (e) {
+    console.log("getPosition error", e)
+  }
+}
+
+
+
 
 module.exports = {
   openPosition,
   getPosition,
+  getPersonalPositionWithFundingPayment
 }
