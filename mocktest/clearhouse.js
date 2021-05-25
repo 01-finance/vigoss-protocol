@@ -13,6 +13,52 @@ async function openPosition(house, amm, buyOrSell, qAmount, leverage, minBaseAmo
   }
 }
 
+async function closePosition(house, amm, qlimitAmount, user) {
+  try {
+    let tx = await house.closePosition(amm, 
+      { d: qlimitAmount },
+      { from: user })
+      console.log("closePosition done, gas:" + tx['receipt']['gasUsed'])
+  } catch (e) {
+    console.log("closePosition error", e)
+  }
+}
+
+async function liquidate(house, amm, trader, user) {
+  try {
+    let tx = await house.liquidate(amm, 
+      trader,
+      { from: user })
+      console.log("liquidate done, gas:" + tx['receipt']['gasUsed'])
+  } catch (e) {
+    console.log("liquidate error", e)
+  }
+}
+
+async function addMargin(house, amm, addmargin, user) {
+  try {
+    let tx = await house.addMargin(amm, 
+      trader,
+      {d: addmargin},
+      { from: user })
+    console.log("addMargin done, gas:" + tx['receipt']['gasUsed'])
+  } catch (e) {
+    console.log("liquidate error", e)
+  }
+}
+
+async function removeMargin(house, amm, margin, user) {
+  try {
+    let tx = await house.removeMargin(amm, 
+      trader,
+      {d: margin},
+      { from: user })
+    console.log("removeMargin done, gas:" + tx['receipt']['gasUsed'])
+  } catch (e) {
+    console.log("liquidate error", e)
+  }
+
+}
 
 function printPosition(position, web3) {
   console.log("Pos baseAsset:" + web3.utils.fromWei(position.size.toString()))
@@ -27,6 +73,7 @@ async function getPosition(house, amm, user, web3) {
   try {
     let position = await house.getUnadjustedPosition(amm, user);
     printPosition(position, web3)
+    return position.size
   }  catch (e) {
     console.log("getPosition error", e)
   }
@@ -36,6 +83,7 @@ async function getPersonalPositionWithFundingPayment(houseViewer, amm, user, web
   try {
     let position = await houseViewer.getPersonalPositionWithFundingPayment(amm, user);
     printPosition(position, web3)
+
   }  catch (e) {
     console.log("getPosition error", e)
   }
@@ -47,5 +95,9 @@ async function getPersonalPositionWithFundingPayment(houseViewer, amm, user, web
 module.exports = {
   openPosition,
   getPosition,
+  closePosition,
+  liquidate,
+  addMargin,
+  removeMargin,
   getPersonalPositionWithFundingPayment
 }

@@ -68,7 +68,7 @@ async function getInputTwap(amm, dir, qAmount, web3) {
 // 0: ADD_TO_AMM for short, 1: REMOVE_FROM_AMM for long
 async function getOutputTwap(amm, dir, bAmount, web3) {
   try {
-    const r = await amm.getOutputTwap(dir, 
+    const p = await amm.getOutputTwap(dir, 
       { d: bAmount });
     console.log("getOutputTwap:" + web3.utils.fromWei(p.toString()))
   } catch (e) {
@@ -90,9 +90,10 @@ async function getInputPrice(amm, dir, qAmount, web3) {
 // 0 : ADD_TO_AMM for short, 1: REMOVE_FROM_AMM for long
 async function getOutputPrice(amm, dir, bAmount, web3) {
   try {
-    const r = await amm.getOutputPrice(dir, 
+    const p = await amm.getOutputPrice(dir, 
       { d: bAmount });
     console.log("getOutputPrice:" + web3.utils.fromWei(p.toString()))
+    return p;
   } catch (e) {
     console.log("getOutputPrice", e)
   }

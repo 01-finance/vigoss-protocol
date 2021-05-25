@@ -11,7 +11,8 @@ async function totalSupply(token, web3) {
 async function balanceOf(token, user, web3, tag) {
   try {
     let bofU =  await token.balanceOf(user,  {from: user} )
-    console.log(tag + "balanceOf : " +  web3.utils.fromWei(bofU))
+    console.log(tag + " balanceOf : " +  web3.utils.fromWei(bofU))
+    return bofU
   }  catch (e) {
     console.log("balanceOf error", e)
   }

@@ -4,7 +4,7 @@ var Amm = artifacts.require("Amm");
 
 
 const { totalSupply, transfer, balanceOf, approve } = require('./token')
-const { openPosition, getPosition } = require('./clearhouse')
+const { openPosition, getPosition, closePosition, addMargin, liquidate, removeMargin } = require('./clearhouse')
 const {
   getUnderlyingPrice,
   getUnderlyingTwapPrice,
@@ -38,8 +38,8 @@ module.exports = async function(callback) {
     console.log("init contract error", e)
   }
 
-  console.log("\n  ===  user openPosition  === \n");
-  await approve(usdcMock, accounts[0], house.address, web3.utils.toWei("500"));
+  console.log("\n  ===  user0 openPosition  === \n");
+  await approve(usdcMock, accounts[0], house.address, web3.utils.toWei("1000"));
 
   // getInputPrice 预测数量 min
   await getInputPrice(ETHUSDCAmm, ADD_TO_AMM, web3.utils.toWei("200"), web3)
@@ -56,14 +56,14 @@ module.exports = async function(callback) {
     web3
   )
 
-  await getPosition(house, ETHUSDCAmm.address, accounts[0], web3 )
+  let user0Size = await getPosition(house, ETHUSDCAmm.address, accounts[0], web3 )
   
   await getSpotPrice(ETHUSDCAmm, web3);
   
 
   console.log("\n  ===  user1 openPosition  === \n");
-  await transfer(usdcMock, accounts[0], accounts[1], web3.utils.toWei("500"));
-  await approve(usdcMock, accounts[1], house.address, web3.utils.toWei("500"));
+  await transfer(usdcMock, accounts[0], accounts[1], web3.utils.toWei("11000"));
+  await approve(usdcMock, accounts[1], house.address, web3.utils.toWei("11000"));
 
   await getInputPrice(ETHUSDCAmm, ADD_TO_AMM, web3.utils.toWei("200"), web3)
   // await getInputTwap(ETHUSDCAmm,  ADD_TO_AMM, web3.utils.toWei("200"), web3)
@@ -72,7 +72,7 @@ module.exports = async function(callback) {
   await openPosition(house, 
     ETHUSDCAmm.address, 
     0,   // buy long 
-    web3.utils.toWei("100"),  // 100 usdc
+    web3.utils.toWei("10000"),  // 100 usdc
     web3.utils.toWei("2"),    // 2 leverage
     web3.utils.toWei("0"),  //minBaseamount( for slippage)
     accounts[1],
@@ -80,6 +80,25 @@ module.exports = async function(callback) {
   )
 
   await getPosition(house, ETHUSDCAmm.address, accounts[1], web3 )
+  await getSpotPrice(ETHUSDCAmm, web3);
+
+  console.log("\n  ===  user0 closePosition  === \n");
+  console.log("user0Size:" + user0Size);
+  
+  // TODO: 偏小？
+  await getOutputPrice(ETHUSDCAmm, REMOVE_FROM_AMM, (user0Size / 2).toString(), web3);
+
+  let b1 = await balanceOf(usdcMock, accounts[0], web3, "close before ");
+  await closePosition(house, ETHUSDCAmm.address, "0", accounts[0])
+    
+  let b2 = await balanceOf(usdcMock, accounts[0], web3, "after before ");
+  try {
+    console.log("balance added ", web3.utils.fromWei((b2 - b1).toString()))
+  } catch (e) {
+    console.log("b :", e);
+  }
+
+  
 
   await getSpotPrice(ETHUSDCAmm, web3);
 
