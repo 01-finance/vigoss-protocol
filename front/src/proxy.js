@@ -53,7 +53,7 @@ export default {
   },
 
   getAmm(addr) {
-    const proxy = contract(Cart)
+    const proxy = contract(Amm)
     proxy.setProvider(this.provider)
     return proxy.at(addr);
   },
