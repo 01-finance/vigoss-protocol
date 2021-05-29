@@ -2,13 +2,14 @@
 <div class="hello">
   <h1>Vigoss Demo</h1>
   <span>USDC 余额：{{ usdcBalance }} </span>
+  <span>当前价：1 ETH = {{ currPrice }} USDC</span>
   <h3>下单</h3>
   <div>
     <input type="radio" id="long" value="0" v-model="longOrShort">
     <label for="long">做多</label>
     <input type="radio" id="short" value="1" v-model="longOrShort">
     <label for="short">做空</label>
-
+    <br>
     <input v-model="baseAmount" placeholder="标的数量">
     <input v-model="margin" placeholder="保证金数量">
     <input v-model="leverage" @change="calcFee" placeholder="杠杆倍数">
@@ -23,7 +24,7 @@
   </div>
 
   <h3>我的订单</h3>
-  <div>
+  <div v-if="myPosition">
     <span>保证金: {{ this.myPosition.margin }}</span>
     <br>
     <span> size : {{ this.myPosition.baseAsset}}</span>
@@ -33,7 +34,14 @@
     <span> openNotional: {{ this.myPosition.openNotional}}</span>
     <br>
     <span> lastUpdatedCumulativePremiumFraction: {{ this.myPosition.lastUpdatedCumulativePremiumFraction}}</span>
-  
+    <br>
+    <button @click="closePosition">Close</button>
+
+    <div>
+      <input v-model="adjustAmount" placeholder="调整的保证金数量">
+      <button @click="removeMargin">减少保证金</button>
+      <button @click="addMargin">增加保证金</button>
+    </div>
   </div>
 
 
@@ -59,11 +67,14 @@ export default {
       usdcBalance: null,
       longOrShort: 0,
       baseAmount: null,
+      currPrice: null,
       margin: null,
       leverage: null,
       transactionFee: null,
       totalCost: null,
-      myPosition: {},
+      myPosition: null,
+      adjustAmount: null,
+
     }
   },
 
@@ -104,6 +115,12 @@ export default {
     balanceOf() {
       this.usdc.balanceOf(this.account).then(r => {
         this.usdcBalance = fromDec(r.toString(), this.decimal);
+      })
+    },
+
+    getSpotPrice() {
+      this.ammPair.getSpotPrice().then(r => {
+        this.currPrice = this.web3.utils.fromWei(r.toString());
       })
     },
 
@@ -178,7 +195,9 @@ export default {
         { d: qAmount },
         { d: lev },
         { d: minAmount },
-        { from: this.account })
+        { from: this.account }).then(() => {
+          this.getPosition();
+        })
     },
 
     getPosition() {
@@ -191,8 +210,31 @@ export default {
         myPosition.blockNumber = position.blockNumber
         this.myPosition = myPosition;
       })
-
     },
+
+    closePosition() {
+      this.ch.closePosition(this.ammPair.address, {d: "0"}, 
+        { from : this.account}).then( () => {
+        this.getPosition();
+      })
+    },
+
+    removeMargin() {
+      let amount = this.web3.utils.toWei(this.adjustAmount);
+      this.ch.removeMargin(this.ammPair.address, 
+      {d: amount}, {from: this.account}).then(() => {
+        this.getPosition();
+      })
+    },
+
+    addMargin() {
+      let amount = this.web3.utils.toWei(this.adjustAmount);
+      this.ch.addMargin(this.ammPair.address,
+      {d: amount}, 
+      {from: this.account}).then(() => {
+        this.getPosition();
+      })
+    }
 
   }
 

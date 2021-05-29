@@ -38,7 +38,6 @@ async function liquidate(house, amm, trader, user) {
 async function addMargin(house, amm, addmargin, user) {
   try {
     let tx = await house.addMargin(amm, 
-      trader,
       {d: addmargin},
       { from: user })
     console.log("addMargin done, gas:" + tx['receipt']['gasUsed'])
@@ -50,7 +49,6 @@ async function addMargin(house, amm, addmargin, user) {
 async function removeMargin(house, amm, margin, user) {
   try {
     let tx = await house.removeMargin(amm, 
-      trader,
       {d: margin},
       { from: user })
     console.log("removeMargin done, gas:" + tx['receipt']['gasUsed'])
