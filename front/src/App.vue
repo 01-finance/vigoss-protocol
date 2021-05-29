@@ -38,4 +38,20 @@ li {
 a {
   color: #42b983;
 }
+input {
+    outline-style: none ;
+    border: 1px solid #ccc; 
+    border-radius: 3px;
+    margin: 2px;
+    padding: 7px 5px;
+    width: 360px;
+    font-size: 18px;
+}
+span {
+  font-size: 18px;  
+}
+button {
+  font-size: 18px;
+}
+
 </style>

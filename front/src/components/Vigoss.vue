@@ -2,7 +2,7 @@
 <div class="hello">
   <h1>Vigoss Demo</h1>
   <span>USDC 余额：{{ usdcBalance }} </span>
-
+  <h3>下单</h3>
   <div>
     <input type="radio" id="long" value="0" v-model="longOrShort">
     <label for="long">做多</label>
@@ -21,6 +21,21 @@
     <button @click="approve">授权</button>
     <button @click="openPosition">下单</button>
   </div>
+
+  <h3>我的订单</h3>
+  <div>
+    <span>保证金: {{ this.myPosition.margin }}</span>
+    <br>
+    <span> size : {{ this.myPosition.baseAsset}}</span>
+    <br>
+    <span> blockNumber: {{ this.myPosition.blockNumber}}</span>
+    <br>
+    <span> openNotional: {{ this.myPosition.openNotional}}</span>
+    <br>
+    <span> lastUpdatedCumulativePremiumFraction: {{ this.myPosition.lastUpdatedCumulativePremiumFraction}}</span>
+  
+  </div>
+
 
 </div>
 </template>
@@ -48,6 +63,7 @@ export default {
       leverage: null,
       transactionFee: null,
       totalCost: null,
+      myPosition: {},
     }
   },
 
@@ -81,6 +97,8 @@ export default {
 
       let ETHUSDCPair = require(`../../abis/Amm:ETH-USDC.${network}.json`);
       this.ammPair = await proxy.getAmm(ETHUSDCPair.address);
+
+      this.getPosition();
     },
 
     balanceOf() {
@@ -161,7 +179,20 @@ export default {
         { d: lev },
         { d: minAmount },
         { from: this.account })
-    }
+    },
+
+    getPosition() {
+      this.ch.getUnadjustedPosition(this.ammPair.address, this.account).then((position) => {
+        let myPosition = {};
+        myPosition.margin = this.web3.utils.fromWei(position.margin.toString())
+        myPosition.baseAsset = this.web3.utils.fromWei(position.size.toString())
+        myPosition.openNotional = this.web3.utils.fromWei(position.openNotional.toString())
+        myPosition.lastUpdatedCumulativePremiumFraction = this.web3.utils.fromWei(position.lastUpdatedCumulativePremiumFraction.toString())
+        myPosition.blockNumber = position.blockNumber
+        this.myPosition = myPosition;
+      })
+
+    },
 
   }
 
