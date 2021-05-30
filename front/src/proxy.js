@@ -62,7 +62,7 @@ export default {
   getUSDCToken(networkId) {
     const networkName = NETWORK_NAME[networkId];
     let addrJs = require(`../abis/USDC.${networkName}.json`);
-    console.log("usdc addr:", addrJs)
+    // console.log("usdc addr:", addrJs)
     const proxy = contract(MockToken)
     proxy.setProvider(this.provider)
     return proxy.at(addrJs.address);
@@ -71,7 +71,7 @@ export default {
   getClearingHouse(networkId) {
     const networkName = NETWORK_NAME[networkId];
     let addrJs = require(`../abis/ClearingHouse.${networkName}.json`);
-    console.log("usdc addr:", addrJs)
+    // console.log("ClearingHouse addr:", addrJs)
     const proxy = contract(ClearingHouse)
     proxy.setProvider(this.provider)
     return proxy.at(addrJs.address);
@@ -88,7 +88,7 @@ export default {
   getInsuranceFund(networkId) {
     const networkName = NETWORK_NAME[networkId];
     let addrJs = require(`../abis/InsuranceFund.${networkName}.json`);
-    console.log("usdc addr:", addrJs)
+    // console.log("InsuranceFund addr:", addrJs)
     const proxy = contract(InsuranceFund)
     proxy.setProvider(this.provider)
     return proxy.at(addrJs.address);

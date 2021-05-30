@@ -1,5 +1,5 @@
 // https://github.com/trufflesuite/truffle/tree/develop/packages/hdwallet-provider
-// const HDWalletProvider = require('@truffle/hdwallet-provider');
+const HDWalletProvider = require('@truffle/hdwallet-provider');
 const infuraKey = "";
 
 const fs = require('fs');

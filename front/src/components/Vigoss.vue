@@ -23,15 +23,15 @@
     <span>总成本：{{ totalCost }} USDC </span>
     <br>
 
-    <button @click="approve">授权</button>
-    <button @click="openPosition">下单</button>
+    <button @click="approve">(先)授权</button>
+    <button @click="openPosition">(后)下单</button>
   </div>
 
   <h3>我的订单</h3>
   <div v-if="myPosition">
     <span>保证金: {{ this.myPosition.margin }}</span>
     <br>
-    <span> size : {{ this.myPosition.baseAsset}}</span>
+    <span> size(负表示做空) : {{ this.myPosition.baseAsset}}</span>
     <br>
     <span> MarginRate : {{ myPosition.marginRate}}</span>
     <br>
@@ -215,9 +215,11 @@ export default {
     },
 
     async getPosition() {
-      let marginRate = await this.ch.getMarginRatio(this.ammPair.address, this.account);
 
-      this.ch.getUnadjustedPosition(this.ammPair.address, this.account).then((position) => {
+      try {
+        let marginRate = await this.ch.getMarginRatio(this.ammPair.address, this.account);
+        
+        this.ch.getUnadjustedPosition(this.ammPair.address, this.account).then((position) => {
         let myPosition = {};
         myPosition.margin = this.web3.utils.fromWei(position.margin.toString())
         myPosition.baseAsset = this.web3.utils.fromWei(position.size.toString())
@@ -228,7 +230,12 @@ export default {
 
         this.myPosition = myPosition;
       
-      })
+        })
+      } catch (e) {
+        console.log("getPosition:", e);
+      }
+
+
     },
 
 
