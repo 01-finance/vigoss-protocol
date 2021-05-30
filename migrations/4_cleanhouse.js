@@ -1,4 +1,5 @@
 const ClearingHouse = artifacts.require("ClearingHouse");
+const ClearingHouseViewer = artifacts.require("ClearingHouseViewer");
 const InsuranceFund = artifacts.require("InsuranceFund");
 
 const { writeAbis } = require('./log');
@@ -13,4 +14,8 @@ module.exports = async function(deployer, network, accounts) {
       fund.address);
 
   await writeAbis(ClearingHouse, 'ClearingHouse', network);
+
+  await deployer.deploy(ClearingHouseViewer, ClearingHouse.address);
+  await writeAbis(ClearingHouseViewer, 'ClearingHouseViewer', network);
+
 }

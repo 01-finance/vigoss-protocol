@@ -1,0 +1,248 @@
+{
+  "contractName": "ClearingHouseViewer",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "contract ClearingHouse",
+          "name": "_clearingHouse",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor",
+      "signature": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "clearingHouse",
+      "outputs": [
+        {
+          "internalType": "contract ClearingHouse",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x0af96800"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IAmm",
+          "name": "_amm",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_trader",
+          "type": "address"
+        },
+        {
+          "internalType": "enum ClearingHouse.PnlCalcOption",
+          "name": "_pnlCalcOption",
+          "type": "uint8"
+        }
+      ],
+      "name": "getUnrealizedPnl",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "int256",
+              "name": "d",
+              "type": "int256"
+            }
+          ],
+          "internalType": "struct SignedDecimal.signedDecimal",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xa2420238"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "_quoteToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_trader",
+          "type": "address"
+        }
+      ],
+      "name": "getPersonalBalanceWithFundingPayment",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "d",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Decimal.decimal",
+          "name": "margin",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xbafe871c"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IAmm",
+          "name": "_amm",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_trader",
+          "type": "address"
+        }
+      ],
+      "name": "getPersonalPositionWithFundingPayment",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "int256",
+                  "name": "d",
+                  "type": "int256"
+                }
+              ],
+              "internalType": "struct SignedDecimal.signedDecimal",
+              "name": "size",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "d",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct Decimal.decimal",
+              "name": "margin",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "d",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct Decimal.decimal",
+              "name": "openNotional",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "int256",
+                  "name": "d",
+                  "type": "int256"
+                }
+              ],
+              "internalType": "struct SignedDecimal.signedDecimal",
+              "name": "lastUpdatedCumulativePremiumFraction",
+              "type": "tuple"
+            },
+            {
+              "internalType": "uint256",
+              "name": "liquidityHistoryIndex",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "blockNumber",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct ClearingHouse.Position",
+          "name": "position",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x16f6c558"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IAmm",
+          "name": "_amm",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_trader",
+          "type": "address"
+        }
+      ],
+      "name": "isPositionNeedToBeMigrated",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x7db3b72d"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IAmm",
+          "name": "_amm",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_trader",
+          "type": "address"
+        }
+      ],
+      "name": "getMarginRatio",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "int256",
+              "name": "d",
+              "type": "int256"
+            }
+          ],
+          "internalType": "struct SignedDecimal.signedDecimal",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xea0a45f9"
+    }
+  ]
+}

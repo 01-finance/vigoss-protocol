@@ -2,16 +2,20 @@
 <div class="hello">
   <h1>Vigoss Demo</h1>
   <span>USDC 余额：{{ usdcBalance }} </span>
+  <br>
   <span>当前价：1 ETH = {{ currPrice }} USDC</span>
   <h3>下单</h3>
   <div>
     <input type="radio" id="long" value="0" v-model="longOrShort">
     <label for="long">做多</label>
+    <br>
     <input type="radio" id="short" value="1" v-model="longOrShort">
     <label for="short">做空</label>
     <br>
     <input v-model="baseAmount" placeholder="标的数量">
+    <br>
     <input v-model="margin" placeholder="保证金数量">
+    <br>
     <input v-model="leverage" @change="calcFee" placeholder="杠杆倍数">
 
     <br>
@@ -29,6 +33,9 @@
     <br>
     <span> size : {{ this.myPosition.baseAsset}}</span>
     <br>
+    <span> MarginRate : {{ myPosition.marginRate}}</span>
+    <br>
+
     <span> blockNumber: {{ this.myPosition.blockNumber}}</span>
     <br>
     <span> openNotional: {{ this.myPosition.openNotional}}</span>
@@ -105,11 +112,13 @@ export default {
       console.log(network)
 
       this.ch = await proxy.getClearingHouse(this.chainid);
+      // this.chv = await proxy.getClearingHouseViewer(this.chainid);
 
       let ETHUSDCPair = require(`../../abis/Amm:ETH-USDC.${network}.json`);
       this.ammPair = await proxy.getAmm(ETHUSDCPair.address);
 
       this.getPosition();
+      this.getSpotPrice();
     },
 
     balanceOf() {
@@ -155,7 +164,7 @@ export default {
     },
 
     calcFee() {
-      let qAmount = toDec(this.margin, this.decimal);
+      let qAmount = toDec(parseFloat(this.margin) * parseFloat(this.leverage), this.decimal);
       this.ammPair.calcFee({
         d: qAmount
       }).then(fee => {
@@ -200,7 +209,9 @@ export default {
         })
     },
 
-    getPosition() {
+    async getPosition() {
+      let marginRate = await this.ch.getMarginRatio(this.ammPair.address, this.account);
+
       this.ch.getUnadjustedPosition(this.ammPair.address, this.account).then((position) => {
         let myPosition = {};
         myPosition.margin = this.web3.utils.fromWei(position.margin.toString())
@@ -208,9 +219,13 @@ export default {
         myPosition.openNotional = this.web3.utils.fromWei(position.openNotional.toString())
         myPosition.lastUpdatedCumulativePremiumFraction = this.web3.utils.fromWei(position.lastUpdatedCumulativePremiumFraction.toString())
         myPosition.blockNumber = position.blockNumber
+        myPosition.marginRate =  this.web3.utils.fromWei(marginRate.toString());
+
         this.myPosition = myPosition;
+      
       })
     },
+
 
     closePosition() {
       this.ch.closePosition(this.ammPair.address, {d: "0"}, 

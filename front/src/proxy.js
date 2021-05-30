@@ -6,6 +6,7 @@ import Amm from "../abis/Amm.json";
 import ClearingHouse from "../abis/ClearingHouse.json";
 import InsuranceFund from "../abis/InsuranceFund.json";
 import MockToken from "../abis/MockToken.json";
+import ClearingHouseViewer from "../abis/ClearingHouseViewer.json";
 import { NETWORK_NAME } from "./constants";
 
 
@@ -72,6 +73,14 @@ export default {
     let addrJs = require(`../abis/ClearingHouse.${networkName}.json`);
     console.log("usdc addr:", addrJs)
     const proxy = contract(ClearingHouse)
+    proxy.setProvider(this.provider)
+    return proxy.at(addrJs.address);
+  },
+
+  getClearingHouseViewer(networkId) {
+    const networkName = NETWORK_NAME[networkId];
+    let addrJs = require(`../abis/ClearingHouseViewer.${networkName}.json`);
+    const proxy = contract(ClearingHouseViewer)
     proxy.setProvider(this.provider)
     return proxy.at(addrJs.address);
   },
