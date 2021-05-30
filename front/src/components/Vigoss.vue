@@ -145,7 +145,7 @@ export default {
         let p = await this.ammPair.getOutputPrice(dir, {
           d: bAmount
         })
-        this.margin = formatNum(this.web3.utils.fromWei(p.toString()), 4);
+        this.margin = formatNum(this.web3.utils.fromWei(p.toString()), 6);
       }
     },
 
@@ -158,7 +158,7 @@ export default {
         let p = await this.ammPair.getInputPrice(this.longOrShort, {
           d: qAmount
         })
-        this.baseAmount = formatNum(this.web3.utils.fromWei(p.toString()), 4);
+        this.baseAmount = formatNum(this.web3.utils.fromWei(p.toString()), 6);
       }
 
     },
@@ -197,8 +197,13 @@ export default {
     openPosition() {
       let qAmount = toDec(this.margin, this.decimal);
       let lev = toDec(this.leverage, 18);
-      let Slippage = 0.99; // 
-      let minAmount = toDec(parseFloat(this.baseAmount) * Slippage, 18);
+      let Slippage = 0.01;  // 滑点设置  1%
+      let offSet = this.longOrShort > 0 ?  1 + Slippage :  1 - Slippage
+      let minBase = parseFloat(this.baseAmount) * offSet;
+      
+      console.log("minBase:" + minBase)
+      let minAmount = toDec(minBase, 18);
+      
       this.ch.openPosition(this.ammPair.address,
         this.longOrShort,
         { d: qAmount },
