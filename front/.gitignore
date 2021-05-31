@@ -3,6 +3,7 @@ node_modules
 /dist
 
 /abis/*.hardhat.json
+push.sh
 
 
 # local env files

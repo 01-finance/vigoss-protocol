@@ -13,16 +13,17 @@ import { NETWORK_NAME } from "./constants";
 
 export default {
 
+
   async initWeb3Account(callback) {
     if (window.ethereum) {
       this.provider = window.ethereum;
 
       // eth_subscribe are not supported
-
       if (window.imToken && !window.ethereum.supportsSubscriptions()) {
         window.ethereum.on = null;
       }
 
+      // 请求连接demo.
       try {
         await window.ethereum.enable();
       } catch (error) {
