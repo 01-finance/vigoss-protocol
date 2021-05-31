@@ -67,9 +67,19 @@ function printPosition(position, web3) {
   console.log("Pos blockNumber:" +position.blockNumber)
 }
 
-async function getPosition(house, amm, user, web3) {
+async function getUnadjustedPosition(house, amm, user, web3) {
   try {
     let position = await house.getUnadjustedPosition(amm, user);
+    printPosition(position, web3)
+    return position.size
+  }  catch (e) {
+    console.log("getPosition error", e)
+  }
+}
+
+async function getPosition(house, amm, user, web3) {
+  try {
+    let position = await house.getPosition(amm, user);
     printPosition(position, web3)
     return position.size
   }  catch (e) {
@@ -88,6 +98,14 @@ async function getPersonalPositionWithFundingPayment(houseViewer, amm, user, web
 }
 
 
+async function payFunding(house, amm, user) {
+  try {
+    await house.payFunding(amm, {from: user});
+  }  catch (e) {
+    console.log("payFunding error", e)
+  }
+}
+
 
 
 module.exports = {
@@ -97,5 +115,6 @@ module.exports = {
   liquidate,
   addMargin,
   removeMargin,
+  getUnadjustedPosition,
   getPersonalPositionWithFundingPayment
 }
