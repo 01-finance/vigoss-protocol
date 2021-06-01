@@ -106,6 +106,14 @@ async function payFunding(house, amm, user) {
   }
 }
 
+async function getLatestCumulativePremiumFraction(house, amm, web3) {
+  try {
+    let pf = await house.getLatestCumulativePremiumFraction(amm);
+    console.log("pf:" +  web3.utils.fromWei(pf.toString()));
+  }  catch (e) {
+    console.log("getLatestCumulativePremiumFraction error", e)
+  }
+}
 
 
 module.exports = {
@@ -115,6 +123,8 @@ module.exports = {
   liquidate,
   addMargin,
   removeMargin,
+  payFunding,
   getUnadjustedPosition,
-  getPersonalPositionWithFundingPayment
+  getPersonalPositionWithFundingPayment,
+  getLatestCumulativePremiumFraction
 }

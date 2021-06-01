@@ -711,7 +711,6 @@ contract ClearingHouse is
      * @notice if funding rate is positive, traders with long position pay traders with short position and vice versa.
      * @param _amm IAmm address
      */
-    //TODO: when do this?
     function payFunding(IAmm _amm) external {
         requireAmm(_amm, true);
 
