@@ -93,10 +93,6 @@ contract Amm is IAmm, Ownable, BlockContext {
     //    The below state variables can not change the order    //
     //**********************************************************//
 
-    // DEPRECATED
-    // update during every swap and calculate total amm pnl per funding period
-    SignedDecimal.signedDecimal private baseAssetDeltaThisFundingPeriod;
-
     // update during every swap and used when shutting amm down. it's trader's total base asset size
     SignedDecimal.signedDecimal public totalPositionSize;
 
@@ -276,10 +272,6 @@ contract Amm is IAmm, Ownable, BlockContext {
         nextFundingTime = nextFundingTimeOnHourStart > minNextValidFundingTime
             ? nextFundingTimeOnHourStart
             : minNextValidFundingTime;
-
-        // DEPRECATED only for backward compatibility before we upgrade ClearingHouse
-        // reset funding related states
-        baseAssetDeltaThisFundingPeriod = SignedDecimal.zero();
 
         return premiumFraction;
     }
@@ -573,10 +565,6 @@ contract Amm is IAmm, Ownable, BlockContext {
         return settlementPrice;
     }
 
-    // DEPRECATED only for backward compatibility before we upgrade ClearingHouse
-    function getBaseAssetDeltaThisFundingPeriod() external view override returns (SignedDecimal.signedDecimal memory) {
-        return baseAssetDeltaThisFundingPeriod;
-    }
 
     function getMaxHoldingBaseAsset() external view override returns (Decimal.decimal memory) {
         return maxHoldingBaseAsset;
@@ -784,15 +772,11 @@ contract Amm is IAmm, Ownable, BlockContext {
         if (_dirOfQuote == Dir.ADD_TO_AMM) {
             quoteAssetReserve = quoteAssetReserve.addD(_quoteAssetAmount);
             baseAssetReserve = baseAssetReserve.subD(_baseAssetAmount);
-            // DEPRECATED only for backward compatibility before we upgrade ClearingHouse
-            baseAssetDeltaThisFundingPeriod = baseAssetDeltaThisFundingPeriod.subD(_baseAssetAmount);
             totalPositionSize = totalPositionSize.addD(_baseAssetAmount);
             cumulativeNotional = cumulativeNotional.addD(_quoteAssetAmount);
         } else {
             quoteAssetReserve = quoteAssetReserve.subD(_quoteAssetAmount);
             baseAssetReserve = baseAssetReserve.addD(_baseAssetAmount);
-            // DEPRECATED only for backward compatibility before we upgrade ClearingHouse
-            baseAssetDeltaThisFundingPeriod = baseAssetDeltaThisFundingPeriod.addD(_baseAssetAmount);
             totalPositionSize = totalPositionSize.subD(_baseAssetAmount);
             cumulativeNotional = cumulativeNotional.subD(_quoteAssetAmount);
         }
