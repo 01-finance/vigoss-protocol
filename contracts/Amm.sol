@@ -414,6 +414,7 @@ contract Amm is IAmm, Ownable, BlockContext {
     // VIEW FUNCTIONS
     //
 
+    // 
     function isOverFluctuationLimit(Dir _dirOfBase, Decimal.decimal memory _baseAssetAmount)
         external
         view
@@ -578,6 +579,7 @@ contract Amm is IAmm, Ownable, BlockContext {
         return totalPositionSize;
     }
 
+    // 系统价格是否比 Oracle 相差10% 
     function isOverSpreadLimit() external view override returns (bool) {
         Decimal.decimal memory oraclePrice = getUnderlyingPrice();
         require(oraclePrice.toUint() > 0, "underlying price is 0");
@@ -893,6 +895,7 @@ contract Amm is IAmm, Ownable, BlockContext {
         revert("not supported option");
     }
 
+    // 
     function getPriceBoundariesOfLastBlock() internal view returns (Decimal.decimal memory, Decimal.decimal memory) {
         uint256 len = reserveSnapshots.length;
         ReserveSnapshot memory latestSnapshot = reserveSnapshots[len.sub(1)];

@@ -179,7 +179,7 @@ contract ClearingHouse is
     // designed for arbitragers who can hold unlimited positions. will be removed after guarded period
     address internal whitelist;
 
-    //◥◤◥◤◥◤◥◤◥◤◥◤◥◤◥◤ add state variables below ◥◤◥◤◥◤◥◤◥◤◥◤◥◤◥◤//
+    // 
     Decimal.decimal public partialLiquidationRatio;
 
     // FUNCTIONS
@@ -536,6 +536,7 @@ contract ClearingHouse is
                 _amm.isOverFluctuationLimit(dirOfBase, position.size.abs()) &&
                 partialLiquidationRatio.cmp(Decimal.one()) < 0
             ) {
+              // 关闭部分
                 Decimal.decimal memory partiallyClosedPositionNotional =
                     _amm.getOutputPrice(dirOfBase, position.size.mulD(partialLiquidationRatio).abs());
 
@@ -598,6 +599,7 @@ contract ClearingHouse is
 
         // including oracle-based margin ratio as reference price when amm is over spread limit
         if (_amm.isOverSpreadLimit()) {
+            console.log("liquidate:isOverSpreadLimit");
             SignedDecimal.signedDecimal memory marginRatioBasedOnOracle = _getMarginRatioBasedOnOracle(_amm, _trader);
             if (marginRatioBasedOnOracle.subD(marginRatio).toInt() > 0) {
                 marginRatio = marginRatioBasedOnOracle;
@@ -616,11 +618,13 @@ contract ClearingHouse is
             Decimal.decimal memory feeToInsuranceFund;
             IERC20 quoteAsset = _amm.quoteAsset();
 
+            // 部分清算
             if (
                 marginRatio.toInt() > int256(liquidationFeeRatio.toUint()) &&
                 partialLiquidationRatio.cmp(Decimal.one()) < 0 &&
                 partialLiquidationRatio.toUint() != 0
             ) {
+                console.log("partialLiquidation");
                 Position memory position = getPosition(_amm, _trader);
                 Decimal.decimal memory partiallyLiquidatedPositionNotional =
                     _amm.getOutputPrice(
@@ -646,6 +650,8 @@ contract ClearingHouse is
                 positionResp.position.margin = positionResp.position.margin.subD(liquidationPenalty);
                 setPosition(_amm, _trader, positionResp.position);
             } else {
+                console.log("total Liquidation");
+
                 liquidationPenalty = getPosition(_amm, _trader).margin;
                 positionResp = internalClosePosition(_amm, _trader, Decimal.zero());
                 Decimal.decimal memory remainMargin = positionResp.marginToVault.abs();
@@ -1083,6 +1089,7 @@ contract ClearingHouse is
 
         (, SignedDecimal.signedDecimal memory unrealizedPnl) =
             getPositionNotionalAndUnrealizedPnl(_amm, _trader, PnlCalcOption.SPOT_PRICE);
+
         (
             Decimal.decimal memory remainMargin,
             Decimal.decimal memory badDebt,
@@ -1095,6 +1102,7 @@ contract ClearingHouse is
         positionResp.badDebt = badDebt;
         positionResp.fundingPayment = fundingPayment;
         positionResp.marginToVault = MixedDecimal.fromDecimal(remainMargin).mulScalar(-1);
+        
         // for amm.swapOutput, the direction is in base asset, from the perspective of Amm
         positionResp.exchangedQuoteAssetAmount = _amm.swapOutput(
             oldPosition.size.toInt() > 0 ? IAmm.Dir.ADD_TO_AMM : IAmm.Dir.REMOVE_FROM_AMM,
@@ -1230,6 +1238,7 @@ contract ClearingHouse is
             return unadjustedPosition;
         }
         uint256 latestLiquidityIndex = _amm.getLiquidityHistoryLength().sub(1);
+        console.log("adjustPositionForLiquidityChanged:latestLiquidityIndex", latestLiquidityIndex);
         if (unadjustedPosition.liquidityHistoryIndex == latestLiquidityIndex) {
             return unadjustedPosition;
         }
@@ -1256,6 +1265,9 @@ contract ClearingHouse is
             _position.liquidityHistoryIndex = _latestLiquidityIndex;
             return _position;
         }
+
+        console.log("CH:position.liquidityHistoryIndex", _position.liquidityHistoryIndex);
+
         // get the change in Amm notional value
         // notionalDelta = current cumulative notional - cumulative notional of last snapshot
         IAmm.LiquidityChangedSnapshot memory lastSnapshot =

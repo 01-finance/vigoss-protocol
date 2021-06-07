@@ -35,6 +35,16 @@ async function liquidate(house, amm, trader, user) {
   }
 }
 
+async function partialLiquidationRatio(house, web3) {
+  try {
+    let plr = await house.partialLiquidationRatio(
+      { from: user })
+      console.log("partialLiquidationRatio:" +  web3.utils.fromWei(plr.toString())
+  } catch (e) {
+    console.log("liquidate error", e)
+  }
+}
+
 async function addMargin(house, amm, addmargin, user) {
   try {
     let tx = await house.addMargin(amm, 
@@ -59,16 +69,18 @@ async function removeMargin(house, amm, margin, user) {
 }
 
 function printPosition(position, web3) {
+  
   console.log("Pos baseAsset:" + web3.utils.fromWei(position.size.toString()))
   console.log("Pos margin:" + web3.utils.fromWei(position.margin.toString()))
   console.log("Pos openNotional:" + web3.utils.fromWei(position.openNotional.toString()))
   console.log("Pos lastUpdatedCumulativePremiumFraction:" + web3.utils.fromWei(position.lastUpdatedCumulativePremiumFraction.toString()))
-  console.log("Pos index:" + position.liquidityHistoryIndex)
+  console.log("Pos liquidityHistoryIndex:" + position.liquidityHistoryIndex)
   console.log("Pos blockNumber:" +position.blockNumber)
 }
 
 async function getUnadjustedPosition(house, amm, user, web3) {
   try {
+    console.log("\n getUnadjustedPosition \n ")
     let position = await house.getUnadjustedPosition(amm, user);
     printPosition(position, web3)
     return position.size
@@ -79,6 +91,7 @@ async function getUnadjustedPosition(house, amm, user, web3) {
 
 async function getPosition(house, amm, user, web3) {
   try {
+    console.log("\n getPosition \n ")
     let position = await house.getPosition(amm, user);
     printPosition(position, web3)
     return position.size
@@ -89,6 +102,7 @@ async function getPosition(house, amm, user, web3) {
 
 async function getPersonalPositionWithFundingPayment(houseViewer, amm, user, web3) {
   try {
+    console.log("\n getPersonalPositionWithFundingPayment \n ")
     let position = await houseViewer.getPersonalPositionWithFundingPayment(amm, user);
     printPosition(position, web3)
 
@@ -125,6 +139,7 @@ module.exports = {
   removeMargin,
   payFunding,
   getUnadjustedPosition,
+  partialLiquidationRatio,
   getPersonalPositionWithFundingPayment,
   getLatestCumulativePremiumFraction
 }
