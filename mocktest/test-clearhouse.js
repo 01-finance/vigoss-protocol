@@ -4,7 +4,7 @@ var Amm = artifacts.require("Amm");
 
 
 const { totalSupply, transfer, balanceOf, approve } = require('./token')
-const { openPosition, getPosition, closePosition, addMargin, liquidate, removeMargin } = require('./clearhouse')
+const { openPosition, getPosition, closePosition, addMargin, liquidate, removeMargin, getUnadjustedPosition, partialLiquidationRatio } = require('./clearhouse')
 const {
   getUnderlyingPrice,
   getUnderlyingTwapPrice,
@@ -38,6 +38,8 @@ module.exports = async function(callback) {
     console.log("init contract error", e)
   }
 
+  await partialLiquidationRatio(house, web3);
+
   console.log("\n  ===  user0 openPosition  === \n");
   await approve(usdcMock, accounts[0], house.address, web3.utils.toWei("1000"));
 
@@ -56,6 +58,7 @@ module.exports = async function(callback) {
     web3
   )
 
+  await getUnadjustedPosition(house, ETHUSDCAmm.address, accounts[0], web3 )
   let user0Size = await getPosition(house, ETHUSDCAmm.address, accounts[0], web3 )
   
   await getSpotPrice(ETHUSDCAmm, web3);
@@ -79,6 +82,7 @@ module.exports = async function(callback) {
     web3
   )
 
+  await getUnadjustedPosition(house, ETHUSDCAmm.address, accounts[1], web3 )
   await getPosition(house, ETHUSDCAmm.address, accounts[1], web3 )
   await getSpotPrice(ETHUSDCAmm, web3);
 
@@ -99,7 +103,7 @@ module.exports = async function(callback) {
   }
 
   
-
+  await getUnadjustedPosition(house, ETHUSDCAmm.address, accounts[0], web3 )
   await getSpotPrice(ETHUSDCAmm, web3);
 
 }

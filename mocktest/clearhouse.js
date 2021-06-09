@@ -37,9 +37,8 @@ async function liquidate(house, amm, trader, user) {
 
 async function partialLiquidationRatio(house, web3) {
   try {
-    let plr = await house.partialLiquidationRatio(
-      { from: user })
-      console.log("partialLiquidationRatio:" +  web3.utils.fromWei(plr.toString())
+    let plr = await house.partialLiquidationRatio()
+      console.log("partialLiquidationRatio:" +  web3.utils.fromWei(plr.toString()));
   } catch (e) {
     console.log("liquidate error", e)
   }

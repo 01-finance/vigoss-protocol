@@ -1522,28 +1522,6 @@
     },
     {
       "inputs": [],
-      "name": "getBaseAssetDeltaThisFundingPeriod",
-      "outputs": [
-        {
-          "components": [
-            {
-              "internalType": "int256",
-              "name": "d",
-              "type": "int256"
-            }
-          ],
-          "internalType": "struct SignedDecimal.signedDecimal",
-          "name": "",
-          "type": "tuple"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0xe805d6fc"
-    },
-    {
-      "inputs": [],
       "name": "getMaxHoldingBaseAsset",
       "outputs": [
         {

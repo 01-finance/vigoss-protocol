@@ -768,6 +768,7 @@ contract ClearingHouse is
             (getPositionNotionalAndUnrealizedPnl(_amm, _trader, PnlCalcOption.SPOT_PRICE));
         (Decimal.decimal memory twapPositionNotional, SignedDecimal.signedDecimal memory twapPricePnl) =
             (getPositionNotionalAndUnrealizedPnl(_amm, _trader, PnlCalcOption.TWAP));
+
         (SignedDecimal.signedDecimal memory unrealizedPnl, Decimal.decimal memory positionNotional) =
             spotPricePnl.toInt() > twapPricePnl.toInt()
                 ? (spotPricePnl, spotPositionNotional)
@@ -819,8 +820,8 @@ contract ClearingHouse is
      * @param _amm IAmm address
      * @param _trader trader address
      * @param _pnlCalcOption enum PnlCalcOption, SPOT_PRICE for spot price and TWAP for twap price
-     * @return positionNotional position notional
-     * @return unrealizedPnl unrealized Pnl
+     * @return positionNotional position notional（当前价格下仓位价值）
+     * @return unrealizedPnl unrealized Pnl（未实现盈亏：当前仓位价值 与 开仓价值的差）
      */
     function getPositionNotionalAndUnrealizedPnl(
         IAmm _amm,
@@ -1078,6 +1079,7 @@ contract ClearingHouse is
         return positionResp;
     }
 
+    // 
     function internalClosePosition(
         IAmm _amm,
         address _trader,
@@ -1102,7 +1104,7 @@ contract ClearingHouse is
         positionResp.badDebt = badDebt;
         positionResp.fundingPayment = fundingPayment;
         positionResp.marginToVault = MixedDecimal.fromDecimal(remainMargin).mulScalar(-1);
-        
+
         // for amm.swapOutput, the direction is in base asset, from the perspective of Amm
         positionResp.exchangedQuoteAssetAmount = _amm.swapOutput(
             oldPosition.size.toInt() > 0 ? IAmm.Dir.ADD_TO_AMM : IAmm.Dir.REMOVE_FROM_AMM,
@@ -1238,11 +1240,12 @@ contract ClearingHouse is
             return unadjustedPosition;
         }
         uint256 latestLiquidityIndex = _amm.getLiquidityHistoryLength().sub(1);
-        console.log("adjustPositionForLiquidityChanged:latestLiquidityIndex", latestLiquidityIndex);
+        console.log("CH:adjustPositionForLiquidityChanged:latestLiquidityIndex", latestLiquidityIndex);
         if (unadjustedPosition.liquidityHistoryIndex == latestLiquidityIndex) {
             return unadjustedPosition;
         }
 
+      console.log("CH:calcPositionAfterLiquidityMigration:latestLiquidityIndex", latestLiquidityIndex);
         Position memory adjustedPosition =
             calcPositionAfterLiquidityMigration(_amm, unadjustedPosition, latestLiquidityIndex);
         setPosition(_amm, _trader, adjustedPosition);
@@ -1278,6 +1281,9 @@ contract ClearingHouse is
         // by applying notionalDelta to the old curve
         Decimal.decimal memory updatedOldBaseReserve;
         Decimal.decimal memory updatedOldQuoteReserve;
+
+        console.log("CH:notionalDelta", notionalDelta.toInt());
+
         if (notionalDelta.toInt() != 0) {
             Decimal.decimal memory baseAssetWorth =
                 _amm.getInputPriceWithReserves(
@@ -1296,6 +1302,7 @@ contract ClearingHouse is
             updatedOldQuoteReserve = lastSnapshot.quoteAssetReserve;
             updatedOldBaseReserve = lastSnapshot.baseAssetReserve;
         }
+
         // calculate the new position size
         _position.size = _amm.calcBaseAssetAfterLiquidityMigration(
             _position.size,

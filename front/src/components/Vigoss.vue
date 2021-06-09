@@ -24,6 +24,7 @@
     <br>
 
     <button @click="approve">(先)授权</button>
+    <button @click="allowance">查询授权: {{ allowanced }}</button>
     <button @click="openPosition">(后)下单</button>
   </div>
 
@@ -81,7 +82,7 @@ export default {
       totalCost: null,
       myPosition: null,
       adjustAmount: null,
-
+      allowanced: null,
     }
   },
 
@@ -163,6 +164,9 @@ export default {
 
     },
 
+
+
+
     calcFee() {
       let qAmount = toDec(parseFloat(this.margin) * parseFloat(this.leverage), this.decimal);
       this.ammPair.calcFee({
@@ -181,7 +185,12 @@ export default {
           this.getOutPrice();
         }
       }
+    },
 
+    allowance()  {
+      this.usdc.allowance(this.account, this.ch.address).then((r) => {
+        this.allowanced = fromDec(r, this.decimal);
+      })
     },
 
     approve() {
@@ -238,7 +247,7 @@ export default {
 
     },
 
-
+    // TODO: {d: "0"}
     closePosition() {
       this.ch.closePosition(this.ammPair.address, {d: "0"}, 
         { from : this.account}).then( () => {
