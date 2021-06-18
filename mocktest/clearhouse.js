@@ -110,6 +110,19 @@ async function getPersonalPositionWithFundingPayment(houseViewer, amm, user, web
   }
 }
 
+async function getPositionNotionalAndUnrealizedPnl(){
+
+}
+
+async function getMarginRatio(house, amm, user, web3) {
+  try {
+    let ratio = await house.getMarginRatio(amm, user, {from: user});
+    console.log("MarginRatio:" + web3.utils.fromWei(ratio.toString()))
+  }  catch (e) {
+    console.log("getMarginRatio error", e)
+  }
+}
+
 
 async function payFunding(house, amm, user) {
   try {
@@ -137,6 +150,7 @@ module.exports = {
   addMargin,
   removeMargin,
   payFunding,
+  getMarginRatio,
   getUnadjustedPosition,
   partialLiquidationRatio,
   getPersonalPositionWithFundingPayment,

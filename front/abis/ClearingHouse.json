@@ -326,20 +326,6 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "referralCode",
-          "type": "bytes32"
-        }
-      ],
-      "name": "ReferredPositionChanged",
-      "type": "event",
-      "signature": "0x09a07769667a46c2b89124a4d731c76fb5203061073aec16319ba9c6a79a3248"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": false,
           "internalType": "address",
           "name": "amm",
@@ -753,66 +739,6 @@
           "internalType": "struct Decimal.decimal",
           "name": "_baseAssetAmountLimit",
           "type": "tuple"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "_referralCode",
-          "type": "bytes32"
-        }
-      ],
-      "name": "openPositionWithReferral",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x5559c775"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        },
-        {
-          "internalType": "enum ClearingHouse.Side",
-          "name": "_side",
-          "type": "uint8"
-        },
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "d",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct Decimal.decimal",
-          "name": "_quoteAssetAmount",
-          "type": "tuple"
-        },
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "d",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct Decimal.decimal",
-          "name": "_leverage",
-          "type": "tuple"
-        },
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "d",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct Decimal.decimal",
-          "name": "_baseAssetAmountLimit",
-          "type": "tuple"
         }
       ],
       "name": "openPosition",
@@ -820,37 +746,6 @@
       "stateMutability": "nonpayable",
       "type": "function",
       "signature": "0x893d242d"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        },
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "d",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct Decimal.decimal",
-          "name": "_quoteAssetAmountLimit",
-          "type": "tuple"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "_referralCode",
-          "type": "bytes32"
-        }
-      ],
-      "name": "closePositionWithReferral",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x3e810714"
     },
     {
       "inputs": [

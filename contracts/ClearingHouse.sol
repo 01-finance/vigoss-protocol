@@ -93,8 +93,6 @@ contract ClearingHouse is
         uint256 badDebt
     );
 
-    event ReferredPositionChanged(bytes32 indexed referralCode);
-
     //
     // Struct and Enum
     //
@@ -367,28 +365,6 @@ contract ClearingHouse is
     //   pay liquidation fee to liquidator
     //   move the remain margin to insuranceFund
 
-    /**
-     * @notice open a position with referral code
-     * @param _amm amm address
-     * @param _side enum Side; BUY for long and SELL for short
-     * @param _quoteAssetAmount quote asset amount in 18 digits. Can Not be 0
-     * @param _leverage leverage  in 18 digits. Can Not be 0
-     * @param _baseAssetAmountLimit minimum base asset amount expected to get to prevent from slippage.
-     * @param _referralCode referral code
-     */
-    function openPositionWithReferral(
-        IAmm _amm,
-        Side _side,
-        Decimal.decimal calldata _quoteAssetAmount,
-        Decimal.decimal calldata _leverage,
-        Decimal.decimal calldata _baseAssetAmountLimit,
-        bytes32 _referralCode
-    ) external {
-        openPosition(_amm, _side, _quoteAssetAmount, _leverage, _baseAssetAmountLimit);
-        if (_referralCode != 0) {
-            emit ReferredPositionChanged(_referralCode);
-        }
-    }
 
     /**
      * @notice open a position
@@ -490,21 +466,6 @@ contract ClearingHouse is
         );
     }
 
-    /**
-     * @notice close position with referral code
-     * @param _amm IAmm address
-     * @param _referralCode referral code
-     */
-    function closePositionWithReferral(
-        IAmm _amm,
-        Decimal.decimal calldata _quoteAssetAmountLimit,
-        bytes32 _referralCode
-    ) external {
-        closePosition(_amm, _quoteAssetAmountLimit);
-        if (_referralCode != 0) {
-            emit ReferredPositionChanged(_referralCode);
-        }
-    }
 
     /**
      * @notice close all the positions
@@ -1269,7 +1230,7 @@ contract ClearingHouse is
             return _position;
         }
 
-        console.log("CH:position.liquidityHistoryIndex", _position.liquidityHistoryIndex);
+        console.log("CH:position.liquidityHistoryIndex ", _position.liquidityHistoryIndex);
 
         // get the change in Amm notional value
         // notionalDelta = current cumulative notional - cumulative notional of last snapshot
@@ -1282,9 +1243,8 @@ contract ClearingHouse is
         Decimal.decimal memory updatedOldBaseReserve;
         Decimal.decimal memory updatedOldQuoteReserve;
 
-        console.log("CH:notionalDelta", notionalDelta.toInt());
-
         if (notionalDelta.toInt() != 0) {
+            console.log("CH:notionalDelta ");
             Decimal.decimal memory baseAssetWorth =
                 _amm.getInputPriceWithReserves(
                     notionalDelta.toInt() > 0 ? IAmm.Dir.ADD_TO_AMM : IAmm.Dir.REMOVE_FROM_AMM,

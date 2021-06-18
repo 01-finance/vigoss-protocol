@@ -249,6 +249,7 @@ export default {
 
     // TODO: {d: "0"}
     closePosition() {
+      
       this.ch.closePosition(this.ammPair.address, {d: "0"}, 
         { from : this.account}).then( () => {
         this.getPosition();
