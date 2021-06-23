@@ -65,11 +65,12 @@ module.exports = async function(callback) {
   await balanceOf(usdcMock, house.address, web3, " house ");
 
   await transfer(usdcMock, accounts[0], accounts[2], web3.utils.toWei("11000"));
-
+  await balanceOf(usdcMock, accounts[2], web3, " user2 ");
+  await approve(usdcMock, accounts[2], house.address, web3.utils.toWei("10000"));
 
   console.log("\n  ===  user2 做多 === \n");
-  await openPosition(house, 
-    ETHUSDCAmm.address, 
+  await openPosition(house,
+    ETHUSDCAmm.address,
     0,   // buy long 
     web3.utils.toWei("1000"),  // 1000 usdc
     web3.utils.toWei("5"),     // 5 leverage
@@ -85,10 +86,10 @@ module.exports = async function(callback) {
   console.log("\n  ===  user 0 short === \n");
   await openPosition(house, 
     ETHUSDCAmm.address, 
-    1,   // buy long 
+    1,   // short 
     web3.utils.toWei("500000"),  // 1000 usdc
     web3.utils.toWei("2"),    // 5 leverage
-    web3.utils.toWei("1000"),  //minBaseamount( for slippage)
+    web3.utils.toWei("500000"),  //minBaseamount( for slippage)
     accounts[0],
     web3
   )
