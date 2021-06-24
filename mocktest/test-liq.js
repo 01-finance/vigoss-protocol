@@ -57,7 +57,8 @@ module.exports = async function(callback) {
     console.log("init contract error", e)
   }
 
-  await approve(usdcMock, accounts[0], house.address, web3.utils.toWei("10000"));
+  await getSpotPrice(ETHUSDCAmm, web3);
+  await approve(usdcMock, accounts[0], house.address, web3.utils.toWei("1000000000"));
   await feed.setPrice(ethMock.address, web3.utils.toWei("200"));
   await getUnderlyingPrice(ETHUSDCAmm, web3);
 
@@ -73,7 +74,7 @@ module.exports = async function(callback) {
     ETHUSDCAmm.address,
     0,   // buy long 
     web3.utils.toWei("1000"),  // 1000 usdc
-    web3.utils.toWei("5"),     // 5 leverage
+    web3.utils.toWei("6"),     // 5 leverage
     web3.utils.toWei("0"),     // minBaseamount( for slippage)
     accounts[2],
     web3
@@ -83,21 +84,59 @@ module.exports = async function(callback) {
   await getSpotPrice(ETHUSDCAmm, web3);
   await getMarginRatio(house, ETHUSDCAmm.address, accounts[2], web3 )
 
-  console.log("\n  ===  user 0 short === \n");
+  console.log("\n  ===  set price 180 === \n");
+  await feed.setPrice(ethMock.address, web3.utils.toWei("180"));
+  
+
+  console.log("\n  ===  user 0 short1 === \n");
   await openPosition(house, 
     ETHUSDCAmm.address, 
     1,   // short 
-    web3.utils.toWei("500000"),  // 1000 usdc
+    web3.utils.toWei("100000"),  // 1000 usdc
     web3.utils.toWei("2"),    // 5 leverage
-    web3.utils.toWei("500000"),  //minBaseamount( for slippage)
+    web3.utils.toWei("100000"),  //minBaseamount( for slippage)
+    accounts[0],
+    web3
+  )
+
+  await getSpotPrice(ETHUSDCAmm, web3);
+  await getMarginRatio(house, ETHUSDCAmm.address, accounts[2], web3 )
+
+  console.log("\n  ===  delay 10 min === \n");
+  // delay 10 mins.
+  let min10 = 60 * 10;
+  await advanceTime(web3, min10)
+
+  console.log("\n  ===  set price 160 === \n");
+  await feed.setPrice(ethMock.address, web3.utils.toWei("160"));
+
+  console.log("\n  ===  user 0 short2 === \n");
+  await openPosition(house, 
+    ETHUSDCAmm.address, 
+    1,   // short 
+    web3.utils.toWei("100000"),  // 1000 usdc
+    web3.utils.toWei("2"),    // 5 leverage
+    web3.utils.toWei("100000"),  //minBaseamount( for slippage)
     accounts[0],
     web3
   )
   
-  await getPosition(house, ETHUSDCAmm.address, accounts[0], web3 )
-  await getSpotPrice(ETHUSDCAmm, web3);
+  await getSpotPrice(ETHUSDCAmm, web3);   // 162
   await getMarginRatio(house, ETHUSDCAmm.address, accounts[2], web3 )
 
+  console.log("\n  ===  delay 10 min === \n");
+  // delay 10 mins.
+  await advanceTime(web3, min10)
+  console.log("\n  ===  set price 150 === \n");
+  await feed.setPrice(ethMock.address, web3.utils.toWei("150"));
+  
+  await getPosition(house, ETHUSDCAmm.address, accounts[0], web3 )
+  await getSpotPrice(ETHUSDCAmm, web3);
+  await getMarginRatio(house, ETHUSDCAmm.address, accounts[2], web3 )  // 0.16
 
-  //  liquidate(house, amm, trader, user)
+
+  await liquidate(house, ETHUSDCAmm.address, accounts[2], accounts[0])
+  await getSpotPrice(ETHUSDCAmm, web3);
+
 }
+

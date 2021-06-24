@@ -1,0 +1,66 @@
+修改 AMM 之前的 log
+
+USDC addr:0x131cEBa8eB2014dDe6fF44Df11a298d3fcF9E096
+SpotPrice:200
+approve done, gas:46230
+underlyingPrice:200
+ fund  balanceOf : 0
+ house  balanceOf : 0
+transfer done, gas:51691
+ user2  balanceOf : 11000
+approve done, gas:46218
+
+  ===  user2 做多 ===
+
+openPosition done, gas:493343
+
+ getPosition
+
+Pos baseAsset:29.955067398901647528
+Pos margin:1000
+Pos openNotional:6000
+Pos lastUpdatedCumulativePremiumFraction:0
+Pos liquidityHistoryIndex:0
+Pos blockNumber:302
+SpotPrice:200.600449999999999999
+MarginRatio:0.166666666666666666
+
+  ===  set price 180 ===
+
+
+  ===  user 0 short1 ===
+
+openPosition done, gas:404822
+SpotPrice:181.070449999999999999
+MarginRatio:0.164275674187424828
+
+  ===  delay 10 min ===
+
+
+  ===  set price 160 ===
+
+
+  ===  user 0 short2 ===
+
+openPosition done, gas:429293
+SpotPrice:162.540449999999999999
+MarginRatio:0.083668535441941828
+
+  ===  delay 10 min ===
+
+
+  ===  set price 150 ===
+
+
+ getPosition
+
+Pos baseAsset:-2215.201878269672584857
+Pos margin:200000
+Pos openNotional:400000
+Pos lastUpdatedCumulativePremiumFraction:0
+Pos liquidityHistoryIndex:0
+Pos blockNumber:306
+SpotPrice:162.540449999999999999
+MarginRatio:0.009309093819982714
+liquidate done, gas:406273
+SpotPrice:162.102405139325484265

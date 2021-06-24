@@ -18,4 +18,7 @@ module.exports = async function(deployer, network, accounts) {
   await deployer.deploy(ClearingHouseViewer, ClearingHouse.address);
   await writeAbis(ClearingHouseViewer, 'ClearingHouseViewer', network);
 
+
+  await fund.setBeneficiary(ClearingHouse.address);
+
 }
