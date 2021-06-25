@@ -1,5 +1,6 @@
 // https://github.com/trufflesuite/truffle/tree/develop/packages/hdwallet-provider
 const HDWalletProvider = require('@truffle/hdwallet-provider');
+const wrapProvider = require('arb-ethers-web3-bridge').wrapProvider
 const infuraKey = "";
 
 const fs = require('fs');
@@ -24,6 +25,8 @@ module.exports = {
       gasPrice: 10000000000,   // 10Gwei
     },
 
+
+
     hardhat: {
       host: "127.0.0.1",     // Localhost (default: none)
       port: 8545,            // Standard Ethereum port (default: none)
@@ -41,6 +44,17 @@ module.exports = {
       // from: <address>,        // Account to send txs from (default: accounts[0])
       // websockets: true        // Enable EventEmitter interface for web3 (default: false)
     // },
+
+    arbitrum: {
+      provider: function () {
+        return wrapProvider(
+          new HDWalletProvider(mnemonic, 'https://rinkeby.arbitrum.io/rpc')
+        )
+      },
+      network_id: '*',
+      gasPrice: 40000000000,
+      gas: 287926745,
+    },
 
     // Useful for deploying to a public network.
     // NB: It's important to wrap the provider as a function.

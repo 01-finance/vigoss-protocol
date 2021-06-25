@@ -22,6 +22,7 @@ const chainIds = {
   mainnet: 1,
   rinkeby: 4,
   ropsten: 3,
+  arbitrum: 421611,
 };
 
 // Ensure that we have all the environment variables we need.

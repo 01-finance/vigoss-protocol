@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@truffle/hdwallet-provider": "^1.4.0",
+    "arb-ethers-web3-bridge": "^0.7.3",
     "hardhat-deploy": "^0.7.9"
   },
   "devDependencies": {
