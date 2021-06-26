@@ -96,6 +96,10 @@ contract Amm is IAmm, Ownable, BlockContext {
     // update during every swap and used when shutting amm down. it's trader's total base asset size
     SignedDecimal.signedDecimal public totalPositionSize;
 
+    // totalShortPositionSize = totalPositionSize - totalLongPositionSize
+    SignedDecimal.signedDecimal private totalLongPositionSize;
+
+
     // latest funding rate = ((twap market price - twap oracle price) / twap oracle price) / 24
     SignedDecimal.signedDecimal public fundingRate;
 
@@ -185,6 +189,15 @@ contract Amm is IAmm, Ownable, BlockContext {
 
     }
 
+    function updateLongSize(bool buy, SignedDecimal.signedDecimal memory newSize) external override onlyOpen onlyCounterParty {
+      if (buy) {
+        totalLongPositionSize = totalLongPositionSize.addD(newSize);
+      } else {  // remove
+        totalLongPositionSize = totalLongPositionSize.subD(newSize);
+      }
+      
+    }
+
     /**
      * @notice Swap your quote asset to base asset, the impact of the price MUST be less than `fluctuationLimitRatio`
      * @dev Only clearingHouse can call this function
@@ -242,6 +255,8 @@ contract Amm is IAmm, Ownable, BlockContext {
     ) external override onlyOpen onlyCounterParty returns (Decimal.decimal memory) {
         return implSwapOutput(_dirOfBase, _baseAssetAmount, _quoteAssetAmountLimit);
     }
+
+
 
     /**
      * @notice update funding rate
@@ -573,6 +588,10 @@ contract Amm is IAmm, Ownable, BlockContext {
 
     function getOpenInterestNotionalCap() external view override returns (Decimal.decimal memory) {
         return openInterestNotionalCap;
+    }
+
+    function getLongShortSize() external view override returns (SignedDecimal.signedDecimal memory, SignedDecimal.signedDecimal memory) {
+        return (totalLongPositionSize, totalPositionSize.subD(totalLongPositionSize));
     }
 
     function getBaseAssetDelta() external view override returns (SignedDecimal.signedDecimal memory) {

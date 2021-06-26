@@ -24,6 +24,8 @@ interface IAmm {
         SignedDecimal.signedDecimal totalPositionSize;
     }
 
+    function updateLongSize(bool buy,  SignedDecimal.signedDecimal memory newSize) external;
+
     function swapInput(
         Dir _dir,
         Decimal.decimal calldata _quoteAssetAmount,
@@ -114,7 +116,7 @@ interface IAmm {
     function getMaxHoldingBaseAsset() external view returns (Decimal.decimal memory);
 
     function getOpenInterestNotionalCap() external view returns (Decimal.decimal memory);
-
+    function getLongShortSize() external view returns (SignedDecimal.signedDecimal memory, SignedDecimal.signedDecimal memory);
     function getLiquidityChangedSnapshots(uint256 i) external view returns (LiquidityChangedSnapshot memory);
 
     function getBaseAssetDelta() external view returns (SignedDecimal.signedDecimal memory);

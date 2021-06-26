@@ -441,9 +441,8 @@ contract ClearingHouse is
             
         }
 
-        console.log("CH:openPosition:transferFee");
         // calculate fee and transfer token for fees
-        //@audit - can optimize by changing amm.swapInput/swapOutput's return type to (exchangedAmount, quoteToll, quoteSpread, quoteReserve, baseReserve) (@wraecca)
+        //@audit - can optimize by changing amm.swapInput/swap Output's return type to (exchangedAmount, quoteToll, quoteSpread, quoteReserve, baseReserve) (@wraecca)
         Decimal.decimal memory transferredFee = transferFee(trader, _amm, positionResp.exchangedQuoteAssetAmount);
 
         // emit event
@@ -871,6 +870,9 @@ contract ClearingHouse is
         Position memory oldPosition = getUnadjustedPosition(_amm, trader);
         
         positionResp.exchangedPositionSize = swapInput(_amm, _side, _openNotional, _minPositionSize, false);
+        if (_side == Side.BUY) {
+          _amm.updateLongSize(true, positionResp.exchangedPositionSize);
+        }
 
         SignedDecimal.signedDecimal memory newSize = oldPosition.size.addD(positionResp.exchangedPositionSize);
         // if size is 0 (means a new position), set the latest liquidity index
@@ -935,6 +937,10 @@ contract ClearingHouse is
         if (oldPositionNotional.toUint() > openNotional.toUint()) {
             updateOpenInterestNotional(_amm, MixedDecimal.fromDecimal(openNotional).mulScalar(-1));
             Position memory oldPosition = getUnadjustedPosition(_amm, _trader);
+            if (oldPosition.size.toInt() > 0) {  // remove old buy size.
+              _amm.updateLongSize(false, oldPosition.size);
+            }
+            
             positionResp.exchangedPositionSize = swapInput(
                 _amm,
                 _side,
@@ -942,6 +948,10 @@ contract ClearingHouse is
                 _baseAssetAmountLimit,
                 _canOverFluctuationLimit
             );
+
+            if (_side == Side.BUY) {
+              _amm.updateLongSize(true, positionResp.exchangedPositionSize);
+            }
 
             // realizedPnl = unrealizedPnl * closedRatio
             // closedRatio = positionResp.exchangedPositionSiz / oldPosition.size
@@ -1049,6 +1059,9 @@ contract ClearingHouse is
         // check conditions
         Position memory oldPosition = getUnadjustedPosition(_amm, _trader);
         requirePositionSize(oldPosition.size);
+        if (oldPosition.size.toInt() > 0) {  // close buy size.
+          _amm.updateLongSize(false, oldPosition.size);
+        }
 
         (, SignedDecimal.signedDecimal memory unrealizedPnl) =
             getPositionNotionalAndUnrealizedPnl(_amm, _trader, PnlCalcOption.SPOT_PRICE);
@@ -1087,6 +1100,7 @@ contract ClearingHouse is
     ) internal returns (SignedDecimal.signedDecimal memory) {
         // for amm.swapInput, the direction is in quote asset, from the perspective of Amm
         IAmm.Dir dir = (_side == Side.BUY) ? IAmm.Dir.ADD_TO_AMM : IAmm.Dir.REMOVE_FROM_AMM;
+
         SignedDecimal.signedDecimal memory outputAmount =
             MixedDecimal.fromDecimal(_amm.swapInput(dir, _inputAmount, _minOutputAmount, _canOverFluctuationLimit));
         if (IAmm.Dir.REMOVE_FROM_AMM == dir) {
