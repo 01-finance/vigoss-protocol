@@ -46,8 +46,7 @@ contract InsuranceFund is IInsuranceFund, Ownable, BlockContext, ReentrancyGuard
     IERC20 public perpToken;
     IMinter public minter;
     IInflationMonitor public inflationMonitor;
-    address private beneficiary;
-
+    mapping(address => bool) private beneficiaryMap;
 
     //
     // FUNCTIONS
@@ -142,7 +141,7 @@ contract InsuranceFund is IInsuranceFund, Ownable, BlockContext, ReentrancyGuard
      * @param _amount the amount of quoteToken caller want to withdraw
      */
     function withdraw(IERC20 _quoteToken, Decimal.decimal calldata _amount) external override {
-        require(beneficiary == _msgSender(), "caller is not beneficiary");
+        require(beneficiaryMap[_msgSender()], "caller is not beneficiary");
         require(isQuoteTokenExisted(_quoteToken), "Asset is not supported");
 
         Decimal.decimal memory quoteBalance = balanceOf(_quoteToken);
@@ -165,8 +164,8 @@ contract InsuranceFund is IInsuranceFund, Ownable, BlockContext, ReentrancyGuard
         exchange = _exchange;
     }
 
-    function setBeneficiary(address _beneficiary) external onlyOwner {
-        beneficiary = _beneficiary;
+    function setBeneficiary(address _beneficiary, bool enable) external onlyOwner {
+        beneficiaryMap[_beneficiary] = enable;
     }
 
     function setMinter(IMinter _minter) public onlyOwner {
