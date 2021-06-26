@@ -151,6 +151,8 @@ contract ClearingHouse is
         mapping(address => Position) positionMap;
     }
 
+    IAmm public immutable amm;
+
     // only admin
     Decimal.decimal public initMarginRatio;
 
@@ -162,10 +164,9 @@ contract ClearingHouse is
 
     // key by amm address. will be deprecated or replaced after guarded period.
     // it's not an accurate open interest, just a rough way to control the unexpected loss at the beginning
-    mapping(address => Decimal.decimal) public openInterestNotionalMap;
+    Decimal.decimal public aopenInterestNotional;
 
-    // key by amm address
-    mapping(address => AmmMap) internal ammMap;
+    AmmMap internal ammMap;
 
     // prepaid bad debt balance, key by ERC20 token address
     mapping(address => Decimal.decimal) internal prepaidBadDebt;
@@ -182,13 +183,15 @@ contract ClearingHouse is
 
     // FUNCTIONS
     constructor(
+        IAmm _amm,
         uint256 _initMarginRatio,
         uint256 _maintenanceMarginRatio,
         uint256 _liquidationFeeRatio,
         IInsuranceFund _insuranceFund
     ) public {
         require(address(_insuranceFund) != address(0), "Invalid IInsuranceFund");
-
+        require(address(_insuranceFund) != address(0), "Invalid IInsuranceFund");
+        amm = _amm;
         initMarginRatio = Decimal.decimal(_initMarginRatio);
         maintenanceMarginRatio = Decimal.decimal(_maintenanceMarginRatio);
         liquidationFeeRatio = Decimal.decimal(_liquidationFeeRatio);
@@ -681,7 +684,7 @@ contract ClearingHouse is
         requireAmm(_amm, true);
 
         SignedDecimal.signedDecimal memory premiumFraction = _amm.settleFunding();
-        ammMap[address(_amm)].cumulativePremiumFractions.push(
+        ammMap.cumulativePremiumFractions.push(
             premiumFraction.addD(getLatestCumulativePremiumFraction(_amm))
         );
 
@@ -816,9 +819,9 @@ contract ClearingHouse is
      * @return latest cumulative premium fraction in 18 digits
      */
     function getLatestCumulativePremiumFraction(IAmm _amm) public view returns (SignedDecimal.signedDecimal memory) {
-        uint256 len = ammMap[address(_amm)].cumulativePremiumFractions.length;
+        uint256 len = ammMap.cumulativePremiumFractions.length;
         if (len > 0) {
-            return ammMap[address(_amm)].cumulativePremiumFractions[len - 1];
+            return ammMap.cumulativePremiumFractions[len - 1];
         }
     }
 
@@ -828,7 +831,7 @@ contract ClearingHouse is
 
     function enterRestrictionMode(IAmm _amm) internal {
         uint256 blockNumber = _blockNumber();
-        ammMap[address(_amm)].lastRestrictionBlock = blockNumber;
+        ammMap.lastRestrictionBlock = blockNumber;
         emit RestrictionModeEntered(address(_amm), blockNumber);
     }
 
@@ -837,7 +840,7 @@ contract ClearingHouse is
         address _trader,
         Position memory _position
     ) internal {
-        Position storage positionStorage = ammMap[address(_amm)].positionMap[_trader];
+        Position storage positionStorage = ammMap.positionMap[_trader];
         positionStorage.size = _position.size;
         positionStorage.margin = _position.margin;
         positionStorage.openNotional = _position.openNotional;
@@ -848,7 +851,7 @@ contract ClearingHouse is
 
     function clearPosition(IAmm _amm, address _trader) internal {
         // keep the record in order to retain the last updated block number
-        ammMap[address(_amm)].positionMap[_trader] = Position({
+        ammMap.positionMap[_trader] = Position({
             size: SignedDecimal.zero(),
             margin: Decimal.zero(),
             openNotional: Decimal.zero(),
@@ -1192,7 +1195,7 @@ contract ClearingHouse is
         address ammAddr = address(_amm);
         if (cap > 0) {
             SignedDecimal.signedDecimal memory updatedOpenInterestNotional =
-                _amount.addD(openInterestNotionalMap[ammAddr]);
+                _amount.addD(aopenInterestNotional);
             // the reduced open interest can be larger than total when profit is too high and other position are bankrupt
             if (updatedOpenInterestNotional.toInt() < 0) {
                 updatedOpenInterestNotional = SignedDecimal.zero();
@@ -1201,7 +1204,7 @@ contract ClearingHouse is
                 // whitelist won't be restrict by open interest cap
                 require(updatedOpenInterestNotional.toUint() <= cap || _msgSender() == whitelist, "over limit");
             }
-            openInterestNotionalMap[ammAddr] = updatedOpenInterestNotional.abs();
+            aopenInterestNotional = updatedOpenInterestNotional.abs();
         }
     }
 
@@ -1322,7 +1325,7 @@ contract ClearingHouse is
     }
 
     function getUnadjustedPosition(IAmm _amm, address _trader) public view returns (Position memory position) {
-        position = ammMap[address(_amm)].positionMap[_trader];
+        position = ammMap.positionMap[_trader];
     }
 
     //
@@ -1343,7 +1346,7 @@ contract ClearingHouse is
 
     function requireNotRestrictionMode(IAmm _amm) private view {
         uint256 currentBlock = _blockNumber();
-        if (currentBlock == ammMap[address(_amm)].lastRestrictionBlock) {
+        if (currentBlock == ammMap.lastRestrictionBlock) {
             require(getUnadjustedPosition(_amm, _msgSender()).blockNumber != currentBlock, "only one action allowed");
         }
     }
