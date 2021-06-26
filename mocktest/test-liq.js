@@ -19,7 +19,7 @@ const { totalSupply, transfer, balanceOf, approve } = require('./token')
 const { openPosition, getPosition, closePosition, addMargin, liquidate, removeMargin, getMarginRatio, payFunding } = require('./clearhouse')
 const {
   getUnderlyingPrice,
-  getUnderlyingTwapPrice,
+  getLongShortSize,
   getSpotPrice,
   getSettlementPrice,
   getTwapPrice,

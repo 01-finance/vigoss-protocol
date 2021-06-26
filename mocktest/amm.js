@@ -8,6 +8,17 @@ async function getUnderlyingPrice(amm, web3) {
   }
 }
 
+async function getLongShortSize(amm, web3) {
+
+  try {
+    const p = await amm.getLongShortSize();
+    console.log("Long:" + web3.utils.fromWei(p[0].toString()))
+    console.log("Short:" + web3.utils.fromWei(p[1].toString()))
+  } catch (e) {
+    console.log("getUnderlyingPrice", e)
+  }
+}
+
 async function getUnderlyingTwapPrice(amm, interval, web3) {
   try {
     const p = await amm.getUnderlyingTwapPrice(interval);
@@ -109,7 +120,7 @@ module.exports = {
   getReserve,
   getInputTwap,
   getOutputTwap,
-
+  getLongShortSize,
   getInputPrice,
   getOutputPrice
 }
