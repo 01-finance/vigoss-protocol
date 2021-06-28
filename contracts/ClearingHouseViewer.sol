@@ -44,7 +44,7 @@ contract ClearingHouseViewer {
         ClearingHouse.PnlCalcOption _pnlCalcOption
     ) external view returns (SignedDecimal.signedDecimal memory) {
         (, SignedDecimal.signedDecimal memory unrealizedPnl) =
-            (clearingHouse.getPositionNotionalAndUnrealizedPnl(_amm, _trader, _pnlCalcOption));
+            (clearingHouse.getPositionNotionalAndUnrealizedPnl(_trader, _pnlCalcOption));
         return unrealizedPnl;
     }
 
@@ -81,7 +81,7 @@ contract ClearingHouseViewer {
         view
         returns (ClearingHouse.Position memory position)
     {
-        position = clearingHouse.getPosition(_amm, _trader);
+        position = clearingHouse.getPosition(_trader);
         SignedDecimal.signedDecimal memory marginWithFundingPayment =
             MixedDecimal.fromDecimal(position.margin).addD(
                 getFundingPayment(position, clearingHouse.getLatestCumulativePremiumFraction(_amm))
