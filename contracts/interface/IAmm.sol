@@ -7,6 +7,9 @@ import { Decimal } from "../utils/Decimal.sol";
 import { SignedDecimal } from "../utils/SignedDecimal.sol";
 
 interface IAmm {
+
+    enum Side { BUY, SELL }
+
     /**
      * @notice asset direction, used in getInputPrice, getOutputPrice, swapInput and swapOutput
      * @param ADD_TO_AMM add asset to Amm
@@ -42,6 +45,7 @@ interface IAmm {
     function shutdown() external;
 
     function settleFunding() external returns (SignedDecimal.signedDecimal memory);
+    function settleApportion(Decimal.decimal memory _badDebt, Side _side) external returns (Decimal.decimal memory);
 
     function calcFee(Decimal.decimal calldata _quoteAssetAmount)
         external

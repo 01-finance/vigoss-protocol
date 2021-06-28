@@ -14,6 +14,7 @@ import { Context } from "./openzeppelin/GSN/Context.sol";
 import { ReentrancyGuard } from "./openzeppelin/utils/ReentrancyGuard.sol";
 import { OwnerPausable } from "./OwnerPausable.sol";
 import { IAmm } from "./interface/IAmm.sol";
+
 import { IInsuranceFund } from "./interface/IInsuranceFund.sol";
 import { IMultiTokenRewardRecipient } from "./interface/IMultiTokenRewardRecipient.sol";
 
@@ -97,7 +98,6 @@ contract ClearingHouse is
     // Struct and Enum
     //
 
-    enum Side { BUY, SELL }
     enum PnlCalcOption { SPOT_PRICE, TWAP, ORACLE }
 
     /// @notice This struct records personal position information
@@ -169,6 +169,7 @@ contract ClearingHouse is
     AmmMap internal ammMap;
 
     // prepaid bad debt balance, key by ERC20 token address
+    // TODO: can remove key.
     mapping(address => Decimal.decimal) internal prepaidBadDebt;
 
     // contract dependencies
@@ -379,7 +380,7 @@ contract ClearingHouse is
      */
     function openPosition(
         IAmm _amm,
-        Side _side,
+        IAmm.Side _side,
         Decimal.decimal memory _quoteAssetAmount,
         Decimal.decimal memory _leverage,
         Decimal.decimal memory _baseAssetAmountLimit
@@ -398,7 +399,7 @@ contract ClearingHouse is
             bool isNewPosition = oldPositionSize == 0 ? true : false;
 
             // increase or decrease position depends on old position's side and size
-            if (isNewPosition || (oldPositionSize > 0 ? Side.BUY : Side.SELL) == _side) {
+            if (isNewPosition || (oldPositionSize > 0 ?IAmm.Side.BUY :IAmm.Side.SELL) == _side) {
                 positionResp = internalIncreasePosition(
                     _amm,
                     _side,
@@ -505,7 +506,7 @@ contract ClearingHouse is
 
                 positionResp = openReversePosition(
                     _amm,
-                    position.size.toInt() > 0 ? Side.SELL : Side.BUY,
+                    position.size.toInt() > 0 ?IAmm.Side.SELL :IAmm.Side.BUY,
                     trader,
                     partiallyClosedPositionNotional,
                     Decimal.one(),
@@ -597,7 +598,7 @@ contract ClearingHouse is
 
                 positionResp = openReversePosition(
                     _amm,
-                    position.size.toInt() > 0 ? Side.SELL : Side.BUY,
+                    position.size.toInt() > 0 ?IAmm.Side.SELL :IAmm.Side.BUY,
                     _trader,
                     partiallyLiquidatedPositionNotional,
                     Decimal.one(),
@@ -615,7 +616,8 @@ contract ClearingHouse is
             } else {
                 console.log("total Liquidation");
 
-                liquidationPenalty = getPosition(_amm, _trader).margin;
+                Position memory pos = getPosition(_amm, _trader);
+                liquidationPenalty = pos.margin;
                 positionResp = internalClosePosition(_amm, _trader, Decimal.zero());
                 Decimal.decimal memory remainMargin = positionResp.marginToVault.abs();
                 feeToLiquidator = positionResp.exchangedQuoteAssetAmount.mulD(liquidationFeeRatio).divScalar(2);
@@ -633,6 +635,8 @@ contract ClearingHouse is
                 // transfer the actual token between trader and vault
                 if (totalBadDebt.toUint() > 0) {
                     realizeBadDebt(quoteAsset, totalBadDebt);
+                    //Apportion Debt on SELL if liq long.  vice versa
+                    amm.settleApportion(totalBadDebt, (pos.size.toInt() > 0 ?IAmm.Side.SELL:IAmm.Side.BUY));
                 }
                 if (remainMargin.toUint() > 0) {
                     feeToInsuranceFund = remainMargin;
@@ -864,7 +868,7 @@ contract ClearingHouse is
     // only called from openPosition and closeAndOpenReversePosition. caller need to ensure there's enough marginRatio
     function internalIncreasePosition(
         IAmm _amm,
-        Side _side,
+        IAmm.Side _side,
         Decimal.decimal memory _openNotional,
         Decimal.decimal memory _minPositionSize,
         Decimal.decimal memory _leverage
@@ -873,7 +877,7 @@ contract ClearingHouse is
         Position memory oldPosition = getUnadjustedPosition(_amm, trader);
         
         positionResp.exchangedPositionSize = swapInput(_amm, _side, _openNotional, _minPositionSize, false);
-        if (_side == Side.BUY) {
+        if (_side ==IAmm.Side.BUY) {
           _amm.updateLongSize(true, positionResp.exchangedPositionSize);
         }
 
@@ -924,7 +928,7 @@ contract ClearingHouse is
 
     function openReversePosition(
         IAmm _amm,
-        Side _side,
+        IAmm.Side _side,
         address _trader,
         Decimal.decimal memory _quoteAssetAmount,
         Decimal.decimal memory _leverage,
@@ -952,7 +956,7 @@ contract ClearingHouse is
                 _canOverFluctuationLimit
             );
 
-            if (_side == Side.BUY) {
+            if (_side ==IAmm.Side.BUY) {
               _amm.updateLongSize(true, positionResp.exchangedPositionSize);
             }
 
@@ -1006,7 +1010,7 @@ contract ClearingHouse is
 
     function closeAndOpenReversePosition(
         IAmm _amm,
-        Side _side,
+        IAmm.Side _side,
         address _trader,
         Decimal.decimal memory _quoteAssetAmount,
         Decimal.decimal memory _leverage,
@@ -1078,7 +1082,10 @@ contract ClearingHouse is
 
         positionResp.exchangedPositionSize = oldPosition.size.mulScalar(-1);
         positionResp.realizedPnl = unrealizedPnl;
-        positionResp.badDebt = badDebt;
+        positionResp.badDebt = badDebt;  // >0
+
+        console.log("badDebt:", badDebt.toUint());
+
         positionResp.fundingPayment = fundingPayment;
         positionResp.marginToVault = MixedDecimal.fromDecimal(remainMargin).mulScalar(-1);
 
@@ -1096,13 +1103,13 @@ contract ClearingHouse is
 
     function swapInput(
         IAmm _amm,
-        Side _side,
+        IAmm.Side _side,
         Decimal.decimal memory _inputAmount,
         Decimal.decimal memory _minOutputAmount,
         bool _canOverFluctuationLimit
     ) internal returns (SignedDecimal.signedDecimal memory) {
         // for amm.swapInput, the direction is in quote asset, from the perspective of Amm
-        IAmm.Dir dir = (_side == Side.BUY) ? IAmm.Dir.ADD_TO_AMM : IAmm.Dir.REMOVE_FROM_AMM;
+        IAmm.Dir dir = (_side ==IAmm.Side.BUY) ? IAmm.Dir.ADD_TO_AMM : IAmm.Dir.REMOVE_FROM_AMM;
 
         SignedDecimal.signedDecimal memory outputAmount =
             MixedDecimal.fromDecimal(_amm.swapInput(dir, _inputAmount, _minOutputAmount, _canOverFluctuationLimit));

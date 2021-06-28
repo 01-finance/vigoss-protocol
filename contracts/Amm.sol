@@ -10,7 +10,6 @@ import { Ownable } from "./openzeppelin/access/Ownable.sol";
 import { Decimal } from "./utils/Decimal.sol";
 import { SignedDecimal } from "./utils/SignedDecimal.sol";
 import { MixedDecimal } from "./utils/MixedDecimal.sol";
-
 import { IAmm } from "./interface/IAmm.sol";
 
 contract Amm is IAmm, Ownable, BlockContext {
@@ -63,6 +62,8 @@ contract Amm is IAmm, Ownable, BlockContext {
         uint256 timestamp;
         uint256 blockNumber;
     }
+
+
 
     // internal usage
     enum QuoteAssetDir { QUOTE_IN, QUOTE_OUT }
@@ -120,6 +121,10 @@ contract Amm is IAmm, Ownable, BlockContext {
 
     // init cumulativePositionMultiplier is 1, will be updated every time when amm reserve increase/decrease
     Decimal.decimal private cumulativePositionMultiplier;
+
+    // 
+    Decimal.decimal public longApportionFraction;
+    Decimal.decimal public shortApportionFraction;
 
     // snapshot of amm reserve when change liquidity's invariant
     LiquidityChangedSnapshot[] private liquidityChangedSnapshots;
@@ -256,7 +261,9 @@ contract Amm is IAmm, Ownable, BlockContext {
         return implSwapOutput(_dirOfBase, _baseAssetAmount, _quoteAssetAmountLimit);
     }
 
-
+    function settleApportion(Decimal.decimal memory _badDebt, Side _side) external override onlyOpen onlyCounterParty returns (Decimal.decimal memory) {
+        // _badDebt 
+    }
 
     /**
      * @notice update funding rate
