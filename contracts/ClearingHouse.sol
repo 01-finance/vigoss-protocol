@@ -260,7 +260,7 @@ contract ClearingHouse is
         requireNonZeroInput(_addedMargin);
         // update margin part in personal position
         address trader = _msgSender();
-        Position memory position = adjustPositionForLiquidityChanged(_amm, trader);
+        Position memory position = getPosition(_amm, trader);
         position.margin = position.margin.addD(_addedMargin);
         setPosition(_amm, trader, position);
         // transfer token from trader
@@ -279,7 +279,7 @@ contract ClearingHouse is
         requireNonZeroInput(_removedMargin);
         // update margin part in personal position
         address trader = _msgSender();
-        Position memory position = adjustPositionForLiquidityChanged(_amm, trader);
+        Position memory position = getPosition(_amm, trader);
         // realize funding payment if there's no bad debt
         SignedDecimal.signedDecimal memory marginDelta = MixedDecimal.fromDecimal(_removedMargin).mulScalar(-1);
         (
@@ -395,7 +395,7 @@ contract ClearingHouse is
         PositionResp memory positionResp;
         {
             // add scope for stack too deep error
-            int256 oldPositionSize = adjustPositionForLiquidityChanged(_amm, trader).size.toInt();
+            int256 oldPositionSize = getPosition(_amm, trader).size.toInt();
             bool isNewPosition = oldPositionSize == 0 ? true : false;
 
             // increase or decrease position depends on old position's side and size
@@ -485,7 +485,6 @@ contract ClearingHouse is
 
         // update position
         address trader = _msgSender();
-        adjustPositionForLiquidityChanged(_amm, trader);
 
         PositionResp memory positionResp;
         {
@@ -570,9 +569,6 @@ contract ClearingHouse is
             }
         }
         requireMoreMarginRatio(marginRatio, maintenanceMarginRatio, false);
-
-        // update states
-        adjustPositionForLiquidityChanged(_amm, _trader);
 
         PositionResp memory positionResp;
         Decimal.decimal memory liquidationPenalty;
@@ -708,14 +704,6 @@ contract ClearingHouse is
         }
     }
 
-    /**
-     * @notice adjust msg.sender's position when liquidity migration happened
-     * @param _amm Amm address
-     */
-    function adjustPosition(IAmm _amm) external {
-        adjustPositionForLiquidityChanged(_amm, _msgSender());
-    }
-
     //
     // VIEW FUNCTIONS
     //
@@ -773,13 +761,7 @@ contract ClearingHouse is
      * @return struct Position
      */
     function getPosition(IAmm _amm, address _trader) public view returns (Position memory) {
-        Position memory pos = getUnadjustedPosition(_amm, _trader);
-        uint256 latestLiquidityIndex = _amm.getLiquidityHistoryLength().sub(1);
-        if (pos.liquidityHistoryIndex == latestLiquidityIndex) {
-            return pos;
-        }
-
-        return calcPositionAfterLiquidityMigration(_amm, pos, latestLiquidityIndex);
+        return getUnadjustedPosition(_amm, _trader);
     }
 
     /**
@@ -1213,88 +1195,6 @@ contract ClearingHouse is
             }
             aopenInterestNotional = updatedOpenInterestNotional.abs();
         }
-    }
-
-    //
-    // INTERNAL VIEW FUNCTIONS
-    //
-
-    function adjustPositionForLiquidityChanged(IAmm _amm, address _trader) internal returns (Position memory) {
-        Position memory unadjustedPosition = getUnadjustedPosition(_amm, _trader);
-        if (unadjustedPosition.size.toInt() == 0) {
-            return unadjustedPosition;
-        }
-        uint256 latestLiquidityIndex = _amm.getLiquidityHistoryLength().sub(1);
-        console.log("CH:adjustPositionForLiquidityChanged:latestLiquidityIndex", latestLiquidityIndex);
-        if (unadjustedPosition.liquidityHistoryIndex == latestLiquidityIndex) {
-            return unadjustedPosition;
-        }
-
-      console.log("CH:calcPositionAfterLiquidityMigration:latestLiquidityIndex", latestLiquidityIndex);
-        Position memory adjustedPosition =
-            calcPositionAfterLiquidityMigration(_amm, unadjustedPosition, latestLiquidityIndex);
-        setPosition(_amm, _trader, adjustedPosition);
-        emit PositionAdjusted(
-            address(_amm),
-            _trader,
-            adjustedPosition.size.toInt(),
-            unadjustedPosition.liquidityHistoryIndex,
-            adjustedPosition.liquidityHistoryIndex
-        );
-        return adjustedPosition;
-    }
-
-    function calcPositionAfterLiquidityMigration(
-        IAmm _amm,
-        Position memory _position,
-        uint256 _latestLiquidityIndex
-    ) internal view returns (Position memory) {
-        if (_position.size.toInt() == 0) {
-            _position.liquidityHistoryIndex = _latestLiquidityIndex;
-            return _position;
-        }
-
-        console.log("CH:position.liquidityHistoryIndex ", _position.liquidityHistoryIndex);
-
-        // get the change in Amm notional value
-        // notionalDelta = current cumulative notional - cumulative notional of last snapshot
-        IAmm.LiquidityChangedSnapshot memory lastSnapshot =
-            _amm.getLiquidityChangedSnapshots(_position.liquidityHistoryIndex);
-        SignedDecimal.signedDecimal memory notionalDelta =
-            _amm.getCumulativeNotional().subD(lastSnapshot.cumulativeNotional);
-        // update the old curve's reserve
-        // by applying notionalDelta to the old curve
-        Decimal.decimal memory updatedOldBaseReserve;
-        Decimal.decimal memory updatedOldQuoteReserve;
-
-        if (notionalDelta.toInt() != 0) {
-            console.log("CH:notionalDelta ");
-            Decimal.decimal memory baseAssetWorth =
-                _amm.getInputPriceWithReserves(
-                    notionalDelta.toInt() > 0 ? IAmm.Dir.ADD_TO_AMM : IAmm.Dir.REMOVE_FROM_AMM,
-                    notionalDelta.abs(),
-                    lastSnapshot.quoteAssetReserve,
-                    lastSnapshot.baseAssetReserve
-                );
-            updatedOldQuoteReserve = notionalDelta.addD(lastSnapshot.quoteAssetReserve).abs();
-            if (notionalDelta.toInt() > 0) {
-                updatedOldBaseReserve = lastSnapshot.baseAssetReserve.subD(baseAssetWorth);
-            } else {
-                updatedOldBaseReserve = lastSnapshot.baseAssetReserve.addD(baseAssetWorth);
-            }
-        } else {
-            updatedOldQuoteReserve = lastSnapshot.quoteAssetReserve;
-            updatedOldBaseReserve = lastSnapshot.baseAssetReserve;
-        }
-
-        // calculate the new position size
-        _position.size = _amm.calcBaseAssetAfterLiquidityMigration(
-            _position.size,
-            updatedOldQuoteReserve,
-            updatedOldBaseReserve
-        );
-        _position.liquidityHistoryIndex = _latestLiquidityIndex;
-        return _position;
     }
 
     function calcRemainMarginWithFundingPayment(
