@@ -135,7 +135,7 @@ contract Amm is IAmm, Ownable, BlockContext {
     uint256 public nextFundingTime;
     ReserveSnapshot[] public reserveSnapshots;
 
-    address private counterParty;
+    address public override counterParty;
     address public globalShutdown;
 
     IERC20 public override quoteAsset;

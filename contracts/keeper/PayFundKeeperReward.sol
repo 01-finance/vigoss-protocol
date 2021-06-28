@@ -14,11 +14,11 @@ contract PayFundKeeperReward is KeeperRewardBase {
     /**
      * @notice call this function to pay funding payment and get token reward
      */
-    function payFunding(IAmm _amm) external {
+    function payFunding(IClearingHouse house) external {
         bytes4 selector = IClearingHouse.payFunding.selector;
-        TaskInfo memory task = getTaskInfo(selector);
+        // TaskInfo memory task = getTaskInfo(selector);
 
-        IClearingHouse(task.contractAddr).payFunding(_amm);
+        house.payFunding();
         postTaskAction(selector);
     }
 }

@@ -17,14 +17,14 @@ contract ClearingHouseViewer {
     using SignedDecimal for SignedDecimal.signedDecimal;
     using MixedDecimal for SignedDecimal.signedDecimal;
 
-    ClearingHouse public clearingHouse;
 
+    IInsuranceFund insuranceFund;
     //
     // FUNCTIONS
     //
 
-    constructor(ClearingHouse _clearingHouse) public {
-        clearingHouse = _clearingHouse;
+    constructor(IInsuranceFund fund) public {
+      insuranceFund = fund;
     }
 
     //
@@ -33,13 +33,12 @@ contract ClearingHouseViewer {
 
     /**
      * @notice get unrealized PnL
-     * @param _amm IAmm address
      * @param _trader trader address
      * @param _pnlCalcOption ClearingHouse.PnlCalcOption, can be SPOT_PRICE or TWAP.
      * @return unrealized PnL in 18 digits
      */
     function getUnrealizedPnl(
-        IAmm _amm,
+        ClearingHouse clearingHouse,
         address _trader,
         ClearingHouse.PnlCalcOption _pnlCalcOption
     ) external view returns (SignedDecimal.signedDecimal memory) {
@@ -59,24 +58,23 @@ contract ClearingHouseViewer {
         view
         returns (Decimal.decimal memory margin)
     {
-        IInsuranceFund insuranceFund = clearingHouse.insuranceFund();
         IAmm[] memory amms = insuranceFund.getAllAmms();
         for (uint256 i = 0; i < amms.length; i++) {
             if (IAmm(amms[i]).quoteAsset() != _quoteToken) {
                 continue;
             }
-            Decimal.decimal memory posMargin = getPersonalPositionWithFundingPayment(amms[i], _trader).margin;
+            Decimal.decimal memory posMargin = getPersonalPositionWithFundingPayment(ClearingHouse(amms[i].counterParty()), _trader).margin;
             margin = margin.addD(posMargin);
         }
     }
 
     /**
      * @notice get personal position with funding payment
-     * @param _amm IAmm address
+     * @param  clearingHouse ClearingHouse address
      * @param _trader trader address
      * @return position ClearingHouse.Position struct
      */
-    function getPersonalPositionWithFundingPayment(IAmm _amm, address _trader)
+    function getPersonalPositionWithFundingPayment(ClearingHouse clearingHouse, address _trader)
         public
         view
         returns (ClearingHouse.Position memory position)
@@ -84,19 +82,19 @@ contract ClearingHouseViewer {
         position = clearingHouse.getPosition(_trader);
         SignedDecimal.signedDecimal memory marginWithFundingPayment =
             MixedDecimal.fromDecimal(position.margin).addD(
-                getFundingPayment(position, clearingHouse.getLatestCumulativePremiumFraction(_amm))
+                getFundingPayment(position, clearingHouse.getLatestCumulativePremiumFraction())
             );
         position.margin = marginWithFundingPayment.toInt() >= 0 ? marginWithFundingPayment.abs() : Decimal.zero();
     }
 
     /**
      * @notice get personal margin ratio
-     * @param _amm IAmm address
+     * @param clearingHouse ClearingHouse address
      * @param _trader trader address
      * @return personal margin ratio in 18 digits
      */
-    function getMarginRatio(IAmm _amm, address _trader) external view returns (SignedDecimal.signedDecimal memory) {
-        return clearingHouse.getMarginRatio(_amm, _trader);
+    function getMarginRatio(ClearingHouse clearingHouse, address _trader) external view returns (SignedDecimal.signedDecimal memory) {
+        return clearingHouse.getMarginRatio(_trader);
     }
 
     //

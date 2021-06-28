@@ -75,7 +75,6 @@ contract ClearingHouse is
 
     /// @notice This event is emitted when position liquidated
     /// @param trader the account address being liquidated
-    /// @param amm IAmm address
     /// @param positionNotional liquidated position value minus liquidationFee
     /// @param positionSize liquidated position size
     /// @param liquidationFee liquidation fee to the liquidator
@@ -905,7 +904,6 @@ contract ClearingHouse is
             }
             
             positionResp.exchangedPositionSize = swapInput(
-                amm,
                 _side,
                 openNotional,
                 _baseAssetAmountLimit,
@@ -936,7 +934,7 @@ contract ClearingHouse is
                 positionResp.badDebt,
                 positionResp.fundingPayment,
                 latestCumulativePremiumFraction
-            ) = calcRemainMarginWithFundingPayment(amm, oldPosition, positionResp.realizedPnl);
+            ) = calcRemainMarginWithFundingPayment(oldPosition, positionResp.realizedPnl);
 
           // TODO:
           // positionResp.apportionPayment = ;
@@ -1160,7 +1158,6 @@ contract ClearingHouse is
     function updateOpenInterestNotional(SignedDecimal.signedDecimal memory _amount) internal {
         // when cap = 0 means no cap
         uint256 cap = amm.getOpenInterestNotionalCap().toUint();
-        address ammAddr = address(amm);
         if (cap > 0) {
             SignedDecimal.signedDecimal memory updatedOpenInterestNotional =
                 _amount.addD(aopenInterestNotional);

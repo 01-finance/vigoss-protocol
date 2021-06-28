@@ -106,6 +106,7 @@ interface IAmm {
     function getLiquidityHistoryLength() external view returns (uint256);
 
     // overridden by state variable
+    function counterParty() external view returns (address);
     function quoteAsset() external view returns (IERC20);
 
     function baseAsset() external view returns (IERC20);
