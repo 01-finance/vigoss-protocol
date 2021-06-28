@@ -123,8 +123,8 @@ contract Amm is IAmm, Ownable, BlockContext {
     Decimal.decimal private cumulativePositionMultiplier;
 
     // 
-    Decimal.decimal public longApportionFraction;
-    Decimal.decimal public shortApportionFraction;
+    Decimal.decimal private longApportionFraction;
+    Decimal.decimal private shortApportionFraction;
 
     // snapshot of amm reserve when change liquidity's invariant
     LiquidityChangedSnapshot[] private liquidityChangedSnapshots;
@@ -555,6 +555,8 @@ contract Amm is IAmm, Ownable, BlockContext {
         return implGetReserveTwapPrice(_intervalInSeconds);
     }
 
+
+
     /**
      * @notice get current quote/base asset reserve.
      * @return (quote asset reserve, base asset reserve)
@@ -569,6 +571,15 @@ contract Amm is IAmm, Ownable, BlockContext {
 
     function getLiquidityHistoryLength() external view override returns (uint256) {
         return liquidityChangedSnapshots.length;
+    }
+
+
+    function getLongApportionFraction()  external view override returns  (Decimal.decimal memory) {
+      return longApportionFraction;
+    }
+    
+    function getShortApportionFraction()  external view override returns  (Decimal.decimal memory) {
+      return shortApportionFraction;
     }
 
     function getCumulativeNotional() external view override returns (SignedDecimal.signedDecimal memory) {

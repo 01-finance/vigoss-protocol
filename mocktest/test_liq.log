@@ -62,5 +62,12 @@ Pos liquidityHistoryIndex:0
 Pos blockNumber:306
 SpotPrice:162.540449999999999999
 MarginRatio:0.009309093819982714
-liquidate done, gas:406273
+ fund  balanceOf : 406
+ accounts[2]  balanceOf : 9994
+
+  ===  liquidate  ===
+
+liquidate done, gas:385980
+ fund  balanceOf : 237.955221344918954796
+ accounts[2]  balanceOf : 9994
 SpotPrice:162.102405139325484265

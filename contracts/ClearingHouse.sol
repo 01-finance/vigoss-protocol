@@ -105,14 +105,14 @@ contract ClearingHouse is
     /// @param margin isolated margin
     /// @param openNotional the quoteAsset value of position when opening position. the cost of the position
     /// @param lastUpdatedCumulativePremiumFraction for calculating funding payment, record at the moment every time when trader open/reduce/close position
-    /// @param liquidityHistoryIndex
+    /// @param lastApportionFraction
     /// @param blockNumber the block number of the last position
     struct Position {
         SignedDecimal.signedDecimal size;
         Decimal.decimal margin;
         Decimal.decimal openNotional;
         SignedDecimal.signedDecimal lastUpdatedCumulativePremiumFraction;
-        uint256 liquidityHistoryIndex;
+        Decimal.decimal lastApportionFraction;
         uint256 blockNumber;
     }
 
@@ -832,7 +832,7 @@ contract ClearingHouse is
         positionStorage.openNotional = _position.openNotional;
         positionStorage.lastUpdatedCumulativePremiumFraction = _position.lastUpdatedCumulativePremiumFraction;
         positionStorage.blockNumber = _position.blockNumber;
-        positionStorage.liquidityHistoryIndex = _position.liquidityHistoryIndex;
+        positionStorage.lastApportionFraction = _position.lastApportionFraction;
     }
 
     function clearPosition(IAmm _amm, address _trader) internal {
@@ -843,7 +843,7 @@ contract ClearingHouse is
             openNotional: Decimal.zero(),
             lastUpdatedCumulativePremiumFraction: SignedDecimal.zero(),
             blockNumber: _blockNumber(),
-            liquidityHistoryIndex: 0
+            lastApportionFraction: Decimal.zero()
         });
     }
 
@@ -859,16 +859,17 @@ contract ClearingHouse is
         Position memory oldPosition = getUnadjustedPosition(_amm, trader);
         
         positionResp.exchangedPositionSize = swapInput(_amm, _side, _openNotional, _minPositionSize, false);
-        if (_side ==IAmm.Side.BUY) {
+        Decimal.decimal memory apportionFraction;
+        if (_side == IAmm.Side.BUY) {
           _amm.updateLongSize(true, positionResp.exchangedPositionSize);
+          apportionFraction = _amm.getLongApportionFraction();
+        } else {
+          apportionFraction = _amm.getShortApportionFraction();
         }
 
         SignedDecimal.signedDecimal memory newSize = oldPosition.size.addD(positionResp.exchangedPositionSize);
-        // if size is 0 (means a new position), set the latest liquidity index
-        uint256 liquidityHistoryIndex = oldPosition.liquidityHistoryIndex;
-        if (oldPosition.size.toInt() == 0) {
-            liquidityHistoryIndex = _amm.getLiquidityHistoryLength().sub(1);
-        }
+
+        Decimal.decimal memory lastApportionFraction = oldPosition.lastApportionFraction;
 
         updateOpenInterestNotional(_amm, MixedDecimal.fromDecimal(_openNotional));
         // if the trader is not in the whitelist, check max position size
@@ -898,12 +899,14 @@ contract ClearingHouse is
         positionResp.unrealizedPnlAfter = unrealizedPnl;
         positionResp.marginToVault = increaseMarginRequirement;
         positionResp.fundingPayment = fundingPayment;
+        // TODO:
+        // positionResp.apportionPayment = ;
         positionResp.position = Position(
             newSize,
             remainMargin,
             oldPosition.openNotional.addD(positionResp.exchangedQuoteAssetAmount),
             latestCumulativePremiumFraction,
-            liquidityHistoryIndex,
+            apportionFraction,
             _blockNumber()
         );
     }
@@ -938,8 +941,14 @@ contract ClearingHouse is
                 _canOverFluctuationLimit
             );
 
+            
+            Decimal.decimal memory apportionFraction;
+
             if (_side ==IAmm.Side.BUY) {
               _amm.updateLongSize(true, positionResp.exchangedPositionSize);
+              apportionFraction = _amm.getLongApportionFraction();
+            } else {
+              apportionFraction = _amm.getShortApportionFraction();
             }
 
             // realizedPnl = unrealizedPnl * closedRatio
@@ -957,6 +966,9 @@ contract ClearingHouse is
                 positionResp.fundingPayment,
                 latestCumulativePremiumFraction
             ) = calcRemainMarginWithFundingPayment(_amm, oldPosition, positionResp.realizedPnl);
+
+          // TODO:
+          // positionResp.apportionPayment = ;
 
             // positionResp.unrealizedPnlAfter = unrealizedPnl - realizedPnl
             positionResp.unrealizedPnlAfter = unrealizedPnl.subD(positionResp.realizedPnl);
@@ -981,7 +993,7 @@ contract ClearingHouse is
                 remainMargin,
                 remainOpenNotional.abs(),
                 latestCumulativePremiumFraction,
-                oldPosition.liquidityHistoryIndex,
+                apportionFraction,
                 _blockNumber()
             );
             return positionResp;
