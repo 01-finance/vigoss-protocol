@@ -38,6 +38,8 @@ contract Amm is IAmm, Ownable, BlockContext {
     event LiquidityChanged(uint256 quoteReserve, uint256 baseReserve, int256 cumulativeNotional);
     event CapChanged(uint256 maxHoldingBaseAsset, uint256 openInterestNotionalCap);
     event Shutdown(uint256 settlementPrice);
+    event LongApportionFractionChanged(uint256 delta);
+    event ShortApportionFractionChanged(uint256 delta);
     event PriceFeedUpdated(address priceFeed);
 
     //
@@ -263,9 +265,13 @@ contract Amm is IAmm, Ownable, BlockContext {
 
     function settleApportion(Decimal.decimal memory _badDebt, Side _side) external override onlyOpen onlyCounterParty returns (Decimal.decimal memory) {
       if (_side == Side.BUY) {
-        longApportionFraction = longApportionFraction.addD(_badDebt.divD(totalLongPositionSize.abs()));
+        Decimal.decimal memory delta = _badDebt.divD(totalLongPositionSize.abs());
+        longApportionFraction = longApportionFraction.addD(delta);
+        emit LongApportionFractionChanged(delta.toUint());
       } else {
-        shortApportionFraction = shortApportionFraction.addD(_badDebt.divD(totalPositionSize.subD(totalLongPositionSize).abs()));
+        Decimal.decimal memory delta = _badDebt.divD(totalPositionSize.subD(totalLongPositionSize).abs());
+        shortApportionFraction = shortApportionFraction.addD(delta);
+        emit ShortApportionFractionChanged(delta.toUint());
       }
     }
 
