@@ -1,8 +1,7 @@
 // https://docs.perp.fi/sdk-documentation/smart-contract-javascript-dev-guide
 async function openPosition(house, amm, buyOrSell, qAmount, leverage, minBaseAmount, user, web3) {
   try {
-    let tx = await house.openPosition(amm, 
-      buyOrSell,
+    let tx = await house.openPosition(buyOrSell,
       { d: qAmount },
       { d: leverage },
       { d: minBaseAmount },
@@ -15,7 +14,7 @@ async function openPosition(house, amm, buyOrSell, qAmount, leverage, minBaseAmo
 
 async function closePosition(house, amm, qlimitAmount, user) {
   try {
-    let tx = await house.closePosition(amm, 
+    let tx = await house.closePosition( 
       { d: qlimitAmount },
       { from: user })
       console.log("closePosition done, gas:" + tx['receipt']['gasUsed'])
@@ -26,7 +25,7 @@ async function closePosition(house, amm, qlimitAmount, user) {
 
 async function liquidate(house, amm, trader, user) {
   try {
-    let tx = await house.liquidate(amm, 
+    let tx = await house.liquidate(
       trader,
       { from: user })
       console.log("liquidate done, gas:" + tx['receipt']['gasUsed'])
@@ -46,7 +45,7 @@ async function partialLiquidationRatio(house, web3) {
 
 async function addMargin(house, amm, addmargin, user) {
   try {
-    let tx = await house.addMargin(amm, 
+    let tx = await house.addMargin(
       {d: addmargin},
       { from: user })
     console.log("addMargin done, gas:" + tx['receipt']['gasUsed'])
@@ -57,7 +56,7 @@ async function addMargin(house, amm, addmargin, user) {
 
 async function removeMargin(house, amm, margin, user) {
   try {
-    let tx = await house.removeMargin(amm, 
+    let tx = await house.removeMargin( 
       {d: margin},
       { from: user })
     console.log("removeMargin done, gas:" + tx['receipt']['gasUsed'])
@@ -80,7 +79,7 @@ function printPosition(position, web3) {
 async function getUnadjustedPosition(house, amm, user, web3) {
   try {
     console.log("\n getUnadjustedPosition \n ")
-    let position = await house.getUnadjustedPosition(amm, user);
+    let position = await house.getUnadjustedPosition(user);
     printPosition(position, web3)
     return position.size
   }  catch (e) {
@@ -91,7 +90,7 @@ async function getUnadjustedPosition(house, amm, user, web3) {
 async function getPosition(house, amm, user, web3) {
   try {
     console.log("\n getPosition \n ")
-    let position = await house.getPosition(amm, user);
+    let position = await house.getPosition(user);
     printPosition(position, web3)
     return position.size
   }  catch (e) {
@@ -102,7 +101,7 @@ async function getPosition(house, amm, user, web3) {
 async function getPersonalPositionWithFundingPayment(houseViewer, amm, user, web3) {
   try {
     console.log("\n getPersonalPositionWithFundingPayment \n ")
-    let position = await houseViewer.getPersonalPositionWithFundingPayment(amm, user);
+    let position = await houseViewer.getPersonalPositionWithFundingPayment(user);
     printPosition(position, web3)
 
   }  catch (e) {
@@ -116,7 +115,7 @@ async function getPositionNotionalAndUnrealizedPnl(){
 
 async function getMarginRatio(house, amm, user, web3) {
   try {
-    let ratio = await house.getMarginRatio(amm, user, {from: user});
+    let ratio = await house.getMarginRatio(user, {from: user});
     console.log("MarginRatio:" + web3.utils.fromWei(ratio.toString()))
   }  catch (e) {
     console.log("getMarginRatio error", e)
@@ -126,7 +125,7 @@ async function getMarginRatio(house, amm, user, web3) {
 
 async function payFunding(house, amm, user) {
   try {
-    await house.payFunding(amm, {from: user});
+    await house.payFunding({from: user});
   }  catch (e) {
     console.log("payFunding error", e)
   }
@@ -134,7 +133,7 @@ async function payFunding(house, amm, user) {
 
 async function getLatestCumulativePremiumFraction(house, amm, web3) {
   try {
-    let pf = await house.getLatestCumulativePremiumFraction(amm);
+    let pf = await house.getLatestCumulativePremiumFraction();
     console.log("pf:" +  web3.utils.fromWei(pf.toString()));
   }  catch (e) {
     console.log("getLatestCumulativePremiumFraction error", e)

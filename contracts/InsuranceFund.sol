@@ -45,7 +45,7 @@ contract InsuranceFund is IInsuranceFund, Ownable, BlockContext, ReentrancyGuard
     IExchangeWrapper public exchange;
     IERC20 public perpToken;
     IMinter public minter;
-    IInflationMonitor public inflationMonitor;
+
     mapping(address => bool) private beneficiaryMap;
 
     //
@@ -97,9 +97,6 @@ contract InsuranceFund is IInsuranceFund, Ownable, BlockContext, ReentrancyGuard
      * @dev only owner can call. Emit `ShutdownAllAmms` event
      */
     function shutdownAllAmm() external onlyOwner {
-        if (!inflationMonitor.isOverMintThreshold()) {
-            return;
-        }
         for (uint256 i; i < amms.length; i++) {
             amms[i].shutdown();
         }
@@ -149,7 +146,7 @@ contract InsuranceFund is IInsuranceFund, Ownable, BlockContext, ReentrancyGuard
             Decimal.decimal memory insufficientAmount = _amount.subD(quoteBalance);
             _transfer(_quoteToken, _msgSender(), quoteBalance);
             emit Withdrawn(_msgSender(), quoteBalance.toUint());
-            return Decimal.decimal(insufficientAmount);
+            return insufficientAmount;
         } else {
           _transfer(_quoteToken, _msgSender(), _amount);
           emit Withdrawn(_msgSender(), _amount.toUint());
@@ -172,10 +169,6 @@ contract InsuranceFund is IInsuranceFund, Ownable, BlockContext, ReentrancyGuard
     function setMinter(IMinter _minter) public onlyOwner {
         minter = _minter;
         perpToken = minter.getPerpToken();
-    }
-
-    function setInflationMonitor(IInflationMonitor _inflationMonitor) external onlyOwner {
-        inflationMonitor = _inflationMonitor;
     }
 
     function getQuoteTokenLength() public view returns (uint256) {

@@ -19,6 +19,27 @@ async function getLongShortSize(amm, web3) {
   }
 }
 
+
+async function getLongApportionFraction(amm, web3) {
+
+  try {
+    const p = await amm.getLongApportionFraction();
+    console.log("LongFraction:" + web3.utils.fromWei(p.toString()))
+  } catch (e) {
+    console.log("getLongApportionFraction", e)
+  }
+}
+
+async function getShortApportionFraction(amm, web3) {
+
+  try {
+    const p = await amm.getShortApportionFraction();
+    console.log("ShortFraction:" + web3.utils.fromWei(p.toString()))
+  } catch (e) {
+    console.log("getShortApportionFraction", e)
+  }
+}
+
 async function getUnderlyingTwapPrice(amm, interval, web3) {
   try {
     const p = await amm.getUnderlyingTwapPrice(interval);
@@ -122,5 +143,7 @@ module.exports = {
   getOutputTwap,
   getLongShortSize,
   getInputPrice,
-  getOutputPrice
+  getOutputPrice,
+  getLongApportionFraction,
+  getShortApportionFraction
 }

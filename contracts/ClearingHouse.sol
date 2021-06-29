@@ -615,7 +615,7 @@ contract ClearingHouse is
                     Decimal.decimal memory apportion = realizeBadDebt(quoteAsset, totalBadDebt);
                     //Apportion Debt on SELL if liq long.  vice versa
                     if (apportion.toUint() > 0) {
-                      amm.settleApportion(totalBadDebt, (pos.size.toInt() > 0 ?IAmm.Side.SELL : IAmm.Side.BUY));
+                      amm.settleApportion(apportion, (pos.size.toInt() > 0 ?IAmm.Side.SELL : IAmm.Side.BUY));
                     }
                     
                 }
