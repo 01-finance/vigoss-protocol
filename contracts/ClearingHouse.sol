@@ -163,9 +163,8 @@ contract ClearingHouse is
 
     AmmMap internal ammMap;
 
-    // prepaid bad debt balance, key by ERC20 token address
-    // TODO: can remove key.
-    mapping(address => Decimal.decimal) internal prepaidBadDebt;
+    // prepaid bad debt balance
+    Decimal.decimal internal prepaidBadDebt;
 
     // contract dependencies
     IInsuranceFund public insuranceFund;
@@ -288,7 +287,7 @@ contract ClearingHouse is
         // check margin ratio
         requireMoreMarginRatio(getMarginRatio(trader), initMarginRatio, true);
         // transfer token back to trader
-        withdraw(amm.quoteAsset(), trader, _removedMargin);
+        withdraw(trader, _removedMargin);
         emit MarginChanged(trader, marginDelta.toInt(), fundingPayment.toInt());
     }
 
@@ -428,7 +427,7 @@ contract ClearingHouse is
                 console.log("CH:openPosition:tranferQuote:", _toUint(quoteToken, positionResp.marginToVault.abs()));
                 _transferFrom(quoteToken, trader, address(this), positionResp.marginToVault.abs());
             } else if (positionResp.marginToVault.toInt() < 0) {
-                withdraw(quoteToken, trader, positionResp.marginToVault.abs());
+                withdraw(trader, positionResp.marginToVault.abs());
             }
             
         }
@@ -504,12 +503,11 @@ contract ClearingHouse is
 
             // add scope for stack too deep error
             // transfer the actual token from trader and vault
-            IERC20 quoteToken = amm.quoteAsset();
             if (positionResp.badDebt.toUint() > 0) {
                 enterRestrictionMode();
-                realizeBadDebt(quoteToken, positionResp.badDebt);
+                realizeBadDebt(positionResp.badDebt);
             }
-            withdraw(quoteToken, trader, positionResp.marginToVault.abs());
+            withdraw(trader, positionResp.marginToVault.abs());
         }
 
         // calculate fee and transfer token for fees
@@ -559,7 +557,6 @@ contract ClearingHouse is
             Decimal.decimal memory liquidationBadDebt;
             Decimal.decimal memory feeToLiquidator;
             Decimal.decimal memory feeToInsuranceFund;
-            IERC20 quoteAsset = amm.quoteAsset();
 
             // 部分清算
             if (
@@ -612,7 +609,7 @@ contract ClearingHouse is
 
                 // transfer the actual token between trader and vault
                 if (totalBadDebt.toUint() > 0) {
-                    Decimal.decimal memory apportion = realizeBadDebt(quoteAsset, totalBadDebt);
+                    Decimal.decimal memory apportion = realizeBadDebt(totalBadDebt);
                     //Apportion Debt on SELL if liq long.  vice versa
                     if (apportion.toUint() > 0) {
                       amm.settleApportion(apportion, (pos.size.toInt() > 0 ?IAmm.Side.SELL : IAmm.Side.BUY));
@@ -625,9 +622,9 @@ contract ClearingHouse is
             }
 
             if (feeToInsuranceFund.toUint() > 0) {
-                transferToInsuranceFund(quoteAsset, feeToInsuranceFund);
+                transferToInsuranceFund(feeToInsuranceFund);
             }
-            withdraw(quoteAsset, _msgSender(), feeToLiquidator);
+            withdraw(_msgSender(), feeToLiquidator);
             enterRestrictionMode();
 
             emit PositionLiquidated(
@@ -682,7 +679,7 @@ contract ClearingHouse is
         if (ammFundingPaymentProfit.toInt() < 0) {
             insuranceFund.withdraw(quoteAsset, ammFundingPaymentProfit.abs());
         } else {
-            transferToInsuranceFund(quoteAsset, ammFundingPaymentProfit.abs());
+            transferToInsuranceFund(ammFundingPaymentProfit.abs());
         }
     }
 
@@ -1115,7 +1112,6 @@ contract ClearingHouse is
     }
 
     function withdraw(
-        IERC20 _token,
         address _receiver,
         Decimal.decimal memory _amount
     ) internal {
@@ -1124,33 +1120,35 @@ contract ClearingHouse is
         // and the balance of entire vault is not enough
         // need money from IInsuranceFund to pay first, and record this prepaidBadDebt
         // in this case, insurance fund loss must be zero
-        Decimal.decimal memory totalTokenBalance = _balanceOf(_token, address(this));
+        IERC20 quoteAsset = amm.quoteAsset();
+        Decimal.decimal memory totalTokenBalance = _balanceOf(quoteAsset, address(this));
         if (totalTokenBalance.toUint() < _amount.toUint()) {
             Decimal.decimal memory balanceShortage = _amount.subD(totalTokenBalance);
-            prepaidBadDebt[address(_token)] = prepaidBadDebt[address(_token)].addD(balanceShortage);
-            insuranceFund.withdraw(_token, balanceShortage);
+            prepaidBadDebt = prepaidBadDebt.addD(balanceShortage);
+            insuranceFund.withdraw(quoteAsset, balanceShortage);
         }
 
-        _transfer(_token, _receiver, _amount);
+        _transfer(quoteAsset, _receiver, _amount);
     }
 
-    function realizeBadDebt(IERC20 _token, Decimal.decimal memory _badDebt) internal returns (Decimal.decimal memory) {
-        Decimal.decimal memory badDebtBalance = prepaidBadDebt[address(_token)];
-        if (badDebtBalance.toUint() > _badDebt.toUint()) {
+    function realizeBadDebt(Decimal.decimal memory _badDebt) internal returns (Decimal.decimal memory) {
+        if (prepaidBadDebt.toUint() > _badDebt.toUint()) {
             // no need to move extra tokens because vault already prepay bad debt, only need to update the numbers
-            prepaidBadDebt[address(_token)] = badDebtBalance.subD(_badDebt);
+            prepaidBadDebt = prepaidBadDebt.subD(_badDebt);
             return Decimal.zero();
         } else {
             // in order to realize all the bad debt vault need extra tokens from insuranceFund
-            prepaidBadDebt[address(_token)] = Decimal.zero();
-            return insuranceFund.withdraw(_token, _badDebt.subD(badDebtBalance));
+            prepaidBadDebt = Decimal.zero();
+            
+            return insuranceFund.withdraw(amm.quoteAsset(), _badDebt.subD(prepaidBadDebt));
         }
     }
 
-    function transferToInsuranceFund(IERC20 _token, Decimal.decimal memory _amount) internal {
-        Decimal.decimal memory totalTokenBalance = _balanceOf(_token, address(this));
+    function transferToInsuranceFund(Decimal.decimal memory _amount) internal {
+        IERC20 token = amm.quoteAsset();
+        Decimal.decimal memory totalTokenBalance = _balanceOf(token, address(this));
         _transfer(
-            _token,
+            token,
             address(insuranceFund),
             totalTokenBalance.toUint() < _amount.toUint() ? totalTokenBalance : _amount
         );
