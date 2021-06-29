@@ -7,7 +7,7 @@ import { Decimal } from "../utils/Decimal.sol";
 import { IAmm } from "./IAmm.sol";
 
 interface IInsuranceFund {
-    function withdraw(IERC20 _quoteToken, Decimal.decimal calldata _amount) external;
+    function withdraw(IERC20 _quoteToken, Decimal.decimal calldata _amount) external returns (Decimal.decimal memory);
 
     function isExistedAmm(IAmm _amm) external view returns (bool);
 

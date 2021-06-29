@@ -263,6 +263,7 @@ contract Amm is IAmm, Ownable, BlockContext {
 
     function settleApportion(Decimal.decimal memory _badDebt, Side _side) external override onlyOpen onlyCounterParty returns (Decimal.decimal memory) {
         // _badDebt 
+        
     }
 
     /**

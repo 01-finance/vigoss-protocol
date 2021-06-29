@@ -140,20 +140,21 @@ contract InsuranceFund is IInsuranceFund, Ownable, BlockContext, ReentrancyGuard
      * @notice withdraw token to caller
      * @param _amount the amount of quoteToken caller want to withdraw
      */
-    function withdraw(IERC20 _quoteToken, Decimal.decimal calldata _amount) external override {
+    function withdraw(IERC20 _quoteToken, Decimal.decimal calldata _amount) external override returns (Decimal.decimal memory) {
         require(beneficiaryMap[_msgSender()], "caller is not beneficiary");
         require(isQuoteTokenExisted(_quoteToken), "Asset is not supported");
 
         Decimal.decimal memory quoteBalance = balanceOf(_quoteToken);
         if (_amount.toUint() > quoteBalance.toUint()) {
             Decimal.decimal memory insufficientAmount = _amount.subD(quoteBalance);
-            swapEnoughQuoteAmount(_quoteToken, insufficientAmount);
-            quoteBalance = balanceOf(_quoteToken);
+            _transfer(_quoteToken, _msgSender(), quoteBalance);
+            emit Withdrawn(_msgSender(), quoteBalance.toUint());
+            return Decimal.decimal(insufficientAmount);
+        } else {
+          _transfer(_quoteToken, _msgSender(), _amount);
+          emit Withdrawn(_msgSender(), _amount.toUint());
+          return Decimal.zero();
         }
-        require(quoteBalance.toUint() >= _amount.toUint(), "Fund not enough");
-
-        _transfer(_quoteToken, _msgSender(), _amount);
-        emit Withdrawn(_msgSender(), _amount.toUint());
     }
 
     //

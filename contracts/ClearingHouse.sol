@@ -612,9 +612,12 @@ contract ClearingHouse is
 
                 // transfer the actual token between trader and vault
                 if (totalBadDebt.toUint() > 0) {
-                    realizeBadDebt(quoteAsset, totalBadDebt);
+                    Decimal.decimal memory apportion = realizeBadDebt(quoteAsset, totalBadDebt);
                     //Apportion Debt on SELL if liq long.  vice versa
-                    amm.settleApportion(totalBadDebt, (pos.size.toInt() > 0 ?IAmm.Side.SELL:IAmm.Side.BUY));
+                    if (apportion.toUint() > 0) {
+                      amm.settleApportion(totalBadDebt, (pos.size.toInt() > 0 ?IAmm.Side.SELL : IAmm.Side.BUY));
+                    }
+                    
                 }
                 if (remainMargin.toUint() > 0) {
                     feeToInsuranceFund = remainMargin;
@@ -1131,15 +1134,16 @@ contract ClearingHouse is
         _transfer(_token, _receiver, _amount);
     }
 
-    function realizeBadDebt(IERC20 _token, Decimal.decimal memory _badDebt) internal {
+    function realizeBadDebt(IERC20 _token, Decimal.decimal memory _badDebt) internal returns (Decimal.decimal memory) {
         Decimal.decimal memory badDebtBalance = prepaidBadDebt[address(_token)];
         if (badDebtBalance.toUint() > _badDebt.toUint()) {
             // no need to move extra tokens because vault already prepay bad debt, only need to update the numbers
             prepaidBadDebt[address(_token)] = badDebtBalance.subD(_badDebt);
+            return Decimal.zero();
         } else {
             // in order to realize all the bad debt vault need extra tokens from insuranceFund
-            insuranceFund.withdraw(_token, _badDebt.subD(badDebtBalance));
             prepaidBadDebt[address(_token)] = Decimal.zero();
+            return insuranceFund.withdraw(_token, _badDebt.subD(badDebtBalance));
         }
     }
 
