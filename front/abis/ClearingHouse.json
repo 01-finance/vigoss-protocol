@@ -4,6 +4,11 @@
     {
       "inputs": [
         {
+          "internalType": "contract IAmm",
+          "name": "_amm",
+          "type": "address"
+        },
+        {
           "internalType": "uint256",
           "name": "_initMarginRatio",
           "type": "uint256"
@@ -52,12 +57,6 @@
           "type": "address"
         },
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "amm",
-          "type": "address"
-        },
-        {
           "indexed": false,
           "internalType": "int256",
           "name": "amount",
@@ -68,11 +67,17 @@
           "internalType": "int256",
           "name": "fundingPayment",
           "type": "int256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "apportionPayment",
+          "type": "uint256"
         }
       ],
       "name": "MarginChanged",
       "type": "event",
-      "signature": "0x1c822fe92555a7e529201522fbd166b03a55712d945737f4cc5c1e18199caa7b"
+      "signature": "0x73c79649b0bee64107cd0bbfb48ee481f1b6c3af5c218a7621ef7117a9610136"
     },
     {
       "anonymous": false,
@@ -128,12 +133,6 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "amm",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
           "name": "trader",
           "type": "address"
         },
@@ -158,7 +157,7 @@
       ],
       "name": "PositionAdjusted",
       "type": "event",
-      "signature": "0xdbb898e847eca1f5626ba536593caa10241fb631e7c8a1cb06dfdce8d3934f49"
+      "signature": "0x1466c1471a7cee02d59a15fdf246ec1aee2a524daa92c7b47c24ad33ed1b0dd0"
     },
     {
       "anonymous": false,
@@ -167,12 +166,6 @@
           "indexed": true,
           "internalType": "address",
           "name": "trader",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "amm",
           "type": "address"
         },
         {
@@ -220,19 +213,7 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "badDebt",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
           "name": "liquidationPenalty",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "spotPrice",
           "type": "uint256"
         },
         {
@@ -240,11 +221,17 @@
           "internalType": "int256",
           "name": "fundingPayment",
           "type": "int256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "apportionPayment",
+          "type": "uint256"
         }
       ],
       "name": "PositionChanged",
       "type": "event",
-      "signature": "0x4c7b764f428c13bbea8cc8da90ebe6eef4dafeb27a4e3d9041d64208c47ca7c2"
+      "signature": "0xed742957ff62299db707aa6d06bd6439db6fa3fa07f8ae5f1c7b9cb0e0bd8828"
     },
     {
       "anonymous": false,
@@ -253,12 +240,6 @@
           "indexed": true,
           "internalType": "address",
           "name": "trader",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "amm",
           "type": "address"
         },
         {
@@ -294,17 +275,11 @@
       ],
       "name": "PositionLiquidated",
       "type": "event",
-      "signature": "0x5225638a979dd133f201045ab4169ec2189874d864f2b5a10be72ac6e4b421b4"
+      "signature": "0xe036b6006bcfcd01dcaddf90ab542c1359d4c1a28f21238e89773b40b5aa9f0d"
     },
     {
       "anonymous": false,
       "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "amm",
-          "type": "address"
-        },
         {
           "indexed": true,
           "internalType": "address",
@@ -320,17 +295,11 @@
       ],
       "name": "PositionSettled",
       "type": "event",
-      "signature": "0xba70e8457921bdd49042182753cb6259c62f923e2b64216b68372cd85ec3af6c"
+      "signature": "0x17807379ba663ac6d72cbec7d33ed88347cbee7fff18c4693987cc766b8b7f18"
     },
     {
       "anonymous": false,
       "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "amm",
-          "type": "address"
-        },
         {
           "indexed": false,
           "internalType": "uint256",
@@ -340,7 +309,7 @@
       ],
       "name": "RestrictionModeEntered",
       "type": "event",
-      "signature": "0x97f920fec5d17ec336df7ad438ca8a76dcfd206ddc1d19b263b6f3e6ba3c4f31"
+      "signature": "0x41c9206d0ddffee4c6a337dc2dd2ec255ff5a9bad238707c8d6a5be8f543ee54"
     },
     {
       "anonymous": false,
@@ -355,6 +324,36 @@
       "name": "Unpaused",
       "type": "event",
       "signature": "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa"
+    },
+    {
+      "inputs": [],
+      "name": "amm",
+      "outputs": [
+        {
+          "internalType": "contract IAmm",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x2a943945"
+    },
+    {
+      "inputs": [],
+      "name": "aopenInterestNotional",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "d",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x72a9e325"
     },
     {
       "inputs": [],
@@ -430,27 +429,6 @@
       "type": "function",
       "constant": true,
       "signature": "0x83acb48a"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "openInterestNotionalMap",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "d",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0xb0ac5f2f"
     },
     {
       "inputs": [],
@@ -629,11 +607,6 @@
     {
       "inputs": [
         {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        },
-        {
           "components": [
             {
               "internalType": "uint256",
@@ -650,15 +623,10 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0xac06a96e"
+      "signature": "0xe2235499"
     },
     {
       "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        },
         {
           "components": [
             {
@@ -676,31 +644,20 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0x30e2ae65"
+      "signature": "0x3e99053c"
     },
     {
-      "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        }
-      ],
+      "inputs": [],
       "name": "settlePosition",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0x36405257"
+      "signature": "0x04a2e830"
     },
     {
       "inputs": [
         {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        },
-        {
-          "internalType": "enum ClearingHouse.Side",
+          "internalType": "enum IAmm.Side",
           "name": "_side",
           "type": "uint8"
         },
@@ -745,15 +702,10 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0x893d242d"
+      "signature": "0x16f80e23"
     },
     {
       "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        },
         {
           "components": [
             {
@@ -771,15 +723,10 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0xa8c1b0bc"
+      "signature": "0xc7e7d104"
     },
     {
       "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        },
         {
           "internalType": "address",
           "name": "_trader",
@@ -790,43 +737,18 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0x86b9d81f"
+      "signature": "0x2f865568"
     },
     {
-      "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        }
-      ],
+      "inputs": [],
       "name": "payFunding",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0x3e09fa10"
+      "signature": "0xaaa5a2ad"
     },
     {
       "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        }
-      ],
-      "name": "adjustPosition",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x2db33aa1"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        },
         {
           "internalType": "address",
           "name": "_trader",
@@ -851,15 +773,10 @@
       "stateMutability": "view",
       "type": "function",
       "constant": true,
-      "signature": "0xea0a45f9"
+      "signature": "0x54f4ac87"
     },
     {
       "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        },
         {
           "internalType": "address",
           "name": "_trader",
@@ -919,9 +836,16 @@
               "type": "tuple"
             },
             {
-              "internalType": "uint256",
-              "name": "liquidityHistoryIndex",
-              "type": "uint256"
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "d",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct Decimal.decimal",
+              "name": "lastApportionFraction",
+              "type": "tuple"
             },
             {
               "internalType": "uint256",
@@ -937,15 +861,10 @@
       "stateMutability": "view",
       "type": "function",
       "constant": true,
-      "signature": "0xb33dc190"
+      "signature": "0x16c19739"
     },
     {
       "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        },
         {
           "internalType": "address",
           "name": "_trader",
@@ -987,16 +906,10 @@
       "stateMutability": "view",
       "type": "function",
       "constant": true,
-      "signature": "0x8bedf3bb"
+      "signature": "0x3431c56b"
     },
     {
-      "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        }
-      ],
+      "inputs": [],
       "name": "getLatestCumulativePremiumFraction",
       "outputs": [
         {
@@ -1015,93 +928,7 @@
       "stateMutability": "view",
       "type": "function",
       "constant": true,
-      "signature": "0x6891397b"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_trader",
-          "type": "address"
-        }
-      ],
-      "name": "getUnadjustedPosition",
-      "outputs": [
-        {
-          "components": [
-            {
-              "components": [
-                {
-                  "internalType": "int256",
-                  "name": "d",
-                  "type": "int256"
-                }
-              ],
-              "internalType": "struct SignedDecimal.signedDecimal",
-              "name": "size",
-              "type": "tuple"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "uint256",
-                  "name": "d",
-                  "type": "uint256"
-                }
-              ],
-              "internalType": "struct Decimal.decimal",
-              "name": "margin",
-              "type": "tuple"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "uint256",
-                  "name": "d",
-                  "type": "uint256"
-                }
-              ],
-              "internalType": "struct Decimal.decimal",
-              "name": "openNotional",
-              "type": "tuple"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "int256",
-                  "name": "d",
-                  "type": "int256"
-                }
-              ],
-              "internalType": "struct SignedDecimal.signedDecimal",
-              "name": "lastUpdatedCumulativePremiumFraction",
-              "type": "tuple"
-            },
-            {
-              "internalType": "uint256",
-              "name": "liquidityHistoryIndex",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "blockNumber",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct ClearingHouse.Position",
-          "name": "position",
-          "type": "tuple"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x0475db5a"
+      "signature": "0x42ff51cb"
     }
   ]
 }

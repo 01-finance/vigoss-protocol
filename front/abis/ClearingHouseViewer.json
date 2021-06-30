@@ -4,8 +4,8 @@
     {
       "inputs": [
         {
-          "internalType": "contract ClearingHouse",
-          "name": "_clearingHouse",
+          "internalType": "contract IInsuranceFund",
+          "name": "fund",
           "type": "address"
         }
       ],
@@ -14,25 +14,10 @@
       "signature": "constructor"
     },
     {
-      "inputs": [],
-      "name": "clearingHouse",
-      "outputs": [
-        {
-          "internalType": "contract ClearingHouse",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x0af96800"
-    },
-    {
       "inputs": [
         {
-          "internalType": "contract IAmm",
-          "name": "_amm",
+          "internalType": "contract ClearingHouse",
+          "name": "clearingHouse",
           "type": "address"
         },
         {
@@ -102,8 +87,8 @@
     {
       "inputs": [
         {
-          "internalType": "contract IAmm",
-          "name": "_amm",
+          "internalType": "contract ClearingHouse",
+          "name": "clearingHouse",
           "type": "address"
         },
         {
@@ -165,9 +150,16 @@
               "type": "tuple"
             },
             {
-              "internalType": "uint256",
-              "name": "liquidityHistoryIndex",
-              "type": "uint256"
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "d",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct Decimal.decimal",
+              "name": "lastApportionFraction",
+              "type": "tuple"
             },
             {
               "internalType": "uint256",
@@ -188,34 +180,8 @@
     {
       "inputs": [
         {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_trader",
-          "type": "address"
-        }
-      ],
-      "name": "isPositionNeedToBeMigrated",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x7db3b72d"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
+          "internalType": "contract ClearingHouse",
+          "name": "clearingHouse",
           "type": "address"
         },
         {

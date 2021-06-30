@@ -128,6 +128,20 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "delta",
+          "type": "uint256"
+        }
+      ],
+      "name": "LongApportionFractionChanged",
+      "type": "event",
+      "signature": "0x1de577ee88ab35a94cdc4dfc09d1bb7a26aa2b3e26e2cbbf77d46f8cf374a2d0"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": true,
           "internalType": "address",
           "name": "previousOwner",
@@ -183,6 +197,20 @@
       "name": "ReserveSnapshotted",
       "type": "event",
       "signature": "0x3a3348362552c3897fd1f06a3233519ebd8bd76ad6e99a418a9741155fe90515"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "delta",
+          "type": "uint256"
+        }
+      ],
+      "name": "ShortApportionFractionChanged",
+      "type": "event",
+      "signature": "0x4495632da5b2b8eedc2ce23ff8c6aabc4689d280a7c50f09dbabc5fdbd0ca76c"
     },
     {
       "anonymous": false,
@@ -294,6 +322,21 @@
       "type": "function",
       "constant": true,
       "signature": "0xc9566fcc"
+    },
+    {
+      "inputs": [],
+      "name": "counterParty",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x2c453bdf"
     },
     {
       "inputs": [],
@@ -625,6 +668,32 @@
     {
       "inputs": [
         {
+          "internalType": "bool",
+          "name": "buy",
+          "type": "bool"
+        },
+        {
+          "components": [
+            {
+              "internalType": "int256",
+              "name": "d",
+              "type": "int256"
+            }
+          ],
+          "internalType": "struct SignedDecimal.signedDecimal",
+          "name": "newSize",
+          "type": "tuple"
+        }
+      ],
+      "name": "updateLongSize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x50358ab3"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "enum IAmm.Dir",
           "name": "_dirOfQuote",
           "type": "uint8"
@@ -728,6 +797,45 @@
       "stateMutability": "nonpayable",
       "type": "function",
       "signature": "0xd71ec2ad"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "d",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Decimal.decimal",
+          "name": "_badDebt",
+          "type": "tuple"
+        },
+        {
+          "internalType": "enum IAmm.Side",
+          "name": "_side",
+          "type": "uint8"
+        }
+      ],
+      "name": "settleApportion",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "d",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Decimal.decimal",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x985178e4"
     },
     {
       "inputs": [],
@@ -1342,6 +1450,50 @@
     },
     {
       "inputs": [],
+      "name": "getLongApportionFraction",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "d",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Decimal.decimal",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x6e6f4a9b"
+    },
+    {
+      "inputs": [],
+      "name": "getShortApportionFraction",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "d",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Decimal.decimal",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x88f9f594"
+    },
+    {
+      "inputs": [],
       "name": "getCumulativeNotional",
       "outputs": [
         {
@@ -1563,6 +1715,40 @@
       "type": "function",
       "constant": true,
       "signature": "0x52545410"
+    },
+    {
+      "inputs": [],
+      "name": "getLongShortSize",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "int256",
+              "name": "d",
+              "type": "int256"
+            }
+          ],
+          "internalType": "struct SignedDecimal.signedDecimal",
+          "name": "",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "int256",
+              "name": "d",
+              "type": "int256"
+            }
+          ],
+          "internalType": "struct SignedDecimal.signedDecimal",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x87ab493e"
     },
     {
       "inputs": [],
