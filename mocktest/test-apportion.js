@@ -144,11 +144,13 @@ module.exports = async function(callback) {
   await getSpotPrice(ETHUSDCAmm, web3);
   await getMarginRatio(house, ETHUSDCAmm.address, accounts[2], web3 )  // 0.16
 
+
   await balanceOf(usdcMock, fund.address, web3, " fund ");
   await balanceOf(usdcMock, accounts[2], web3, " accounts[2] ");
 
   await fund.withdraw(usdcMock.address, { d: web3.utils.toWei("250") });  
   await balanceOf(usdcMock, fund.address, web3, " fund ");
+  await getMarginRatio(house, ETHUSDCAmm.address, accounts[0], web3 )
 
   console.log("\n  ===  liquidate  === \n"); 
   await liquidate(house, ETHUSDCAmm.address, accounts[2], accounts[0])
@@ -156,8 +158,8 @@ module.exports = async function(callback) {
   await balanceOf(usdcMock, fund.address, web3, " fund ");
   await balanceOf(usdcMock, accounts[2], web3, " accounts[2] ");
 
-
   await getSpotPrice(ETHUSDCAmm, web3);
+  await getMarginRatio(house, ETHUSDCAmm.address, accounts[0], web3 )
 
   await getLongShortSize(ETHUSDCAmm, web3);
   await getLongApportionFraction(ETHUSDCAmm, web3)

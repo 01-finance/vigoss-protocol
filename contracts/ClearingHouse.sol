@@ -1216,7 +1216,7 @@ contract ClearingHouse is
         }
     }
 
-    function getUnadjustedPosition(address _trader) public view returns (Position memory position) {
+    function getUnadjustedPosition(address _trader) internal view returns (Position memory position) {
         position = ammMap.positionMap[_trader];
     }
 
