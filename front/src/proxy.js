@@ -69,13 +69,10 @@ export default {
     return proxy.at(addrJs.address);
   },
 
-  getClearingHouse(networkId) {
-    const networkName = NETWORK_NAME[networkId];
-    let addrJs = require(`../abis/ClearingHouse.${networkName}.json`);
-    // console.log("ClearingHouse addr:", addrJs)
+  getClearingHouse(addr) {
     const proxy = contract(ClearingHouse)
     proxy.setProvider(this.provider)
-    return proxy.at(addrJs.address);
+    return proxy.at(addr);
   },
 
   getClearingHouseViewer(networkId) {

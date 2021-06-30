@@ -43,6 +43,8 @@
     <br>
     <span> lastUpdatedCumulativePremiumFraction: {{ this.myPosition.lastUpdatedCumulativePremiumFraction}}</span>
     <br>
+    <span> lastApportionFraction: {{ this.myPosition.lastApportionFraction }} </span>
+    <br>
     <button @click="closePosition">Close</button>
 
     <div>
@@ -112,8 +114,8 @@ export default {
       const network = NETWORK_NAME[this.chainid];
       console.log(network)
 
-      this.ch = await proxy.getClearingHouse(this.chainid);
-      // this.chv = await proxy.getClearingHouseViewer(this.chainid);
+      let ETHUSDCHouse = require(`../../abis/ClearingHouse:ETH-USDC.${network}.json`);
+      this.ch = await proxy.getClearingHouse(ETHUSDCHouse.address);
 
       let ETHUSDCPair = require(`../../abis/Amm:ETH-USDC.${network}.json`);
       this.ammPair = await proxy.getAmm(ETHUSDCPair.address);
@@ -213,8 +215,7 @@ export default {
       console.log("minBase:" + minBase)
       let minAmount = toDec(minBase, 18);
       
-      this.ch.openPosition(this.ammPair.address,
-        this.longOrShort,
+      this.ch.openPosition(this.longOrShort,
         { d: qAmount },
         { d: lev },
         { d: minAmount },
@@ -226,9 +227,9 @@ export default {
     async getPosition() {
 
       try {
-        let marginRate = await this.ch.getMarginRatio(this.ammPair.address, this.account);
+        let marginRate = await this.ch.getMarginRatio( this.account);
         
-        this.ch.getUnadjustedPosition(this.ammPair.address, this.account).then((position) => {
+        this.ch.getPosition( this.account).then((position) => {
         let myPosition = {};
         myPosition.margin = this.web3.utils.fromWei(position.margin.toString())
         myPosition.baseAsset = this.web3.utils.fromWei(position.size.toString())
@@ -236,7 +237,7 @@ export default {
         myPosition.lastUpdatedCumulativePremiumFraction = this.web3.utils.fromWei(position.lastUpdatedCumulativePremiumFraction.toString())
         myPosition.blockNumber = position.blockNumber
         myPosition.marginRate =  this.web3.utils.fromWei(marginRate.toString());
-
+        myPosition.lastApportionFraction = this.web3.utils.fromWei(position.lastApportionFraction.toString())
         this.myPosition = myPosition;
       
         })
@@ -249,8 +250,7 @@ export default {
 
     // TODO: {d: "0"}
     closePosition() {
-      
-      this.ch.closePosition(this.ammPair.address, {d: "0"}, 
+      this.ch.closePosition( {d: "0"}, 
         { from : this.account}).then( () => {
         this.getPosition();
       })
@@ -258,7 +258,7 @@ export default {
 
     removeMargin() {
       let amount = this.web3.utils.toWei(this.adjustAmount);
-      this.ch.removeMargin(this.ammPair.address, 
+      this.ch.removeMargin( 
       {d: amount}, {from: this.account}).then(() => {
         this.getPosition();
       })
@@ -266,7 +266,7 @@ export default {
 
     addMargin() {
       let amount = this.web3.utils.toWei(this.adjustAmount);
-      this.ch.addMargin(this.ammPair.address,
+      this.ch.addMargin(
       {d: amount}, 
       {from: this.account}).then(() => {
         this.getPosition();
