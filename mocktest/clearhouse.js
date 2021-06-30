@@ -72,7 +72,7 @@ function printPosition(position, web3) {
   console.log("Pos margin:" + web3.utils.fromWei(position.margin.toString()))
   console.log("Pos openNotional:" + web3.utils.fromWei(position.openNotional.toString()))
   console.log("Pos lastUpdatedCumulativePremiumFraction:" + web3.utils.fromWei(position.lastUpdatedCumulativePremiumFraction.toString()))
-  console.log("Pos liquidityHistoryIndex:" + position.liquidityHistoryIndex)
+  console.log("Pos lastApportion:" + web3.utils.fromWei(position.lastApportionFraction.toString()))
   console.log("Pos blockNumber:" +position.blockNumber)
 }
 

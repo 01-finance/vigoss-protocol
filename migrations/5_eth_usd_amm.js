@@ -14,10 +14,10 @@ module.exports = async function(deployer, network, accounts) {
 
   const quoteAssetReserve = web3.utils.toWei("4000000") // 
   const baseAssetReserve  =  web3.utils.toWei("20000") // 
-  const tradeLimitRatio   = web3.utils.toWei("0.9")    // default 0.015 1.25%
+  const tradeLimitRatio   = web3.utils.toWei("0.015")    // default 0.015 1.25%
   const fundingPeriod = 3600   // 1 hour
   
-  const fluctuationLimitRatio = web3.utils.toWei("0.8") // default 0.012 1.2%
+  const fluctuationLimitRatio = web3.utils.toWei("0.012") // default 0.012 1.2%
   const tollRatio   = web3.utils.toWei("0");
   const spreadRatio = web3.utils.toWei("0.001"); // 0.1%
 
@@ -56,7 +56,6 @@ module.exports = async function(deployer, network, accounts) {
   await fund.setBeneficiary(house.address, true);
 
   await amm.setCounterParty(house.address);
-
 
   await fund.addAmm(Amm.address);
 }
