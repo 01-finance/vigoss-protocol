@@ -32,7 +32,7 @@ const {
   getShortApportionFraction
 } = require('./amm')
 
-const network = 'hardhat'
+const network = 'testbsc'
 const ADD_TO_AMM = 0;
 const REMOVE_FROM_AMM = 1;
 

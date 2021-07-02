@@ -95,6 +95,7 @@ export default {
 
       this.web3.eth.net.getId().then(id => {
         this.chainid = id
+        console.log("this.chainid:" + this.chainid)
         this.init()
       })
     })

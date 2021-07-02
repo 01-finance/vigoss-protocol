@@ -62,6 +62,7 @@ export default {
 
   getUSDCToken(networkId) {
     const networkName = NETWORK_NAME[networkId];
+    console.log("usdc networkName:", networkName)
     let addrJs = require(`../abis/USDC.${networkName}.json`);
     // console.log("usdc addr:", addrJs)
     const proxy = contract(MockToken)

@@ -75,6 +75,15 @@ module.exports = {
       gas: 7003605,
       gasPrice: 45000000000,  // 40Gwei
     },
+
+    testbsc: {
+      provider: function() {   // link ok 
+        return new HDWalletProvider(mnemonic, "https://data-seed-prebsc-1-s1.binance.org:8545/")
+      },
+      network_id: 97,
+      gas: 7003605,
+      gasPrice: 10000000000,  // 10Gwei
+    },
     
     heco: {
       provider: function() {
