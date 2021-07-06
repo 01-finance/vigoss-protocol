@@ -130,6 +130,8 @@ interface IAmm {
 
     function isOverSpreadLimit() external view returns (bool);
 
+    function isInFusing() external view returns (bool);
+
     function getLongApportionFraction() external view returns (Decimal.decimal memory);
     function getShortApportionFraction() external view returns (Decimal.decimal memory);
 }

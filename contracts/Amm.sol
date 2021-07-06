@@ -41,6 +41,7 @@ contract Amm is IAmm, Ownable, BlockContext {
     event LongApportionFractionChanged(uint256 delta);
     event ShortApportionFractionChanged(uint256 delta);
     event PriceFeedUpdated(address priceFeed);
+    event EnterFusing();
 
     //
     // MODIFIERS
@@ -91,6 +92,8 @@ contract Amm is IAmm, Ownable, BlockContext {
     //
     // 10%
     uint256 public constant MAX_ORACLE_SPREAD_RATIO = 1e17;
+
+    uint256 public constant MAX_TWAP_SPREAD_RATIO = 1e17;
 
     //**********************************************************//
     //    The below state variables can not change the order    //
@@ -146,6 +149,8 @@ contract Amm is IAmm, Ownable, BlockContext {
     IPriceFeed public priceFeed;
 
     bool public override open;
+    uint private fusingEndTime;
+    uint256 public fusingPeriod = 2 * 60;
 
 
     constructor (
@@ -416,6 +421,10 @@ contract Amm is IAmm, Ownable, BlockContext {
         spreadRatio = _spreadRatio;
     }
 
+    function setFusingPeriod(uint _period) public onlyOwner {
+      fusingPeriod = _period;
+    }
+
     /**
      * @notice set new cap during guarded period, which is max position size that traders can hold
      * @dev only owner can call. assume this will be removes soon once the guarded period has ended. must be set before opening amm
@@ -441,6 +450,13 @@ contract Amm is IAmm, Ownable, BlockContext {
         priceFeed = _priceFeed;
         emit PriceFeedUpdated(address(priceFeed));
     }
+
+    function isInFusing() external view override returns (bool) {
+      if (block.timestamp <= fusingEndTime) {
+        return true;
+      }
+      return false;
+    } 
 
     //
     // VIEW FUNCTIONS
@@ -817,6 +833,7 @@ contract Amm is IAmm, Ownable, BlockContext {
         // check if it's over fluctuationLimitRatio
         // this check should be before reserves being updated
         checkIsOverBlockFluctuationLimit(_dirOfQuote, _quoteAssetAmount, _baseAssetAmount, _canOverFluctuationLimit);
+        Decimal.decimal memory twapPrice = getTwapPrice(spotPriceTwapInterval);
 
         if (_dirOfQuote == Dir.ADD_TO_AMM) {
             quoteAssetReserve = quoteAssetReserve.addD(_quoteAssetAmount);
@@ -830,8 +847,12 @@ contract Amm is IAmm, Ownable, BlockContext {
             cumulativeNotional = cumulativeNotional.subD(_quoteAssetAmount);
         }
 
+        Decimal.decimal memory marketPrice = getSpotPrice();
+
         // addReserveSnapshot must be after checking price fluctuation
         addReserveSnapshot();
+        checkEnterFusing(twapPrice, marketPrice);
+        
     }
 
     function implGetInputAssetTwapPrice(
@@ -955,6 +976,15 @@ contract Amm is IAmm, Ownable, BlockContext {
         Decimal.decimal memory upperLimit = lastPrice.mulD(Decimal.one().addD(fluctuationLimitRatio));
         Decimal.decimal memory lowerLimit = lastPrice.mulD(Decimal.one().subD(fluctuationLimitRatio));
         return (upperLimit, lowerLimit);
+    }
+
+    function checkEnterFusing(Decimal.decimal memory twapPrice, Decimal.decimal memory marketPrice) internal {
+        Decimal.decimal memory twapSpreadRatioAbs =
+            MixedDecimal.fromDecimal(marketPrice).subD(twapPrice).divD(twapPrice).abs();
+        if( twapSpreadRatioAbs.toUint() >= MAX_TWAP_SPREAD_RATIO) {
+          fusingEndTime = block.timestamp + fusingPeriod;
+          emit EnterFusing();
+        }
     }
 
     /**
