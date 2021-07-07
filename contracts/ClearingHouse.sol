@@ -376,6 +376,7 @@ contract ClearingHouse is
         Decimal.decimal memory _baseAssetAmountLimit
     ) public whenNotPaused() nonReentrant() {
         requireAmm(true);
+        requireAmmNoInFusing();
         requireNonZeroInput(_quoteAssetAmount);
         requireNonZeroInput(_leverage);
         requireMoreMarginRatio(MixedDecimal.fromDecimal(Decimal.one()).divD(_leverage), initMarginRatio, true);
@@ -465,6 +466,7 @@ contract ClearingHouse is
     {
         // check conditions
         requireAmm(true);
+        requireAmmNoInFusing();
         requireNotRestrictionMode();
 
         // update position
@@ -536,6 +538,7 @@ contract ClearingHouse is
      */
     function liquidate(address _trader) external nonReentrant() {
         requireAmm(true);
+        requireAmmNoInFusing();
         SignedDecimal.signedDecimal memory marginRatio = getMarginRatio(_trader);
 
         // including oracle-based margin ratio as reference price when amm is over spread limit
@@ -1226,6 +1229,10 @@ contract ClearingHouse is
     function requireAmm(bool _open) private view {
         require(insuranceFund.isExistedAmm(amm), "amm not found");
         require(_open == amm.open(), _open ? "amm was closed" : "amm is open");
+    }
+
+    function requireAmmNoInFusing() private view {
+      require(!amm.isInFusing(), "amm in fusing");
     }
 
     function requireNonZeroInput(Decimal.decimal memory _decimal) private pure {
