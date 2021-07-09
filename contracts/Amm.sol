@@ -93,7 +93,8 @@ contract Amm is IAmm, Ownable, BlockContext {
     // 10%
     uint256 public constant MAX_ORACLE_SPREAD_RATIO = 1e17;
 
-    uint256 public constant MAX_TWAP_SPREAD_RATIO = 1e17;
+    // 10%
+    uint256 public maxTwapSpreadRatio = 1e17;
 
     //**********************************************************//
     //    The below state variables can not change the order    //
@@ -419,6 +420,11 @@ contract Amm is IAmm, Ownable, BlockContext {
      */
     function setSpreadRatio(Decimal.decimal memory _spreadRatio) public onlyOwner {
         spreadRatio = _spreadRatio;
+    }
+
+
+    function setMaxTwapSpreadRatio(uint _maxTwapSpreadRatio) public onlyOwner {
+      maxTwapSpreadRatio = _maxTwapSpreadRatio;
     }
 
     function setFusingPeriod(uint _period) public onlyOwner {
@@ -981,7 +987,7 @@ contract Amm is IAmm, Ownable, BlockContext {
     function checkEnterFusing(Decimal.decimal memory twapPrice, Decimal.decimal memory marketPrice) internal {
         Decimal.decimal memory twapSpreadRatioAbs =
             MixedDecimal.fromDecimal(marketPrice).subD(twapPrice).divD(twapPrice).abs();
-        if( twapSpreadRatioAbs.toUint() >= MAX_TWAP_SPREAD_RATIO) {
+        if( twapSpreadRatioAbs.toUint() >= maxTwapSpreadRatio) {
           fusingEndTime = block.timestamp + fusingPeriod;
           emit EnterFusing();
         }
