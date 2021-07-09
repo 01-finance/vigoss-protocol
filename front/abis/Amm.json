@@ -80,6 +80,13 @@
     },
     {
       "anonymous": false,
+      "inputs": [],
+      "name": "EnterFusing",
+      "type": "event",
+      "signature": "0x2c9919ed2c08f822c2bb01ceeee2392b2451e4ee4bebf39dcb318fa0c252114f"
+    },
+    {
+      "anonymous": false,
       "inputs": [
         {
           "indexed": false,
@@ -295,6 +302,21 @@
     },
     {
       "inputs": [],
+      "name": "MAX_TWAP_SPREAD_RATIO",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xec46f626"
+    },
+    {
+      "inputs": [],
       "name": "baseAsset",
       "outputs": [
         {
@@ -397,6 +419,21 @@
       "type": "function",
       "constant": true,
       "signature": "0x41d3c84c"
+    },
+    {
+      "inputs": [],
+      "name": "fusingPeriod",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x55ed4800"
     },
     {
       "inputs": [],
@@ -1047,6 +1084,20 @@
     {
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "_period",
+          "type": "uint256"
+        }
+      ],
+      "name": "setFusingPeriod",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xf8fbcf2b"
+    },
+    {
+      "inputs": [
+        {
           "components": [
             {
               "internalType": "uint256",
@@ -1090,6 +1141,21 @@
       "stateMutability": "nonpayable",
       "type": "function",
       "signature": "0x724e78da"
+    },
+    {
+      "inputs": [],
+      "name": "isInFusing",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xe673a3b1"
     },
     {
       "inputs": [

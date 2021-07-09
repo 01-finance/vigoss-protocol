@@ -63,16 +63,16 @@ async function getSettlementPrice(amm, web3) {
     const p = await amm.getSettlementPrice();
     console.log("SettlementPrice:" + web3.utils.fromWei(p.toString()))
   } catch (e) {
-    console.log("SettlementPrice", e)
+    console.log("SettlementPrice", e.toString())
   }
 }
 
 async function getTwapPrice(amm, interval, web3) {
   try {
     const p = await amm.getTwapPrice(interval);
-    console.log("SpotPrice:" + web3.utils.fromWei(p.toString()))
+    console.log("getTwapPrice:" + web3.utils.fromWei(p.toString()))
   } catch (e) {
-    console.log("SpotPrice", e)
+    console.log("getTwapPrice", e.toString())
   }
 }
 
@@ -82,7 +82,7 @@ async function getReserve(amm, web3) {
     console.log("getReserve quote:" + web3.utils.fromWei(r[0].toString()))
     console.log("getReserve base:" + web3.utils.fromWei(r[1].toString()))
   } catch (e) {
-    console.log("SpotPrice", e)
+    console.log("getReserve", e.toString())
   }
 }
 
@@ -95,6 +95,16 @@ async function getInputTwap(amm, dir, qAmount, web3) {
   } catch (e) {
     console.log("getInputTwap", e)
   }
+}
+
+
+async function isInFusing(amm) {
+  try {
+    const fusing = await amm.isInFusing();
+    console.log("isInFusing:" + fusing)
+  } catch (e) {
+    console.log("isInFusing error", e)
+  }  
 }
 
 // 0: ADD_TO_AMM for short, 1: REMOVE_FROM_AMM for long
@@ -139,6 +149,7 @@ module.exports = {
   getSettlementPrice,
   getTwapPrice,
   getReserve,
+  isInFusing,
   getInputTwap,
   getOutputTwap,
   getLongShortSize,

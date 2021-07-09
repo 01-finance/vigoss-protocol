@@ -43,7 +43,7 @@ async function partialLiquidationRatio(house, web3) {
   }
 }
 
-async function addMargin(house, amm, addmargin, user) {
+async function addMargin(house, addmargin, user) {
   try {
     let tx = await house.addMargin(
       {d: addmargin},
