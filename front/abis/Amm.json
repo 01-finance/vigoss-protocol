@@ -302,21 +302,6 @@
     },
     {
       "inputs": [],
-      "name": "MAX_TWAP_SPREAD_RATIO",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0xec46f626"
-    },
-    {
-      "inputs": [],
       "name": "baseAsset",
       "outputs": [
         {
@@ -449,6 +434,21 @@
       "type": "function",
       "constant": true,
       "signature": "0x0244accf"
+    },
+    {
+      "inputs": [],
+      "name": "maxTwapSpreadRatio",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x042a6fa8"
     },
     {
       "inputs": [],
@@ -1080,6 +1080,20 @@
       "stateMutability": "nonpayable",
       "type": "function",
       "signature": "0x524f15a1"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_maxTwapSpreadRatio",
+          "type": "uint256"
+        }
+      ],
+      "name": "setMaxTwapSpreadRatio",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x4bb9a6c8"
     },
     {
       "inputs": [
