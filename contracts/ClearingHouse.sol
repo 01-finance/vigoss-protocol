@@ -171,9 +171,6 @@ contract ClearingHouse is
     // designed for arbitragers who can hold unlimited positions. will be removed after guarded period
     address internal whitelist;
 
-    // 
-    Decimal.decimal public partialLiquidationRatio;
-
     // FUNCTIONS
     constructor(
         IAmm _amm,
@@ -232,14 +229,6 @@ contract ClearingHouse is
         whitelist = _whitelist;
     }
 
-    /**
-     * @notice set the margin ratio after deleveraging
-     * @dev only owner can call
-     */
-    function setPartialLiquidationRatio(Decimal.decimal memory _ratio) external onlyOwner {
-        require(_ratio.cmp(Decimal.one()) <= 0, "invalid partial liquidation ratio");
-        partialLiquidationRatio = _ratio;
-    }
 
     /**
      * @notice add margin to increase margin ratio
@@ -474,33 +463,8 @@ contract ClearingHouse is
 
         PositionResp memory positionResp;
         {
-            Position memory position = getPosition(trader);
             // if it is long position, close a position means short it(which means base dir is ADD_TO_AMM) and vice versa
-            IAmm.Dir dirOfBase = position.size.toInt() > 0 ? IAmm.Dir.ADD_TO_AMM : IAmm.Dir.REMOVE_FROM_AMM;
-
-            // check if this position exceed fluctuation limit
-            // if over fluctuation limit, then close partial position. Otherwise close all.
-            // if partialLiquidationRatio is 1, then close whole position
-            if (
-                amm.isOverFluctuationLimit(dirOfBase, position.size.abs()) &&
-                partialLiquidationRatio.cmp(Decimal.one()) < 0
-            ) {
-              // 关闭部分
-                Decimal.decimal memory partiallyClosedPositionNotional =
-                    amm.getOutputPrice(dirOfBase, position.size.mulD(partialLiquidationRatio).abs());
-
-                positionResp = openReversePosition(
-                    position.size.toInt() > 0 ?IAmm.Side.SELL :IAmm.Side.BUY,
-                    trader,
-                    partiallyClosedPositionNotional,
-                    Decimal.one(),
-                    Decimal.zero(),
-                    true
-                );
-                setPosition(trader, positionResp.position);
-            } else {
-                positionResp = internalClosePosition(trader, _quoteAssetAmountLimit);
-            }
+            positionResp = internalClosePosition(trader, _quoteAssetAmountLimit);
 
             // add scope for stack too deep error
             // transfer the actual token from trader and vault
@@ -555,70 +519,35 @@ contract ClearingHouse is
         Decimal.decimal memory liquidationPenalty;
         {
             Decimal.decimal memory liquidationBadDebt;
-            Decimal.decimal memory feeToLiquidator;
             Decimal.decimal memory feeToInsuranceFund;
 
-            // 部分清算
-            if (
-                marginRatio.toInt() > int256(liquidationFeeRatio.toUint()) &&
-                partialLiquidationRatio.cmp(Decimal.one()) < 0 &&
-                partialLiquidationRatio.toUint() != 0
-            ) {
-                console.log("partialLiquidation");
-                Position memory position = getPosition(_trader);
-                Decimal.decimal memory partiallyLiquidatedPositionNotional =
-                    amm.getOutputPrice(
-                        position.size.toInt() > 0 ? IAmm.Dir.ADD_TO_AMM : IAmm.Dir.REMOVE_FROM_AMM,
-                        position.size.mulD(partialLiquidationRatio).abs()
-                    );
+            Position memory pos = getPosition(_trader);
+            liquidationPenalty = pos.margin;
+            positionResp = internalClosePosition(_trader, Decimal.zero());
+            Decimal.decimal memory remainMargin = positionResp.marginToVault.abs();
+            Decimal.decimal memory feeToLiquidator = positionResp.exchangedQuoteAssetAmount.mulD(liquidationFeeRatio).divScalar(2);
 
-                positionResp = openReversePosition(
-                    position.size.toInt() > 0 ?IAmm.Side.SELL :IAmm.Side.BUY,
-                    _trader,
-                    partiallyLiquidatedPositionNotional,
-                    Decimal.one(),
-                    Decimal.zero(),
-                    true
-                );
-
-                // half of the liquidationFee goes to liquidator & another half goes to insurance fund
-                liquidationPenalty = positionResp.exchangedQuoteAssetAmount.mulD(liquidationFeeRatio);
-                feeToLiquidator = liquidationPenalty.divScalar(2);
-                feeToInsuranceFund = liquidationPenalty.subD(feeToLiquidator);
-
-                positionResp.position.margin = positionResp.position.margin.subD(liquidationPenalty);
-                setPosition(_trader, positionResp.position);
+            // if the remainMargin is not enough for liquidationFee, count it as bad debt
+            // else, then the rest will be transferred to insuranceFund
+            Decimal.decimal memory totalBadDebt = positionResp.badDebt;
+            if (feeToLiquidator.toUint() > remainMargin.toUint()) {
+                liquidationBadDebt = feeToLiquidator.subD(remainMargin);
+                totalBadDebt = totalBadDebt.addD(liquidationBadDebt);
             } else {
-                console.log("total Liquidation");
+                remainMargin = remainMargin.subD(feeToLiquidator);
+            }
 
-                Position memory pos = getPosition(_trader);
-                liquidationPenalty = pos.margin;
-                positionResp = internalClosePosition(_trader, Decimal.zero());
-                Decimal.decimal memory remainMargin = positionResp.marginToVault.abs();
-                feeToLiquidator = positionResp.exchangedQuoteAssetAmount.mulD(liquidationFeeRatio).divScalar(2);
-
-                // if the remainMargin is not enough for liquidationFee, count it as bad debt
-                // else, then the rest will be transferred to insuranceFund
-                Decimal.decimal memory totalBadDebt = positionResp.badDebt;
-                if (feeToLiquidator.toUint() > remainMargin.toUint()) {
-                    liquidationBadDebt = feeToLiquidator.subD(remainMargin);
-                    totalBadDebt = totalBadDebt.addD(liquidationBadDebt);
-                } else {
-                    remainMargin = remainMargin.subD(feeToLiquidator);
+            // transfer the actual token between trader and vault
+            if (totalBadDebt.toUint() > 0) {
+                Decimal.decimal memory apportion = realizeBadDebt(totalBadDebt);
+                //Apportion Debt on SELL if liq long.  vice versa
+                if (apportion.toUint() > 0) {
+                  amm.settleApportion(apportion, (pos.size.toInt() > 0 ?IAmm.Side.SELL : IAmm.Side.BUY));
                 }
-
-                // transfer the actual token between trader and vault
-                if (totalBadDebt.toUint() > 0) {
-                    Decimal.decimal memory apportion = realizeBadDebt(totalBadDebt);
-                    //Apportion Debt on SELL if liq long.  vice versa
-                    if (apportion.toUint() > 0) {
-                      amm.settleApportion(apportion, (pos.size.toInt() > 0 ?IAmm.Side.SELL : IAmm.Side.BUY));
-                    }
-                    
-                }
-                if (remainMargin.toUint() > 0) {
-                    feeToInsuranceFund = remainMargin;
-                }
+                
+            }
+            if (remainMargin.toUint() > 0) {
+                feeToInsuranceFund = remainMargin;
             }
 
             if (feeToInsuranceFund.toUint() > 0) {
