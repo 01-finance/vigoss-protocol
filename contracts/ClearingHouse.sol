@@ -54,6 +54,7 @@ contract ClearingHouse is
     /// @param positionSizeAfter position size after this transaction, might be increased or decreased
     /// @param realizedPnl realized pnl after this position changed
     /// @param unrealizedPnlAfter unrealized pnl after this position changed
+    /// @param badDebt position change amount cleared by insurance funds
     /// @param liquidationPenalty amount of remaining margin lost due to liquidation
     /// @param fundingPayment funding payment (+: trader paid, -: trader received)
     event PositionChanged(
@@ -65,6 +66,7 @@ contract ClearingHouse is
         int256 positionSizeAfter,
         int256 realizedPnl,
         int256 unrealizedPnlAfter,
+        uint badDebt,
         uint256 liquidationPenalty,
         int256 fundingPayment,
         uint apportionPayment
@@ -438,6 +440,7 @@ contract ClearingHouse is
             positionResp.position.size.toInt(),
             positionResp.realizedPnl.toInt(),
             positionResp.unrealizedPnlAfter.toInt(),
+            positionResp.badDebt.toUint(),
             0,
             fundingPayment,
             positionResp.apportionPayment.toUint()
@@ -489,6 +492,7 @@ contract ClearingHouse is
             positionResp.position.size.toInt(),
             positionResp.realizedPnl.toInt(),
             positionResp.unrealizedPnlAfter.toInt(),
+            positionResp.badDebt.toUint(),
             0,
             fundingPayment,
             positionResp.apportionPayment.toUint()
@@ -577,6 +581,7 @@ contract ClearingHouse is
             positionResp.position.size.toInt(),
             positionResp.realizedPnl.toInt(),
             positionResp.unrealizedPnlAfter.toInt(),
+            positionResp.badDebt.toUint(),
             liquidationPenalty.toUint(),
             fundingPayment,
             positionResp.apportionPayment.toUint()
