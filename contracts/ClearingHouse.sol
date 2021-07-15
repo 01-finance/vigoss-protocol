@@ -588,6 +588,7 @@ contract ClearingHouse is
      */
     function payFunding() external {
         requireAmm(true);
+        requireAmmNoInFusing();
 
         SignedDecimal.signedDecimal memory premiumFraction = amm.settleFunding();
         ammMap.cumulativePremiumFractions.push(
