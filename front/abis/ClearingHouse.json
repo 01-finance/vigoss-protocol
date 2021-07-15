@@ -213,6 +213,12 @@
         {
           "indexed": false,
           "internalType": "uint256",
+          "name": "badDebt",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
           "name": "liquidationPenalty",
           "type": "uint256"
         },
@@ -231,7 +237,7 @@
       ],
       "name": "PositionChanged",
       "type": "event",
-      "signature": "0xed742957ff62299db707aa6d06bd6439db6fa3fa07f8ae5f1c7b9cb0e0bd8828"
+      "signature": "0xd61156240c1ca3932dc0f34a8c21a0ae0161c6d93a98236b54d84baab073468b"
     },
     {
       "anonymous": false,
@@ -447,21 +453,6 @@
     },
     {
       "inputs": [],
-      "name": "partialLiquidationRatio",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "d",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x090f05c2"
-    },
-    {
-      "inputs": [],
       "name": "pause",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -582,27 +573,6 @@
       "stateMutability": "nonpayable",
       "type": "function",
       "signature": "0x854cff2f"
-    },
-    {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "d",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct Decimal.decimal",
-          "name": "_ratio",
-          "type": "tuple"
-        }
-      ],
-      "name": "setPartialLiquidationRatio",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x862c04e3"
     },
     {
       "inputs": [
