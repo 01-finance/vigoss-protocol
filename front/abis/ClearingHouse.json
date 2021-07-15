@@ -30,8 +30,7 @@
         }
       ],
       "stateMutability": "nonpayable",
-      "type": "constructor",
-      "signature": "constructor"
+      "type": "constructor"
     },
     {
       "anonymous": false,
@@ -44,8 +43,7 @@
         }
       ],
       "name": "LiquidationFeeRatioChanged",
-      "type": "event",
-      "signature": "0x6f825f18b787836f7cf974799b160538ab237aa0d14af3611fa69683a40c6d22"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -76,8 +74,7 @@
         }
       ],
       "name": "MarginChanged",
-      "type": "event",
-      "signature": "0x73c79649b0bee64107cd0bbfb48ee481f1b6c3af5c218a7621ef7117a9610136"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -90,8 +87,7 @@
         }
       ],
       "name": "MarginRatioChanged",
-      "type": "event",
-      "signature": "0xce738a6382894b012492e42016c4321ac69da80c4827f80a2e0907585818ac31"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -110,8 +106,7 @@
         }
       ],
       "name": "OwnershipTransferred",
-      "type": "event",
-      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -124,8 +119,7 @@
         }
       ],
       "name": "Paused",
-      "type": "event",
-      "signature": "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -156,8 +150,7 @@
         }
       ],
       "name": "PositionAdjusted",
-      "type": "event",
-      "signature": "0x1466c1471a7cee02d59a15fdf246ec1aee2a524daa92c7b47c24ad33ed1b0dd0"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -236,8 +229,7 @@
         }
       ],
       "name": "PositionChanged",
-      "type": "event",
-      "signature": "0xd61156240c1ca3932dc0f34a8c21a0ae0161c6d93a98236b54d84baab073468b"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -280,8 +272,7 @@
         }
       ],
       "name": "PositionLiquidated",
-      "type": "event",
-      "signature": "0xe036b6006bcfcd01dcaddf90ab542c1359d4c1a28f21238e89773b40b5aa9f0d"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -300,8 +291,7 @@
         }
       ],
       "name": "PositionSettled",
-      "type": "event",
-      "signature": "0x17807379ba663ac6d72cbec7d33ed88347cbee7fff18c4693987cc766b8b7f18"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -314,8 +304,7 @@
         }
       ],
       "name": "RestrictionModeEntered",
-      "type": "event",
-      "signature": "0x41c9206d0ddffee4c6a337dc2dd2ec255ff5a9bad238707c8d6a5be8f543ee54"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -328,251 +317,7 @@
         }
       ],
       "name": "Unpaused",
-      "type": "event",
-      "signature": "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa"
-    },
-    {
-      "inputs": [],
-      "name": "amm",
-      "outputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x2a943945"
-    },
-    {
-      "inputs": [],
-      "name": "aopenInterestNotional",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "d",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x72a9e325"
-    },
-    {
-      "inputs": [],
-      "name": "feePool",
-      "outputs": [
-        {
-          "internalType": "contract IMultiTokenRewardRecipient",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0xae2e933b"
-    },
-    {
-      "inputs": [],
-      "name": "initMarginRatio",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "d",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0xe57d5636"
-    },
-    {
-      "inputs": [],
-      "name": "insuranceFund",
-      "outputs": [
-        {
-          "internalType": "contract IInsuranceFund",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0xb7902303"
-    },
-    {
-      "inputs": [],
-      "name": "liquidationFeeRatio",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "d",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0xcfe71103"
-    },
-    {
-      "inputs": [],
-      "name": "maintenanceMarginRatio",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "d",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x83acb48a"
-    },
-    {
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x8da5cb5b"
-    },
-    {
-      "inputs": [],
-      "name": "pause",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x8456cb59"
-    },
-    {
-      "inputs": [],
-      "name": "paused",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x5c975abb"
-    },
-    {
-      "inputs": [],
-      "name": "renounceOwnership",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x715018a6"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "transferOwnership",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xf2fde38b"
-    },
-    {
-      "inputs": [],
-      "name": "unpause",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x3f4ba83a"
-    },
-    {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "d",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct Decimal.decimal",
-          "name": "_liquidationFeeRatio",
-          "type": "tuple"
-        }
-      ],
-      "name": "setLiquidationFeeRatio",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x203b3788"
-    },
-    {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "d",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct Decimal.decimal",
-          "name": "_maintenanceMarginRatio",
-          "type": "tuple"
-        }
-      ],
-      "name": "setMaintenanceMarginRatio",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x6c127446"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_feePool",
-          "type": "address"
-        }
-      ],
-      "name": "setTollPool",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x7b25e922"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_whitelist",
-          "type": "address"
-        }
-      ],
-      "name": "setWhitelist",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x854cff2f"
+      "type": "event"
     },
     {
       "inputs": [
@@ -592,87 +337,33 @@
       "name": "addMargin",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xe2235499"
-    },
-    {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "d",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct Decimal.decimal",
-          "name": "_removedMargin",
-          "type": "tuple"
-        }
-      ],
-      "name": "removeMargin",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x3e99053c"
+      "type": "function"
     },
     {
       "inputs": [],
-      "name": "settlePosition",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x04a2e830"
-    },
-    {
-      "inputs": [
+      "name": "amm",
+      "outputs": [
         {
-          "internalType": "enum IAmm.Side",
-          "name": "_side",
-          "type": "uint8"
-        },
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "d",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct Decimal.decimal",
-          "name": "_quoteAssetAmount",
-          "type": "tuple"
-        },
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "d",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct Decimal.decimal",
-          "name": "_leverage",
-          "type": "tuple"
-        },
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "d",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct Decimal.decimal",
-          "name": "_baseAssetAmountLimit",
-          "type": "tuple"
+          "internalType": "contract IAmm",
+          "name": "",
+          "type": "address"
         }
       ],
-      "name": "openPosition",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x16f80e23"
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "aopenInterestNotional",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "d",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
       "inputs": [
@@ -692,30 +383,40 @@
       "name": "closePosition",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xc7e7d104"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_trader",
-          "type": "address"
-        }
-      ],
-      "name": "liquidate",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x2f865568"
+      "type": "function"
     },
     {
       "inputs": [],
-      "name": "payFunding",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xaaa5a2ad"
+      "name": "feePool",
+      "outputs": [
+        {
+          "internalType": "contract IMultiTokenRewardRecipient",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getLatestCumulativePremiumFraction",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "int256",
+              "name": "d",
+              "type": "int256"
+            }
+          ],
+          "internalType": "struct SignedDecimal.signedDecimal",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
       "inputs": [
@@ -741,9 +442,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x54f4ac87"
+      "type": "function"
     },
     {
       "inputs": [
@@ -829,9 +528,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x16c19739"
+      "type": "function"
     },
     {
       "inputs": [
@@ -874,31 +571,281 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x3431c56b"
+      "type": "function"
     },
     {
       "inputs": [],
-      "name": "getLatestCumulativePremiumFraction",
+      "name": "initMarginRatio",
       "outputs": [
         {
-          "components": [
-            {
-              "internalType": "int256",
-              "name": "d",
-              "type": "int256"
-            }
-          ],
-          "internalType": "struct SignedDecimal.signedDecimal",
-          "name": "",
-          "type": "tuple"
+          "internalType": "uint256",
+          "name": "d",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x42ff51cb"
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "insuranceFund",
+      "outputs": [
+        {
+          "internalType": "contract IInsuranceFund",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_trader",
+          "type": "address"
+        }
+      ],
+      "name": "liquidate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "liquidationFeeRatio",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "d",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "maintenanceMarginRatio",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "d",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "enum IAmm.Side",
+          "name": "_side",
+          "type": "uint8"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "d",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Decimal.decimal",
+          "name": "_quoteAssetAmount",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "d",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Decimal.decimal",
+          "name": "_leverage",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "d",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Decimal.decimal",
+          "name": "_baseAssetAmountLimit",
+          "type": "tuple"
+        }
+      ],
+      "name": "openPosition",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pause",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "paused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "payFunding",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "d",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Decimal.decimal",
+          "name": "_removedMargin",
+          "type": "tuple"
+        }
+      ],
+      "name": "removeMargin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "d",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Decimal.decimal",
+          "name": "_liquidationFeeRatio",
+          "type": "tuple"
+        }
+      ],
+      "name": "setLiquidationFeeRatio",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "d",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Decimal.decimal",
+          "name": "_maintenanceMarginRatio",
+          "type": "tuple"
+        }
+      ],
+      "name": "setMaintenanceMarginRatio",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_feePool",
+          "type": "address"
+        }
+      ],
+      "name": "setTollPool",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_whitelist",
+          "type": "address"
+        }
+      ],
+      "name": "setWhitelist",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "settlePosition",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "unpause",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
   ]
 }

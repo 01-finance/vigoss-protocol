@@ -99,6 +99,9 @@ Deploy the contracts to a specific network, such as the Ropsten testnet:
 
 ```sh
 $ yarn deploy:network ropsten
+$ yarn hardhat --network hardhat deploy
+$ yarn hardhat --network hardhat deploy --tags InsuranceFund
+
 ```
 
 ## Syntax Highlighting

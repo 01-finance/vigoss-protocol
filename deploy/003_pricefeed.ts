@@ -1,5 +1,8 @@
+import { artifacts, ethers} from "hardhat"
+
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
+const { writeAbiAddr } = require('../migrations/log');
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts, network } = hre;
@@ -12,7 +15,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const { deployer } = await getNamedAccounts();
 
-  await deploy('SimpleUSDPriceFeed', {
+  let feed = await deploy('SimpleUSDPriceFeed', {
     from: deployer,
     args: [
       deployer,
@@ -21,6 +24,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     deterministicDeployment: false,
   });
 
+  let artifact = await artifacts.readArtifact("SimpleUSDPriceFeed")
+  await writeAbiAddr(artifact, feed.address, "SimpleUSDPriceFeed", network.name);
 };
 
 export default func;

@@ -20,8 +20,7 @@
         }
       ],
       "stateMutability": "nonpayable",
-      "type": "constructor",
-      "signature": "constructor"
+      "type": "constructor"
     },
     {
       "anonymous": false,
@@ -46,8 +45,7 @@
         }
       ],
       "name": "Approval",
-      "type": "event",
-      "signature": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -66,8 +64,7 @@
         }
       ],
       "name": "OwnershipTransferred",
-      "type": "event",
-      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -92,8 +89,7 @@
         }
       ],
       "name": "Transfer",
-      "type": "event",
-      "signature": "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+      "type": "event"
     },
     {
       "inputs": [
@@ -117,9 +113,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0xdd62ed3e"
+      "type": "function"
     },
     {
       "inputs": [
@@ -143,8 +137,7 @@
         }
       ],
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x095ea7b3"
+      "type": "function"
     },
     {
       "inputs": [
@@ -163,9 +156,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x70a08231"
+      "type": "function"
     },
     {
       "inputs": [],
@@ -178,9 +169,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x313ce567"
+      "type": "function"
     },
     {
       "inputs": [
@@ -204,8 +193,7 @@
         }
       ],
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xa457c2d7"
+      "type": "function"
     },
     {
       "inputs": [
@@ -229,8 +217,31 @@
         }
       ],
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x39509351"
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "mint",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
       "inputs": [],
@@ -243,9 +254,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x06fdde03"
+      "type": "function"
     },
     {
       "inputs": [],
@@ -258,17 +267,14 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x8da5cb5b"
+      "type": "function"
     },
     {
       "inputs": [],
       "name": "renounceOwnership",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x715018a6"
+      "type": "function"
     },
     {
       "inputs": [],
@@ -281,9 +287,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x95d89b41"
+      "type": "function"
     },
     {
       "inputs": [],
@@ -296,9 +300,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x18160ddd"
+      "type": "function"
     },
     {
       "inputs": [
@@ -322,8 +324,7 @@
         }
       ],
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xa9059cbb"
+      "type": "function"
     },
     {
       "inputs": [
@@ -352,8 +353,7 @@
         }
       ],
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x23b872dd"
+      "type": "function"
     },
     {
       "inputs": [
@@ -366,33 +366,7 @@
       "name": "transferOwnership",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xf2fde38b"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_to",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "mint",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x40c10f19"
+      "type": "function"
     }
   ]
 }
