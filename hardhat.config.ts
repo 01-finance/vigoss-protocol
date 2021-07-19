@@ -25,6 +25,8 @@ const chainIds = {
   arbitrum: 421611,
   testbsc: 97,
   bsc: 56,
+  testheco: 256,
+
 };
 
 // Ensure that we have all the environment variables we need.
@@ -45,7 +47,10 @@ if (!process.env.INFURA_API_KEY) {
 function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig {
   let url: string;
   if (network == 'testbsc') {
-    url = "https://data-seed-prebsc-1-s1.binance.org:8545/"
+    // url = "https://data-seed-prebsc-1-s1.binance.org:8545/"
+    url = "https://data-seed-prebsc-2-s1.binance.org:8545/"
+  } else if(network == 'testheco') {
+    url = "https://http-testnet.hecochain.com"
   } else {
     url = "https://" + network + ".infura.io/v3/" + infuraApiKey;
   }
@@ -82,7 +87,7 @@ const config: HardhatUserConfig = {
     rinkeby: createTestnetConfig("rinkeby"),
     ropsten: createTestnetConfig("ropsten"),
     testbsc: createTestnetConfig("testbsc"),
-
+    testheco: createTestnetConfig("testheco"),
   },
   paths: {
     artifacts: "./artifacts",
