@@ -16,26 +16,29 @@ contract VGSDistributer is Ownable {
     using SafeERC20 for IERC20;
     // Info of each user.
     struct UserInfo {
-        uint256 amount; // How many LP tokens the user has provided.
+        uint256 amount; // How many Stable tokens the user has provided.
         uint256 rewardDebt; // Reward debt. See explanation below.
     }
 
     uint256 public lastRewardSecond; // Last block number that VGSs distribution occurs.
     uint256 public accVgsPerShare; // Accumulated VGSs per share, times 1e12. See below.
 
-    IERC20 public  vgs;
+    IERC20 public immutable vgs;
 
     // Vgs tokens created per block.
     uint256 public vgsPerSecond;
     uint256 public startTimeStamp;
 
-    uint256 public lpSupply;
+    uint256 public marginSupply;
 
     // Info of each user that stakes LP tokens.
     mapping(address => UserInfo) public userInfo;
 
-    event Deposit(address indexed user, address token, uint256 amount);
-    event Withdraw(address indexed user, address token, uint256 amount);
+    mapping (address => bool) public approvedCh;
+
+    event AddMargin(address indexed user, address token, uint256 amount);
+    event RemoveMargin(address indexed user, address token, uint256 amount);
+    event SetClearingHouse(address indexed ch, bool enabled);
 
     constructor(
         IERC20 _vgs,
@@ -47,27 +50,36 @@ contract VGSDistributer is Ownable {
         startTimeStamp = _startTimeStamp;
     }
 
+    function setClearingHouse(address _ch, bool enabled) public onlyOwner {
+      approvedCh[_ch] = enabled;
+      emit SetClearingHouse(_ch, enabled);
+    }
+
+    // be careful. nedd div times.
     function setVgsPerSecond(uint256 _vgsPerSecond) public onlyOwner {
         updatePool();
         vgsPerSecond = _vgsPerSecond;
     }
 
     // View function to see pending PFis on frontend.
-    // TODO: lpSupply neet save.
     function pendingVgs(address _user)
         public
         view
         returns (uint256) {
 
+        uint256 accPerShare = accVgsPerShare; 
+
         UserInfo storage user = userInfo[_user];
-        if (block.timestamp > lastRewardSecond && lpSupply != 0) {
-            uint256 multiplier = block.timestamp.sub(lastRewardSecond);
+        if (block.timestamp > lastRewardSecond && marginSupply != 0) {
+            uint256 multiplier = getMultiplier(lastRewardSecond, block.timestamp);
             uint256 vgsReward =  multiplier.mul(vgsPerSecond);
-            accVgsPerShare = accVgsPerShare.add(
-                vgsReward.mul(SCALE).div(lpSupply)
+
+            accPerShare = accVgsPerShare.add(
+                vgsReward.mul(SCALE).div(marginSupply)
             );
+
         }
-        return user.amount.mul(accVgsPerShare).div(SCALE).sub(user.rewardDebt);
+        return user.amount.mul(accPerShare).div(SCALE).sub(user.rewardDebt);
     }
 
     // Update reward variables of the given pool to be up-to-date.
@@ -75,18 +87,15 @@ contract VGSDistributer is Ownable {
         if (block.timestamp <= lastRewardSecond) {
             return;
         }
-        if (lpSupply == 0) {
+        if (marginSupply == 0) {
             lastRewardSecond = block.timestamp;
             return;
         }
         uint256 multiplier = getMultiplier(lastRewardSecond, block.timestamp);
         uint256 vgsReward = multiplier.mul(vgsPerSecond);
 
-        //TODO:
-        // vgs.mint(address(this), vgsReward);
-
         accVgsPerShare = accVgsPerShare.add(
-            vgsReward.mul(SCALE).div(lpSupply)
+            vgsReward.mul(SCALE).div(marginSupply)
         );
         lastRewardSecond = block.timestamp;
     }
@@ -117,7 +126,8 @@ contract VGSDistributer is Ownable {
 
 
     // Deposit LP tokens to MasterChef for Vgs allocation.
-    function deposit(address token, uint256 _amount, address _user) public {
+    function addMargin(address token, uint256 _amount, address _user) public {
+        require(approvedCh[msg.sender], "must call from approved CH");
         UserInfo storage user = userInfo[_user];
         updatePool();
 
@@ -130,40 +140,44 @@ contract VGSDistributer is Ownable {
         }
 
         if (_amount > 0) {
-
-          // token.safeTransferFrom(
-          //     address(msg.sender),
-          //     address(this),
-          //     _amount
-          // );
-
-          user.amount = user.amount.add(_amount);
+          uint amount = convertAmount(token, _amount);
+          marginSupply = marginSupply.add(amount);
+          user.amount = user.amount.add(amount);
         }
 
         user.rewardDebt = user.amount.mul(accVgsPerShare).div(SCALE);
-        emit Deposit(_user, token, _amount);
+        emit AddMargin(_user, token, _amount);
     }
 
     function convertAmount(address token, uint amount) internal view returns (uint) {
+      uint8 d = IERC20(token).decimals();
+      require(d <= 18, "invalid decimal");
 
+      if (d == 18) {
+        return amount;
+      } else {
+        return amount.mul(10** (uint(18) - d));
+      }
     }
 
-    // Withdraw LP tokens from VGSPool.
-    function withdraw(address token, uint256 _amount) public {
-        UserInfo storage user = userInfo[msg.sender];
-        require(user.amount >= _amount, "withdraw: not good");
+    function removeMargin(address token, uint256 _amount, address _user) public {
+        require(approvedCh[msg.sender], "must call from approved CH");
+        uint amount = convertAmount(token, _amount);
+        UserInfo storage user = userInfo[_user];
+        require(user.amount >= amount, "removeMargin: not good");
+
         updatePool();
         uint256 pending =
             user.amount.mul(accVgsPerShare).div(SCALE).sub(
                 user.rewardDebt
             );
-        safeVgsTransfer(msg.sender, pending);
-        user.amount = user.amount.sub(_amount);
-        user.rewardDebt = user.amount.mul(accVgsPerShare).div(SCALE);
-        
-        // lpToken.safeTransfer(address(msg.sender), _amount);
+        safeVgsTransfer(_user, pending);
+        user.amount = user.amount.sub(amount);
+        marginSupply = marginSupply.sub(amount);
 
-        emit Withdraw(msg.sender, token, _amount);
+        user.rewardDebt = user.amount.mul(accVgsPerShare).div(SCALE);
+
+        emit RemoveMargin(_user, token, _amount);
     }
 
 
