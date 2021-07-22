@@ -9,6 +9,9 @@ module.exports = async function (deployer, network, accounts) {
   await deployer.deploy(MockToken, "WETH", 18, web3.utils.toWei("1000000"));
   await writeAbis(MockToken, 'WETH', network);
 
+  await deployer.deploy(MockToken, "USDT", 8, web3.utils.toWei("100"));
+  await writeAbis(MockToken, "USDT", network);
+
 
   
 

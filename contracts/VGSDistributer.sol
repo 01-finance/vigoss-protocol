@@ -30,7 +30,7 @@ contract VGSDistributer is Ownable {
     // Vgs tokens created per block.
     uint256 public vgsPerSecond;
     uint256 public startTimeStamp;
-
+    
     uint256 public marginSupply;
 
     // Info of each user that stakes LP tokens.
@@ -41,6 +41,7 @@ contract VGSDistributer is Ownable {
     event AddMargin(address indexed user, address token, uint256 amount);
     event RemoveMargin(address indexed user, address token, uint256 amount);
     event SetClearingHouse(address indexed ch, bool enabled);
+    event Settlement(address indexed user, uint amount);
 
     constructor(
         IERC20 _vgs,
@@ -108,14 +109,10 @@ contract VGSDistributer is Ownable {
         view
         returns (uint256)
     {
-      console.log("_from:" , _from);
-      console.log("_to:" , _to);
       uint quarter = 90 days;
       for (uint256 i = 0; i < 16; i++) {  
         uint startTs = startTimeStamp.add(quarter * i);
         uint endTs = startTimeStamp.add(quarter * (i+1));
-        console.log("startTs:" , startTs);
-        console.log("endTs:" , endTs);
 
         if (_from >= startTs && _to < endTs) {
           return _to.sub(_from).mul(20 - i);  //  in season
@@ -161,6 +158,19 @@ contract VGSDistributer is Ownable {
       } else {
         return amount.mul(10** (uint(18) - d));
       }
+    }
+
+    function settlement() external returns (uint) {
+      updatePool();
+      address userAddr = msg.sender;
+      UserInfo storage user = userInfo[userAddr];
+      uint currEarn = user.amount.mul(accVgsPerShare).div(SCALE);
+      uint pending = currEarn.sub(user.rewardDebt);
+      safeVgsTransfer(userAddr, pending);
+      user.rewardDebt = currEarn;
+
+      emit Settlement(userAddr, pending);
+      return pending;
     }
 
     function removeMargin(address token, uint256 _amount, address _user) public {
