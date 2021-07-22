@@ -9,6 +9,8 @@ import "./openzeppelin/utils/EnumerableSet.sol";
 import "./openzeppelin/math/SafeMath.sol";
 import "./openzeppelin/access/Ownable.sol";
 
+import "hardhat/console.sol";
+
 contract VGSDistributer is Ownable {
     uint constant SCALE = 1e12;
 
@@ -100,25 +102,26 @@ contract VGSDistributer is Ownable {
         lastRewardSecond = block.timestamp;
     }
 
-    // TODO: TEST
+    // TEST OK, make sure at least 1 transaction in 90 days 
     function getMultiplier(uint256 _from, uint256 _to)
-        public
+        internal
         view
         returns (uint256)
     {
-
+      console.log("_from:" , _from);
+      console.log("_to:" , _to);
       uint quarter = 90 days;
       for (uint256 i = 0; i < 16; i++) {  
         uint startTs = startTimeStamp.add(quarter * i);
         uint endTs = startTimeStamp.add(quarter * (i+1));
-  
-        if (_from >= startTs && _to < endTs) {
-          return _to.sub(_from).mul(20 - i);  //  整段
-        } else if(_from < startTs && _to < endTs) {  //  跨段
-          uint mid = startTimeStamp.add(quarter * i);
-          uint half1 = _to.sub(startTs).mul(20 - i - 1);
-          uint half2 = mid.sub(startTs).mul(20 - i);
+        console.log("startTs:" , startTs);
+        console.log("endTs:" , endTs);
 
+        if (_from >= startTs && _to < endTs) {
+          return _to.sub(_from).mul(20 - i);  //  in season
+        } else if(_from < startTs && _to < endTs) {  //  cross season
+          uint half1 = _to.sub(startTs).mul(20 - i);
+          uint half2 = startTs.sub(_from).mul(20 - i + 1);
           return half1.add(half2);
         }
       }
