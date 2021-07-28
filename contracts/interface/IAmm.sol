@@ -103,7 +103,6 @@ interface IAmm {
 
     function getSpotPrice() external view returns (Decimal.decimal memory);
 
-    function getLiquidityHistoryLength() external view returns (uint256);
 
     // overridden by state variable
     function counterParty() external view returns (address);
@@ -122,7 +121,6 @@ interface IAmm {
 
     function getOpenInterestNotionalCap() external view returns (Decimal.decimal memory);
     function getLongShortSize() external view returns (SignedDecimal.signedDecimal memory, SignedDecimal.signedDecimal memory);
-    function getLiquidityChangedSnapshots(uint256 i) external view returns (LiquidityChangedSnapshot memory);
 
     function getBaseAssetDelta() external view returns (SignedDecimal.signedDecimal memory);
 

@@ -2,10 +2,13 @@
 pragma solidity 0.6.9;
 pragma experimental ABIEncoderV2;
 
+import { Math } from './utils/Math.sol';
 import { BlockContext } from "./utils/BlockContext.sol";
 import { IPriceFeed } from "./interface/IPriceFeed.sol";
 import { SafeMath } from "./openzeppelin/math/SafeMath.sol";
+
 import { IERC20 } from "./openzeppelin/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "./openzeppelin/token/ERC20/SafeERC20.sol";
 import { Ownable } from "./openzeppelin/access/Ownable.sol";
 import { Decimal } from "./utils/Decimal.sol";
 import { SignedDecimal } from "./utils/SignedDecimal.sol";
@@ -13,6 +16,7 @@ import { MixedDecimal } from "./utils/MixedDecimal.sol";
 import { IAmm } from "./interface/IAmm.sol";
 
 contract Amm is IAmm, Ownable, BlockContext {
+    using SafeERC20 for IERC20;
     using SafeMath for uint256;
     using Decimal for Decimal.decimal;
     using SignedDecimal for SignedDecimal.signedDecimal;
@@ -35,7 +39,7 @@ contract Amm is IAmm, Ownable, BlockContext {
     event SwapOutput(Dir dir, uint256 quoteAssetAmount, uint256 baseAssetAmount);
     event FundingRateUpdated(int256 rate, uint256 underlyingPrice);
     event ReserveSnapshotted(uint256 quoteAssetReserve, uint256 baseAssetReserve, uint256 timestamp);
-    event LiquidityChanged(uint256 quoteReserve, uint256 baseReserve, int256 cumulativeNotional);
+    event LiquidityAdded(uint256 quoteReserve, uint256 baseReserve);
     event CapChanged(uint256 maxHoldingBaseAsset, uint256 openInterestNotionalCap);
     event Shutdown(uint256 settlementPrice);
     event LongApportionFractionChanged(uint256 delta);
@@ -56,6 +60,11 @@ contract Amm is IAmm, Ownable, BlockContext {
         _;
     }
 
+    struct LiquidityCost {
+        uint256 quoteAsset;
+        uint256 baseAsset;
+    }
+
     //
     // enum and struct
     //
@@ -65,8 +74,6 @@ contract Amm is IAmm, Ownable, BlockContext {
         uint256 timestamp;
         uint256 blockNumber;
     }
-
-
 
     // internal usage
     enum QuoteAssetDir { QUOTE_IN, QUOTE_OUT }
@@ -125,15 +132,11 @@ contract Amm is IAmm, Ownable, BlockContext {
     Decimal.decimal private maxHoldingBaseAsset;
     Decimal.decimal private openInterestNotionalCap;
 
-    // init cumulativePositionMultiplier is 1, will be updated every time when amm reserve increase/decrease
-    Decimal.decimal private cumulativePositionMultiplier;
 
     // 
     Decimal.decimal private longApportionFraction;
     Decimal.decimal private shortApportionFraction;
 
-    // snapshot of amm reserve when change liquidity's invariant
-    LiquidityChangedSnapshot[] private liquidityChangedSnapshots;
 
     uint256 public spotPriceTwapInterval;
     uint256 public fundingPeriod;
@@ -153,10 +156,10 @@ contract Amm is IAmm, Ownable, BlockContext {
     uint private fusingEndTime;
     uint256 public fusingPeriod = 2 * 60;
 
+    mapping(address => uint) public shares;
+    mapping(address => LiquidityCost) public liquidityCosts;
 
     constructor (
-        uint256 _quoteAssetReserve,
-        uint256 _baseAssetReserve,
         uint256 _tradeLimitRatio,
         uint256 _fundingPeriod,
         IPriceFeed _priceFeed,
@@ -167,17 +170,14 @@ contract Amm is IAmm, Ownable, BlockContext {
         uint256 _spreadRatio
     ) public {
         require(
-            _quoteAssetReserve != 0 &&
                 _tradeLimitRatio != 0 &&
-                _baseAssetReserve != 0 &&
                 _fundingPeriod != 0 &&
                 address(_priceFeed) != address(0) &&
                 _quoteAsset != address(0) &&
                 _baseAsset != address(0),
             "invalid input"
         );
-        quoteAssetReserve = Decimal.decimal(_quoteAssetReserve);
-        baseAssetReserve = Decimal.decimal(_baseAssetReserve);
+
         tradeLimitRatio = Decimal.decimal(_tradeLimitRatio);
         tollRatio = Decimal.decimal(_tollRatio);
         spreadRatio = Decimal.decimal(_spreadRatio);
@@ -188,27 +188,52 @@ contract Amm is IAmm, Ownable, BlockContext {
         baseAsset = IERC20(_baseAsset);
         quoteAsset =IERC20(_quoteAsset);
         priceFeed = _priceFeed;
-        cumulativePositionMultiplier = Decimal.one();
-        liquidityChangedSnapshots.push(
-            LiquidityChangedSnapshot({
-                cumulativeNotional: SignedDecimal.zero(),
-                baseAssetReserve: baseAssetReserve,
-                quoteAssetReserve: quoteAssetReserve,
-                totalPositionSize: SignedDecimal.zero()
-            })
-        );
+
+    }
+
+    function initLiquidity(address to, uint256 _quoteAssetReserve, uint256 _baseAssetReserve) external returns (uint liquidity) {
+        require(quoteAssetReserve.toUint() == 0 && baseAssetReserve.toUint() == 0, "aleady inited");
+
+        liquidity = implAddLiquidity(to, _quoteAssetReserve, _baseAssetReserve);
+        quoteAsset.safeTransferFrom(msg.sender, address(this), _quoteAssetReserve * 2);
+    }
+
+    function addLiquidity(address to, uint256 quoteSupply)  external returns (uint liquidity) {
+        require(quoteAssetReserve.toUint() != 0 && baseAssetReserve.toUint() != 0, "please init liquidity");
+        
+        uint256 _quoteAssetReserve = quoteSupply / 2;
+        uint256 _baseAssetReserve = baseAssetReserve.toUint().mul(_quoteAssetReserve).div(quoteAssetReserve.toUint());
+
+        liquidity = implAddLiquidity(to, _quoteAssetReserve, _baseAssetReserve);
+        quoteAsset.safeTransferFrom(msg.sender, address(this), quoteSupply);
+    }
+
+    function implAddLiquidity(address to, uint256 _quoteAssetReserve, uint256 _baseAssetReserve) internal returns (uint liquidity) {
+        require(_quoteAssetReserve != 0 && _baseAssetReserve != 0, "invalid reserves");
+
+        quoteAssetReserve = quoteAssetReserve.addD(Decimal.decimal(_quoteAssetReserve));
+        baseAssetReserve = baseAssetReserve.addD(Decimal.decimal(_baseAssetReserve));
+
         reserveSnapshots.push(ReserveSnapshot(quoteAssetReserve, baseAssetReserve, _blockTimestamp(), _blockNumber()));
         emit ReserveSnapshotted(quoteAssetReserve.toUint(), baseAssetReserve.toUint(), _blockTimestamp());
+
+        liquidity = Math.sqrt(uint(_quoteAssetReserve).mul(_baseAssetReserve));
+        shares[to] = shares[to].add(liquidity);
+
+        LiquidityCost storage userCost = liquidityCosts[to];
+        userCost.quoteAsset = userCost.baseAsset.add(_quoteAssetReserve);
+        userCost.baseAsset = userCost.baseAsset.add(_baseAssetReserve);
+
+        emit LiquidityAdded(_quoteAssetReserve, _baseAssetReserve);
 
     }
 
     function updateLongSize(bool buy, SignedDecimal.signedDecimal memory newSize) external override onlyOpen onlyCounterParty {
-      if (buy) {
-        totalLongPositionSize = totalLongPositionSize.addD(newSize);
-      } else {  // remove
-        totalLongPositionSize = totalLongPositionSize.subD(newSize);
-      }
-      
+        if (buy) {
+            totalLongPositionSize = totalLongPositionSize.addD(newSize);
+        } else {  // remove
+            totalLongPositionSize = totalLongPositionSize.subD(newSize);
+        }
     }
 
     /**
@@ -458,10 +483,10 @@ contract Amm is IAmm, Ownable, BlockContext {
     }
 
     function isInFusing() external view override returns (bool) {
-      if (block.timestamp <= fusingEndTime) {
-        return true;
-      }
-      return false;
+        if (block.timestamp <= fusingEndTime) {
+            return true;
+        }
+        return false;
     } 
 
     //
@@ -587,8 +612,6 @@ contract Amm is IAmm, Ownable, BlockContext {
         return implGetReserveTwapPrice(_intervalInSeconds);
     }
 
-
-
     /**
      * @notice get current quote/base asset reserve.
      * @return (quote asset reserve, base asset reserve)
@@ -601,30 +624,16 @@ contract Amm is IAmm, Ownable, BlockContext {
         return reserveSnapshots.length;
     }
 
-    function getLiquidityHistoryLength() external view override returns (uint256) {
-        return liquidityChangedSnapshots.length;
-    }
-
-
     function getLongApportionFraction()  external view override returns  (Decimal.decimal memory) {
-      return longApportionFraction;
+        return longApportionFraction;
     }
     
     function getShortApportionFraction()  external view override returns  (Decimal.decimal memory) {
-      return shortApportionFraction;
+        return shortApportionFraction;
     }
 
     function getCumulativeNotional() external view override returns (SignedDecimal.signedDecimal memory) {
         return cumulativeNotional;
-    }
-
-    function getLatestLiquidityChangedSnapshots() public view returns (LiquidityChangedSnapshot memory) {
-        return liquidityChangedSnapshots[liquidityChangedSnapshots.length.sub(1)];
-    }
-
-    function getLiquidityChangedSnapshots(uint256 i) external view override returns (LiquidityChangedSnapshot memory) {
-        require(i < liquidityChangedSnapshots.length, "incorrect index");
-        return liquidityChangedSnapshots[i];
     }
 
     function getSettlementPrice() external view override returns (Decimal.decimal memory) {
@@ -1036,44 +1045,7 @@ contract Amm is IAmm, Ownable, BlockContext {
         }
     }
 
-    function checkLiquidityMultiplierLimit(
-        SignedDecimal.signedDecimal memory _positionSize,
-        Decimal.decimal memory _liquidityMultiplier
-    ) internal view {
-        // have lower bound when position size is long
-        if (_positionSize.toInt() > 0) {
-            Decimal.decimal memory liquidityMultiplierLowerBound =
-                _positionSize
-                    .addD(Decimal.decimal(MARGIN_FOR_LIQUIDITY_MIGRATION_ROUNDING))
-                    .divD(baseAssetReserve)
-                    .abs();
-            require(_liquidityMultiplier.cmp(liquidityMultiplierLowerBound) >= 0, "illegal liquidity multiplier");
-        }
-    }
-
     function implShutdown() internal {
-        LiquidityChangedSnapshot memory latestLiquiditySnapshot = getLatestLiquidityChangedSnapshots();
-
-        // get last liquidity changed history to calc new quote/base reserve
-        Decimal.decimal memory previousK =
-            latestLiquiditySnapshot.baseAssetReserve.mulD(latestLiquiditySnapshot.quoteAssetReserve);
-        SignedDecimal.signedDecimal memory lastInitBaseReserveInNewCurve =
-            latestLiquiditySnapshot.totalPositionSize.addD(latestLiquiditySnapshot.baseAssetReserve);
-        SignedDecimal.signedDecimal memory lastInitQuoteReserveInNewCurve =
-            MixedDecimal.fromDecimal(previousK).divD(lastInitBaseReserveInNewCurve);
-
-        // settlementPrice = SUM(Open Position Notional Value) / SUM(Position Size)
-        // `Open Position Notional Value` = init quote reserve - current quote reserve
-        // `Position Size` = init base reserve - current base reserve
-        SignedDecimal.signedDecimal memory positionNotionalValue =
-            lastInitQuoteReserveInNewCurve.subD(quoteAssetReserve);
-
-        // if total position size less than IGNORABLE_DIGIT_FOR_SHUTDOWN, treat it as 0 positions due to rounding error
-        if (totalPositionSize.toUint() > IGNORABLE_DIGIT_FOR_SHUTDOWN) {
-            settlementPrice = positionNotionalValue.abs().divD(totalPositionSize.abs());
-        }
-
         open = false;
-        emit Shutdown(settlementPrice.toUint());
     }
 }
