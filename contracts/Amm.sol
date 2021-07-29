@@ -60,7 +60,7 @@ contract Amm is IAmm, Ownable, BlockContext {
         _;
     }
 
-    struct LiquidityCost {
+    struct LiquidityStake {
         uint256 quoteAsset;
         uint256 baseAsset;
     }
@@ -156,8 +156,9 @@ contract Amm is IAmm, Ownable, BlockContext {
     uint private fusingEndTime;
     uint256 public fusingPeriod = 2 * 60;
 
+    uint256 public totalLiquidity;
     mapping(address => uint) public shares;
-    mapping(address => LiquidityCost) public liquidityCosts;
+    mapping(address => LiquidityStake) public liquidityStakes;
 
     constructor (
         uint256 _tradeLimitRatio,
@@ -218,14 +219,67 @@ contract Amm is IAmm, Ownable, BlockContext {
         emit ReserveSnapshotted(quoteAssetReserve.toUint(), baseAssetReserve.toUint(), _blockTimestamp());
 
         liquidity = Math.sqrt(uint(_quoteAssetReserve).mul(_baseAssetReserve));
+        totalLiquidity = totalLiquidity.add(liquidity);
         shares[to] = shares[to].add(liquidity);
 
-        LiquidityCost storage userCost = liquidityCosts[to];
-        userCost.quoteAsset = userCost.baseAsset.add(_quoteAssetReserve);
-        userCost.baseAsset = userCost.baseAsset.add(_baseAssetReserve);
+        LiquidityStake storage liquidityStake = liquidityStakes[to];
+        liquidityStake.quoteAsset = liquidityStake.baseAsset.add(_quoteAssetReserve);
+        liquidityStake.baseAsset = liquidityStake.baseAsset.add(_baseAssetReserve);
 
         emit LiquidityAdded(_quoteAssetReserve, _baseAssetReserve);
 
+    }
+
+    function baseReserveEnough(uint stakeBaseReserve) internal view (bool) {
+        uint leftBaseAssetReserve = baseAssetReserve.toUint().sub(stakeBaseReserve);
+
+        if (leftBaseAssetReserve >= totalLongPositionSize.abs() && 
+            leftBaseAssetReserve >= totalPositionSize.subD(totalLongPositionSize).abs()) {
+                return true;
+            }
+
+        return false;
+    }
+
+    function removeAddLiquidity(uint liquidity, address to) external returns (uint quoteAmount) {
+        require(shares[msg.sender] >= liquidity, "Too big");
+        
+        LiquidityStake storage liquidityStake = liquidityStakes[to];
+        uint stakeBaseReserve = liquidityStake.baseAsset;
+        uint stakeQuoteReserve = liquidityStake.quoteAsset;
+
+        if (shares[msg.sender] > liquidity) {
+            stakeBaseReserve = liquidityStake.baseAsset.mul(liquidity).div(shares[msg.sender]);
+            liquidityStake.baseAsset = liquidityStake.baseAsset.sub(stakeBaseReserve);
+
+            stakeQuoteReserve = liquidityStake.quoteAsset.mul(liquidity).div(shares[msg.sender]);
+            liquidityStake.quoteAsset = liquidityStake.quoteAsset.sub(stakeQuoteReserve);
+        } else {
+            delete liquidityStake;
+        }
+        
+        require(baseReserveEnough(stakeBaseReserve), "too low liquidity");
+
+        uint exitQuoteReserve = liquidity.mul(quoteAssetReserve.toUint()).div(totalLiquidity);
+        uint exitBaseReserve = liquidity.mul(baseAssetReserve.toUint()).div(totalLiquidity);
+
+        if (exitBaseReserve > liquidityStake.baseAsset) { // sell vBase
+            uint sellBase = exitBaseReserve.sub(liquidityStake.baseAsset);
+            uint256 qReserve = sellBase.mul(quoteAssetReserve.toUint()).div(baseAssetReserve.toUint());
+            exitQuoteReserve = _exitQuoteReserve.add(qReserve);
+        } else {  // buy vBase
+            uint buyBase = liquidityStake.baseAsset.sub(exitBaseReserve);
+            uint256 qReserve = buyBase.mul(quoteAssetReserve.toUint()).div(baseAssetReserve.toUint());
+            exitQuoteReserve = exitQuoteReserve.sub(qReserve);
+        }
+
+        quoteAmount = stakeQuoteReserve.add(exitQuoteReserve);
+        
+        // TODO:
+        quoteAssetReserve = quoteAssetReserve.sub(exitQuoteReserve);
+        baseAssetReserve = baseAssetReserve.sub();
+        
+        quoteAsset.safeTransfer(to, quoteAmount);
     }
 
     function updateLongSize(bool buy, SignedDecimal.signedDecimal memory newSize) external override onlyOpen onlyCounterParty {
@@ -375,7 +429,7 @@ contract Amm is IAmm, Ownable, BlockContext {
      */
     function shutdown() external override {
         require(_msgSender() == owner() || _msgSender() == globalShutdown, "not owner nor globalShutdown");
-        implShutdown();
+        open = false;
     }
 
     /**
@@ -449,11 +503,11 @@ contract Amm is IAmm, Ownable, BlockContext {
 
 
     function setMaxTwapSpreadRatio(uint _maxTwapSpreadRatio) public onlyOwner {
-      maxTwapSpreadRatio = _maxTwapSpreadRatio;
+        maxTwapSpreadRatio = _maxTwapSpreadRatio;
     }
 
     function setFusingPeriod(uint _period) public onlyOwner {
-      fusingPeriod = _period;
+        fusingPeriod = _period;
     }
 
     /**
@@ -1045,7 +1099,4 @@ contract Amm is IAmm, Ownable, BlockContext {
         }
     }
 
-    function implShutdown() internal {
-        open = false;
-    }
 }

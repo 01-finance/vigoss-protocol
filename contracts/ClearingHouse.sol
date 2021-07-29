@@ -1004,6 +1004,7 @@ contract ClearingHouse is
 
         SignedDecimal.signedDecimal memory outputAmount =
             MixedDecimal.fromDecimal(amm.swapInput(dir, _inputAmount, _minOutputAmount, _canOverFluctuationLimit));
+    
         if (IAmm.Dir.REMOVE_FROM_AMM == dir) {
             return outputAmount.mulScalar(-1);
         }
