@@ -148,9 +148,9 @@ contract InsuranceFund is IInsuranceFund, Ownable, BlockContext, ReentrancyGuard
             emit Withdrawn(_msgSender(), quoteBalance.toUint());
             return insufficientAmount;
         } else {
-          _transfer(_quoteToken, _msgSender(), _amount);
-          emit Withdrawn(_msgSender(), _amount.toUint());
-          return Decimal.zero();
+            _transfer(_quoteToken, _msgSender(), _amount);
+            emit Withdrawn(_msgSender(), _amount.toUint());
+            return Decimal.zero();
         }
     }
 
