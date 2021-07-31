@@ -194,6 +194,7 @@ contract Amm is IAmm, Ownable, BlockContext {
 
     }
 
+    // test OK
     function initLiquidity(address to, uint256 _quoteAssetReserve, uint256 _baseAssetReserve) external returns (uint liquidity) {
         require(quoteAssetReserve.toUint() == 0 && baseAssetReserve.toUint() == 0, "aleady inited");
 
@@ -201,6 +202,7 @@ contract Amm is IAmm, Ownable, BlockContext {
         quoteAsset.safeTransferFrom(msg.sender, address(this), _quoteAssetReserve * 2);
     }
 
+    // test OK
     function addLiquidity(address to, uint256 quoteSupply)  external returns (uint liquidity) {
         require(quoteAssetReserve.toUint() != 0 && baseAssetReserve.toUint() != 0, "please init liquidity");
         
@@ -243,7 +245,9 @@ contract Amm is IAmm, Ownable, BlockContext {
         return false;
     }
 
-    function removeAddLiquidity(uint liquidity, address to) external returns (uint quoteAmount) {
+    // total remove test ok
+    // TODO: part remove, with position
+    function removeLiquidity(address to, uint liquidity) external returns (uint quoteAmount) {
         require(shares[msg.sender] >= liquidity, "Too big");
         
         LiquidityStake storage liquidityStake = liquidityStakes[to];
@@ -259,19 +263,19 @@ contract Amm is IAmm, Ownable, BlockContext {
         } else {
             delete liquidityStakes[to];
         }
-        
+
         require(baseReserveEnough(stakeBaseReserve), "too low liquidity");
 
         uint exitQuoteReserve = liquidity.mul(quoteAssetReserve.toUint()).div(totalLiquidity);
         uint exitBaseReserve = liquidity.mul(baseAssetReserve.toUint()).div(totalLiquidity);
 
-        if (exitBaseReserve > liquidityStake.baseAsset) { // sell vBase
-            uint sellBase = exitBaseReserve.sub(liquidityStake.baseAsset);
+        if (exitBaseReserve > stakeBaseReserve) { // sell vBase
+            uint sellBase = exitBaseReserve.sub(stakeBaseReserve);
             uint256 qReserve = sellBase.mul(quoteAssetReserve.toUint()).div(baseAssetReserve.toUint());
             
             exitQuoteReserve = exitQuoteReserve.add(qReserve);
-        } else {  // buy vBase
-            uint buyBase = liquidityStake.baseAsset.sub(exitBaseReserve);
+        } else if (exitBaseReserve < stakeBaseReserve) {  // buy vBase
+            uint buyBase = stakeBaseReserve.sub(exitBaseReserve);
             uint256 qReserve = buyBase.mul(quoteAssetReserve.toUint()).div(baseAssetReserve.toUint());
             
             exitQuoteReserve = exitQuoteReserve.sub(qReserve);
@@ -282,6 +286,9 @@ contract Amm is IAmm, Ownable, BlockContext {
 
         emit LiquidityRemoved(exitQuoteReserve, stakeBaseReserve, to);
         
+        totalLiquidity = totalLiquidity.sub(liquidity);
+        shares[to] = shares[to].sub(liquidity);
+
         quoteAmount = stakeQuoteReserve.add(exitQuoteReserve);
         quoteAsset.safeTransfer(to, quoteAmount);
     }

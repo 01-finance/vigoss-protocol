@@ -4,6 +4,8 @@ const InsuranceFund = artifacts.require("InsuranceFund");
 const ClearingHouse = artifacts.require("ClearingHouse");
 const ClearingHouseViewer = artifacts.require("ClearingHouseViewer");
 
+const MockToken = artifacts.require("MockToken");
+
 const { writeAbis } = require('./log');
 
 module.exports = async function(deployer, network, accounts) {
@@ -12,8 +14,7 @@ module.exports = async function(deployer, network, accounts) {
   let USDC = require(`../front/abis/USDC.${network}.json`);
   let WETH = require(`../front/abis/WETH.${network}.json`);
 
-  const quoteAssetReserve = web3.utils.toWei("4000000") // 
-  const baseAssetReserve  =  web3.utils.toWei("20000") // 
+
   const tradeLimitRatio   = web3.utils.toWei("0.015")    // default 0.015 1.25%
   const fundingPeriod = 3600   // 1 hour
   
@@ -22,8 +23,7 @@ module.exports = async function(deployer, network, accounts) {
   const spreadRatio = web3.utils.toWei("0.001"); // 0.1%
 
   let amm = await deployer.deploy(Amm, 
-    quoteAssetReserve ,
-    baseAssetReserve, 
+
     tradeLimitRatio,
     fundingPeriod,
     feed.address,
@@ -35,6 +35,14 @@ module.exports = async function(deployer, network, accounts) {
 
   await writeAbis(Amm, 'Amm:ETH-USDC', network);
 
+
+  const quoteAssetReserve = web3.utils.toWei("4000000") // 
+  const baseAssetReserve  =  web3.utils.toWei("20000") // 
+
+  const usdc =  await MockToken.at(USDC.address);
+  usdc.approve(amm.address, web3.utils.toWei("8000000"));
+  await amm.initLiquidity(accounts[0], quoteAssetReserve , baseAssetReserve);
+
   await amm.setOpen(true);
 
   const initMarginRatio = web3.utils.toWei("0.1") // 10% -> 10x
@@ -43,7 +51,7 @@ module.exports = async function(deployer, network, accounts) {
   
   const fund = await InsuranceFund.deployed();
 
-  let house =  await deployer.deploy(ClearingHouse, 
+  let house = await deployer.deploy(ClearingHouse, 
       amm.address, initMarginRatio , maintenanceMarginRatio, liquidationFeeRatio, 
       fund.address);
 

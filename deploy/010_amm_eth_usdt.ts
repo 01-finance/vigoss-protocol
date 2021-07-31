@@ -35,8 +35,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let amm = await deploy('Amm', {
     from: deployer,
     args: [
-      quoteAssetReserve ,
-      baseAssetReserve, 
+      // quoteAssetReserve ,
+      // baseAssetReserve, 
       tradeLimitRatio,
       fundingPeriod,
       FEED.address,

@@ -8,6 +8,63 @@ async function getUnderlyingPrice(amm, web3) {
   }
 }
 
+async function initLiquidity(amm, user, quoteAmount, assetAmount) {
+  try {
+    const p = await amm.initLiquidity(user, quoteAmount, assetAmount, {from: user});
+    console.log("initLiquidity OK")
+  } catch (e) {
+    console.log("initLiquidity", e)
+  }
+}
+
+async function addLiquidity(amm, user, quoteAmount) {
+  try {
+    const p = await amm.addLiquidity(user, quoteAmount, {from: user});
+    console.log("addLiquidity OK")
+  } catch (e) {
+    console.log("addLiquidity", e)
+  }
+}
+
+async function removeLiquidity(amm, user, liquidity) {
+  try {
+    const p = await amm.removeLiquidity(user, liquidity, {from: user});
+    console.log("removeLiquidity OK")
+  } catch (e) {
+    console.log("removeLiquidity", e)
+  }
+}
+
+async function totalLiquidity(amm, web3) {
+  try {
+    const p = await amm.totalLiquidity();
+    console.log("totalLiquidity:" + web3.utils.fromWei(p.toString()))
+  } catch (e) {
+    console.log("totalLiquidity", e)
+  }
+}
+
+async function shares(amm, user, web3) {
+  try {
+    const p = await amm.shares(user);
+    console.log("shares :" + p.toString())
+    console.log("shares:" + web3.utils.fromWei(p.toString()))
+  } catch (e) {
+    console.log("shares", e)
+  }
+}
+
+async function liquidityStakes(amm, user, web3) {
+  try {
+    const p = await amm.liquidityStakes(user);
+    console.log("liquidityStakes quoteAsset:" + web3.utils.fromWei(p[0].toString()))
+    console.log("liquidityStakes baseAsset:" + web3.utils.fromWei(p[1].toString()))
+  } catch (e) {
+    console.log("liquidityStakes", e)
+  }
+}
+
+
 async function getLongShortSize(amm, web3) {
 
   try {
@@ -156,5 +213,11 @@ module.exports = {
   getInputPrice,
   getOutputPrice,
   getLongApportionFraction,
-  getShortApportionFraction
+  getShortApportionFraction,
+  initLiquidity,
+  addLiquidity,
+  removeLiquidity,
+  totalLiquidity,
+  shares,
+  liquidityStakes
 }
