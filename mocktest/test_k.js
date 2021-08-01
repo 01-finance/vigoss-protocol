@@ -56,16 +56,16 @@ module.exports = async function(callback) {
     console.log("init contract error", e)
   }
 
-  // await getSpotPrice(ETHUSDCAmm, web3);
-  // await totalLiquidity(ETHUSDCAmm, web3)
+  await getSpotPrice(ETHUSDCAmm, web3);
+  await totalLiquidity(ETHUSDCAmm, web3)
 
-  // await shares(ETHUSDCAmm, accounts[0], web3)
-  // await liquidityStakes(ETHUSDCAmm, accounts[0], web3)
+  await shares(ETHUSDCAmm, accounts[0], web3)
+  await liquidityStakes(ETHUSDCAmm, accounts[0], web3)
   
-  // await transfer(usdcMock, accounts[0], accounts[1], web3.utils.toWei("10000"));
+  await transfer(usdcMock, accounts[0], accounts[1], web3.utils.toWei("10000"));
 
-  // await approve(usdcMock, accounts[1], ETHUSDCAmm.address, web3.utils.toWei("10000"));
-  // await addLiquidity(ETHUSDCAmm, accounts[1], web3.utils.toWei("10000"));
+  await approve(usdcMock, accounts[1], ETHUSDCAmm.address, web3.utils.toWei("10000"));
+  await addLiquidity(ETHUSDCAmm, accounts[1], web3.utils.toWei("10000"));
   
   await balanceOf(usdcMock, accounts[1], web3, " user1 ");
   await getSpotPrice(ETHUSDCAmm, web3);
@@ -76,12 +76,44 @@ module.exports = async function(callback) {
   await getSpotPrice(ETHUSDCAmm, web3);
   await getReserve(ETHUSDCAmm, web3);
 
+  await transfer(usdcMock, accounts[0], accounts[1], web3.utils.toWei("11000"));
+  await approve(usdcMock, accounts[1], house.address, web3.utils.toWei("11000"));
+
+  console.log(" openPosition  ");
+  await openPosition(house, 
+    ETHUSDCAmm.address, 
+    0,   // buy long 
+    web3.utils.toWei("10000"),  // 100 usdc
+    web3.utils.toWei("2"),    // 2 leverage
+    web3.utils.toWei("0"),  //minBaseamount( for slippage)
+    accounts[1],
+    web3
+  )
+
+  await transfer(usdcMock, accounts[0], accounts[2], web3.utils.toWei("11000"));
+  await approve(usdcMock, accounts[2], house.address, web3.utils.toWei("11000"));
+
+  console.log(" openPosition  ");
+  await openPosition(house, 
+    ETHUSDCAmm.address, 
+    0,   // buy long 
+    web3.utils.toWei("10000"),  // 100 usdc
+    web3.utils.toWei("2"),    // 2 leverage
+    web3.utils.toWei("0"),  //minBaseamount( for slippage)
+    accounts[2],
+    web3
+  )
+
+  await getSpotPrice(ETHUSDCAmm, web3);
+  await getReserve(ETHUSDCAmm, web3);
+  await balanceOf(usdcMock, accounts[1], web3, " user1 ");
+
   console.log(" removeLiquidity  ");
   var liqAmount = "353553390593273762200"
   await removeLiquidity(ETHUSDCAmm, accounts[1], liqAmount);
 
   await balanceOf(usdcMock, accounts[1], web3, " user1 ");
-  await getSpotPrice(ETHUSDCAmm, web3);
+
   await totalLiquidity(ETHUSDCAmm, web3)
 
   await shares(ETHUSDCAmm, accounts[1], web3)
