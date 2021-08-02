@@ -271,14 +271,14 @@ contract Amm is IAmm, Ownable, BlockContext {
 
         if (exitBaseReserve > stakeBaseReserve) { // sell vBase
             uint sellBase = exitBaseReserve.sub(stakeBaseReserve);
-            uint256 qReserve = sellBase.mul(quoteAssetReserve.toUint()).div(baseAssetReserve.toUint());
-            
-            exitQuoteReserve = exitQuoteReserve.add(qReserve);
+            Decimal.decimal memory qReserve = getOutputPrice(Dir.ADD_TO_AMM, Decimal.decimal(sellBase));
+            exitQuoteReserve = exitQuoteReserve.add(qReserve.toUint());
+
         } else if (exitBaseReserve < stakeBaseReserve) {  // buy vBase
             uint buyBase = stakeBaseReserve.sub(exitBaseReserve);
-            uint256 qReserve = buyBase.mul(quoteAssetReserve.toUint()).div(baseAssetReserve.toUint());
-            
-            exitQuoteReserve = exitQuoteReserve.sub(qReserve);
+            Decimal.decimal memory qReserve = getOutputPrice(Dir.REMOVE_FROM_AMM, Decimal.decimal(buyBase));
+
+            exitQuoteReserve = exitQuoteReserve.sub(qReserve.toUint());
         }
 
         baseAssetReserve = baseAssetReserve.subD(Decimal.decimal(stakeBaseReserve));
@@ -571,7 +571,7 @@ contract Amm is IAmm, Ownable, BlockContext {
         }
 
         (Decimal.decimal memory upperLimit, Decimal.decimal memory lowerLimit) = getPriceBoundariesOfLastBlock();
-
+        
         Decimal.decimal memory quoteAssetExchanged = getOutputPrice(_dirOfBase, _baseAssetAmount);
         Decimal.decimal memory price =
             (_dirOfBase == Dir.REMOVE_FROM_AMM)
