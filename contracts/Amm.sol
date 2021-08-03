@@ -15,6 +15,8 @@ import { SignedDecimal } from "./utils/SignedDecimal.sol";
 import { MixedDecimal } from "./utils/MixedDecimal.sol";
 import { IAmm } from "./interface/IAmm.sol";
 
+import "hardhat/console.sol";
+
 contract Amm is IAmm, Ownable, BlockContext {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
@@ -268,17 +270,29 @@ contract Amm is IAmm, Ownable, BlockContext {
 
         uint exitQuoteReserve = liquidity.mul(quoteAssetReserve.toUint()).div(totalLiquidity);
         uint exitBaseReserve = liquidity.mul(baseAssetReserve.toUint()).div(totalLiquidity);
+        console.log("exitQuoteReserve:", exitQuoteReserve);
+        console.log("exitBaseReserve:", exitBaseReserve);
+
 
         if (exitBaseReserve > stakeBaseReserve) { // sell vBase
             uint sellBase = exitBaseReserve.sub(stakeBaseReserve);
+            console.log("sellBase:", sellBase);
+            
             Decimal.decimal memory qReserve = getOutputPrice(Dir.ADD_TO_AMM, Decimal.decimal(sellBase));
+            console.log("qReserve:", qReserve.toUint());
+
             exitQuoteReserve = exitQuoteReserve.add(qReserve.toUint());
+            console.log("exitQuoteReserve:", exitQuoteReserve);
 
         } else if (exitBaseReserve < stakeBaseReserve) {  // buy vBase
             uint buyBase = stakeBaseReserve.sub(exitBaseReserve);
+            console.log("buyBase:", buyBase);
+
             Decimal.decimal memory qReserve = getOutputPrice(Dir.REMOVE_FROM_AMM, Decimal.decimal(buyBase));
+            console.log("qReserve:", qReserve.toUint());
 
             exitQuoteReserve = exitQuoteReserve.sub(qReserve.toUint());
+            console.log("exitQuoteReserve:", exitQuoteReserve);
         }
 
         baseAssetReserve = baseAssetReserve.subD(Decimal.decimal(stakeBaseReserve));

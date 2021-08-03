@@ -16,7 +16,6 @@ import { OwnerPausable } from "./OwnerPausable.sol";
 import { IAmm } from "./interface/IAmm.sol";
 
 import { IInsuranceFund } from "./interface/IInsuranceFund.sol";
-import { IMultiTokenRewardRecipient } from "./interface/IMultiTokenRewardRecipient.sol";
 
 import "hardhat/console.sol";
 
@@ -168,7 +167,7 @@ contract ClearingHouse is
 
     // contract dependencies
     IInsuranceFund public insuranceFund;
-    IMultiTokenRewardRecipient public feePool;
+    address public feePool;
 
     // designed for arbitragers who can hold unlimited positions. will be removed after guarded period
     address internal whitelist;
@@ -219,7 +218,7 @@ contract ClearingHouse is
      * @dev only owner can call
      */
     function setTollPool(address _feePool) external onlyOwner {
-        feePool = IMultiTokenRewardRecipient(_feePool);
+        feePool = _feePool;
     }
 
     /**

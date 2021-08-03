@@ -109,10 +109,10 @@ contract VGSDistributer is Ownable {
         view
         returns (uint256)
     {
-      uint quarter = 90 days;
-      for (uint256 i = 0; i < 16; i++) {  
-        uint startTs = startTimeStamp.add(quarter * i);
-        uint endTs = startTimeStamp.add(quarter * (i+1));
+       uint quarter = 90 days;
+       for (uint256 i = 0; i < 16; i++) {  
+         uint startTs = startTimeStamp.add(quarter * i);
+         uint endTs = startTimeStamp.add(quarter * (i+1));
 
         if (_from >= startTs && _to < endTs) {
           return _to.sub(_from).mul(20 - i);  //  in season
