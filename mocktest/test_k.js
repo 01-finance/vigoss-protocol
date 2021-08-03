@@ -82,7 +82,7 @@ module.exports = async function(callback) {
   console.log(" openPosition  ");
   await openPosition(house, 
     ETHUSDCAmm.address, 
-    0,   // buy long 
+    0,   // buy short 
     web3.utils.toWei("10000"),  // 100 usdc
     web3.utils.toWei("2"),    // 2 leverage
     web3.utils.toWei("0"),  //minBaseamount( for slippage)
