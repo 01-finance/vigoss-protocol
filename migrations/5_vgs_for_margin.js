@@ -1,5 +1,5 @@
 const VigossToken = artifacts.require("VigossToken");
-const VGSDistributer = artifacts.require("VGSDistributer");
+const VGSForMargin = artifacts.require("VGSForMargin");
 const { writeAbis } = require('./log');
 
 module.exports = async function(deployer, network, accounts) {
@@ -8,8 +8,8 @@ module.exports = async function(deployer, network, accounts) {
 
   const vgs = await VigossToken.deployed();
 
-  await deployer.deploy(VGSDistributer, vgs.address, vgsPerSecond, ts);
+  await deployer.deploy(VGSForMargin, vgs.address, vgsPerSecond, ts);
 
-  await writeAbis(VGSDistributer, 'VGSDistributer', network);
+  await writeAbis(VGSForMargin, 'VGSForMargin', network);
 
 }

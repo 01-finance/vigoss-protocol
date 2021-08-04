@@ -1,8 +1,6 @@
 const Amm = artifacts.require("Amm");
 const SimpleUSDPriceFeed = artifacts.require("SimpleUSDPriceFeed");
-const InsuranceFund = artifacts.require("InsuranceFund");
 const ClearingHouse = artifacts.require("ClearingHouse");
-const ClearingHouseViewer = artifacts.require("ClearingHouseViewer");
 
 const MockToken = artifacts.require("MockToken");
 
@@ -40,30 +38,25 @@ module.exports = async function(deployer, network, accounts) {
   const baseAssetReserve  =  web3.utils.toWei("20000") // 
 
   const usdc =  await MockToken.at(USDC.address);
+  await amm.setOpen(true);
+
   usdc.approve(amm.address, web3.utils.toWei("8000000"));
   await amm.initLiquidity(accounts[0], quoteAssetReserve , baseAssetReserve);
-
-  await amm.setOpen(true);
 
   const initMarginRatio = web3.utils.toWei("0.1") // 10% -> 10x
   const maintenanceMarginRatio = web3.utils.toWei("0.0625") // 6.25% -> 16x
   const liquidationFeeRatio = web3.utils.toWei("0.0125")    // 1.25%
   
-  const fund = await InsuranceFund.deployed();
 
   let house = await deployer.deploy(ClearingHouse, 
-      amm.address, initMarginRatio , maintenanceMarginRatio, liquidationFeeRatio, 
-      fund.address);
+      amm.address, initMarginRatio , maintenanceMarginRatio, liquidationFeeRatio
+      );
 
   await writeAbis(ClearingHouse, 'ClearingHouse:ETH-USDC', network);
 
-  await deployer.deploy(ClearingHouseViewer, ClearingHouse.address);
-  await writeAbis(ClearingHouseViewer, 'ClearingHouseViewer:ETH-USDC', network);
-
-
-  await fund.setBeneficiary(house.address, true);
+  // await deployer.deploy(ClearingHouseViewer, ClearingHouse.address);
+  // await writeAbis(ClearingHouseViewer, 'ClearingHouseViewer:ETH-USDC', network);
 
   await amm.setCounterParty(house.address);
 
-  await fund.addAmm(Amm.address);
 }

@@ -11,7 +11,7 @@ import "./openzeppelin/access/Ownable.sol";
 
 import "hardhat/console.sol";
 
-contract VGSDistributer is Ownable {
+contract VGSForMargin is Ownable {
     uint constant SCALE = 1e12;
 
     using SafeMath for uint256;
@@ -54,8 +54,8 @@ contract VGSDistributer is Ownable {
     }
 
     function setClearingHouse(address _ch, bool enabled) public onlyOwner {
-      approvedCh[_ch] = enabled;
-      emit SetClearingHouse(_ch, enabled);
+        approvedCh[_ch] = enabled;
+        emit SetClearingHouse(_ch, enabled);
     }
 
     // be careful. nedd div times.
@@ -103,26 +103,34 @@ contract VGSDistributer is Ownable {
         lastRewardSecond = block.timestamp;
     }
 
-    // TEST OK, make sure at least 1 transaction in 90 days 
     function getMultiplier(uint256 _from, uint256 _to)
         internal
         view
         returns (uint256)
-    {
-       uint quarter = 90 days;
-       for (uint256 i = 0; i < 16; i++) {  
-         uint startTs = startTimeStamp.add(quarter * i);
-         uint endTs = startTimeStamp.add(quarter * (i+1));
-
-        if (_from >= startTs && _to < endTs) {
-          return _to.sub(_from).mul(20 - i);  //  in season
-        } else if(_from < startTs && _to < endTs) {  //  cross season
-          uint half1 = _to.sub(startTs).mul(20 - i);
-          uint half2 = startTs.sub(_from).mul(20 - i + 1);
-          return half1.add(half2);
+        {
+            return _to.sub(_from);
         }
-      }
-    }
+
+    // TEST OK, make sure at least 1 transaction in 90 days 
+    // function getMultiplier(uint256 _from, uint256 _to)
+    //     internal
+    //     view
+    //     returns (uint256)
+    // {
+    //    uint quarter = 90 days;
+    //    for (uint256 i = 0; i < 16; i++) {  
+    //      uint startTs = startTimeStamp.add(quarter * i);
+    //      uint endTs = startTimeStamp.add(quarter * (i+1));
+
+    //     if (_from >= startTs && _to < endTs) {
+    //       return _to.sub(_from).mul(20 - i);  //  in season
+    //     } else if(_from < startTs && _to < endTs) {  //  cross season
+    //       uint half1 = _to.sub(startTs).mul(20 - i);
+    //       uint half2 = startTs.sub(_from).mul(20 - i + 1);
+    //       return half1.add(half2);
+    //     }
+    //   }
+    // }
 
 
     // Deposit LP tokens to MasterChef for Vgs allocation.

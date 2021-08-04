@@ -121,6 +121,24 @@ module.exports = async function(callback) {
   await getSpotPrice(ETHUSDCAmm, web3);
   await getReserve(ETHUSDCAmm, web3);
 
+  console.log(" closePosition  ");
+  await closePosition(house, ETHUSDCAmm.address, "0", accounts[1])
+  await closePosition(house, ETHUSDCAmm.address, "0", accounts[2])
+
+  console.log(" getSpotPrice  ");
+  await getSpotPrice(ETHUSDCAmm, web3);
+  await getReserve(ETHUSDCAmm, web3);
+
+
+  console.log(" removeLiquidity  ");
+  var liqAmount = "282842712474619009760337"
+  await removeLiquidity(ETHUSDCAmm, accounts[0], liqAmount);
+
+  await balanceOf(usdcMock, accounts[0], web3, " user0 ");
+
+  await totalLiquidity(ETHUSDCAmm, web3)
+  await getReserve(ETHUSDCAmm, web3);
+
 }
 
 
