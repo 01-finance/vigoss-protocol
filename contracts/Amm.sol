@@ -45,11 +45,9 @@ contract Amm is IAmm, Ownable, BlockContext {
     event LiquidityRemoved(uint256 quoteReserve, uint256 baseReserve, address user);
 
     event CapChanged(uint256 maxHoldingBaseAsset, uint256 openInterestNotionalCap);
-    event Shutdown(uint256 settlementPrice);
-    event LongApportionFractionChanged(uint256 delta);
-    event ShortApportionFractionChanged(uint256 delta);
     event PriceFeedUpdated(address priceFeed);
     event EnterFusing();
+    event Withdraw(address to, uint amount);
 
     //
     // MODIFIERS
@@ -137,11 +135,6 @@ contract Amm is IAmm, Ownable, BlockContext {
     Decimal.decimal private openInterestNotionalCap;
 
 
-    // 
-    Decimal.decimal private longApportionFraction;
-    Decimal.decimal private shortApportionFraction;
-
-
     uint256 public spotPriceTwapInterval;
     uint256 public fundingPeriod;
     uint256 public fundingBufferPeriod;
@@ -215,7 +208,7 @@ contract Amm is IAmm, Ownable, BlockContext {
         quoteAsset.safeTransferFrom(msg.sender, address(this), quoteSupply);
     }
 
-    function implAddLiquidity(address to, uint256 _quoteAssetReserve, uint256 _baseAssetReserve) internal returns (uint liquidity) {
+    function implAddLiquidity(address to, uint256 _quoteAssetReserve, uint256 _baseAssetReserve) onlyOpen internal returns (uint liquidity) {
         require(_quoteAssetReserve != 0 && _baseAssetReserve != 0, "invalid reserves");
 
         quoteAssetReserve = quoteAssetReserve.addD(Decimal.decimal(_quoteAssetReserve));
@@ -247,8 +240,6 @@ contract Amm is IAmm, Ownable, BlockContext {
         return false;
     }
 
-    // total remove test ok
-    // TODO: part remove, with position
     function removeLiquidity(address to, uint liquidity) external returns (uint quoteAmount) {
         require(shares[msg.sender] >= liquidity, "Too big");
         
@@ -306,6 +297,9 @@ contract Amm is IAmm, Ownable, BlockContext {
         quoteAmount = stakeQuoteReserve.add(exitQuoteReserve);
         quoteAsset.safeTransfer(to, quoteAmount);
     }
+
+
+
 
     function updateLongSize(bool buy, SignedDecimal.signedDecimal memory newSize) external override onlyOpen onlyCounterParty {
         if (buy) {
@@ -373,18 +367,6 @@ contract Amm is IAmm, Ownable, BlockContext {
         return implSwapOutput(_dirOfBase, _baseAssetAmount, _quoteAssetAmountLimit);
     }
 
-    function settleApportion(Decimal.decimal memory _badDebt, Side _side) external override onlyOpen onlyCounterParty returns (Decimal.decimal memory) {
-      if (_side == Side.BUY) {
-        Decimal.decimal memory delta = _badDebt.divD(totalLongPositionSize.abs());
-        longApportionFraction = longApportionFraction.addD(delta);
-        emit LongApportionFractionChanged(delta.toUint());
-      } else {
-        Decimal.decimal memory delta = _badDebt.divD(totalPositionSize.subD(totalLongPositionSize).abs());
-        shortApportionFraction = shortApportionFraction.addD(delta);
-        emit ShortApportionFractionChanged(delta.toUint());
-      }
-    }
-
     /**
      * @notice update funding rate
      * @dev only allow to update while reaching `nextFundingTime`
@@ -447,14 +429,19 @@ contract Amm is IAmm, Ownable, BlockContext {
         return newBaseAsset.mulScalar(isPositiveValue ? 1 : int256(-1));
     }
 
+    function withdraw(Decimal.decimal calldata _amount) onlyCounterParty external override {
+        quoteAsset.safeTransfer(_msgSender(), _amount.toUint());
+        emit Withdraw(_msgSender(), _amount.toUint()); 
+    }
+
     /**
-     * @notice shutdown amm,
-     * @dev only `globalShutdown` or owner can call this function
-     * The price calculation is in `globalShutdown`.
+     * @notice withdraw token to caller
+     * @param _amount the amount of quoteToken caller want to withdraw
      */
-    function shutdown() external override {
-        require(_msgSender() == owner() || _msgSender() == globalShutdown, "not owner nor globalShutdown");
-        open = false;
+    function withdrawBenefit(address to, uint _amount) onlyOwner external {
+        quoteAsset.safeTransfer(to, _amount);
+        require(quoteAsset.balanceOf(address(this)) >= quoteAssetReserve.mulScalar(2).toUint(), "low balance");
+        emit Withdraw(to, _amount);
     }
 
     /**
@@ -701,14 +688,6 @@ contract Amm is IAmm, Ownable, BlockContext {
 
     function getSnapshotLen() external view returns (uint256) {
         return reserveSnapshots.length;
-    }
-
-    function getLongApportionFraction()  external view override returns  (Decimal.decimal memory) {
-        return longApportionFraction;
-    }
-    
-    function getShortApportionFraction()  external view override returns  (Decimal.decimal memory) {
-        return shortApportionFraction;
     }
 
     function getCumulativeNotional() external view override returns (SignedDecimal.signedDecimal memory) {

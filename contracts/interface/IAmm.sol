@@ -42,10 +42,7 @@ interface IAmm {
         Decimal.decimal calldata _quoteAssetAmountLimit
     ) external returns (Decimal.decimal memory);
 
-    function shutdown() external;
-
     function settleFunding() external returns (SignedDecimal.signedDecimal memory);
-    function settleApportion(Decimal.decimal memory _badDebt, Side _side) external returns (Decimal.decimal memory);
 
     function calcFee(Decimal.decimal calldata _quoteAssetAmount)
         external
@@ -112,6 +109,8 @@ interface IAmm {
 
     function open() external view returns (bool);
 
+    function withdraw(Decimal.decimal calldata _amount) external;
+
     // can not be overridden by state variable due to type `Deciaml.decimal`
     function getSettlementPrice() external view returns (Decimal.decimal memory);
 
@@ -130,6 +129,4 @@ interface IAmm {
 
     function isInFusing() external view returns (bool);
 
-    function getLongApportionFraction() external view returns (Decimal.decimal memory);
-    function getShortApportionFraction() external view returns (Decimal.decimal memory);
 }
