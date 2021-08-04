@@ -14,6 +14,7 @@ import { Context } from "./openzeppelin/GSN/Context.sol";
 import { ReentrancyGuard } from "./openzeppelin/utils/ReentrancyGuard.sol";
 import { OwnerPausable } from "./OwnerPausable.sol";
 import { IAmm } from "./interface/IAmm.sol";
+import { IVGSForMargin } from "./interface/IVGSForMargin.sol";
 
 import "hardhat/console.sol";
 
@@ -139,6 +140,7 @@ contract ClearingHouse is
     }
 
     IAmm public immutable amm;
+    IVGSForMargin public immutable vgsForMargin;
 
     // only admin
     Decimal.decimal public initMarginRatio;
@@ -167,12 +169,14 @@ contract ClearingHouse is
     // FUNCTIONS
     constructor(
         IAmm _amm,
+        IVGSForMargin _vgsForMargin,
         uint256 _initMarginRatio,
         uint256 _maintenanceMarginRatio,
         uint256 _liquidationFeeRatio
     ) public {
         require(address(_amm) != address(0), "Invalid _amm");
         amm = _amm;
+        vgsForMargin = _vgsForMargin;
         initMarginRatio = Decimal.decimal(_initMarginRatio);
         maintenanceMarginRatio = Decimal.decimal(_maintenanceMarginRatio);
         liquidationFeeRatio = Decimal.decimal(_liquidationFeeRatio);
@@ -233,8 +237,10 @@ contract ClearingHouse is
         Position memory position = getPosition(trader);
         position.margin = position.margin.addD(_addedMargin);
         setPosition(trader, position);
+
         // transfer token from trader
         _transferFrom(amm.quoteAsset(), trader, address(this), _addedMargin);
+
         emit MarginChanged(trader, int256(_addedMargin.toUint()), 0);
     }
 
@@ -675,6 +681,8 @@ contract ClearingHouse is
         positionStorage.openNotional = _position.openNotional;
         positionStorage.lastUpdatedCumulativePremiumFraction = _position.lastUpdatedCumulativePremiumFraction;
         positionStorage.blockNumber = _position.blockNumber;
+
+        vgsForMargin.changeMargin(address(amm.quoteAsset()) , _position.margin.toUint(), _trader);
     }
 
     function clearPosition(address _trader) internal {
@@ -686,6 +694,7 @@ contract ClearingHouse is
             lastUpdatedCumulativePremiumFraction: SignedDecimal.zero(),
             blockNumber: _blockNumber()
         });
+        vgsForMargin.changeMargin(address(amm.quoteAsset()) , 0, _trader);
     }
 
     // only called from openPosition and closeAndOpenReversePosition. caller need to ensure there's enough marginRatio
@@ -744,6 +753,7 @@ contract ClearingHouse is
             latestCumulativePremiumFraction,
             _blockNumber()
         );
+        
     }
 
     function openReversePosition(

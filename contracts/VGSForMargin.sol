@@ -37,6 +37,7 @@ contract VGSForMargin is Ownable {
     mapping(address => UserInfo) public userInfo;
 
     mapping (address => bool) public approvedCh;
+    mapping (address => mapping(address => uint)) public userChMargins;
 
     event AddMargin(address indexed user, address token, uint256 amount);
     event RemoveMargin(address indexed user, address token, uint256 amount);
@@ -58,7 +59,6 @@ contract VGSForMargin is Ownable {
         emit SetClearingHouse(_ch, enabled);
     }
 
-    // be careful. nedd div times.
     function setVgsPerSecond(uint256 _vgsPerSecond) public onlyOwner {
         updatePool();
         vgsPerSecond = _vgsPerSecond;
@@ -133,9 +133,24 @@ contract VGSForMargin is Ownable {
     // }
 
 
-    // Deposit LP tokens to MasterChef for Vgs allocation.
-    function addMargin(address token, uint256 _amount, address _user) public {
+    function changeMargin(address token, uint256 _targetMargin, address _user) external {
         require(approvedCh[msg.sender], "must call from approved CH");
+        
+        uint lastMargin = userChMargins[_user][msg.sender];
+        if (_targetMargin > lastMargin) {
+            addMargin(token, _targetMargin.sub(lastMargin), _user);
+        } else if (_targetMargin < lastMargin ) {
+            removeMargin(token, lastMargin.sub(_targetMargin), _user);
+        } else {
+            settlement();
+        }
+
+        userChMargins[_user][msg.sender] = _targetMargin;
+    }
+
+
+    // Deposit LP tokens to MasterChef for Vgs allocation.
+    function addMargin(address token, uint256 _amount, address _user) internal {
         UserInfo storage user = userInfo[_user];
         updatePool();
 
@@ -148,9 +163,9 @@ contract VGSForMargin is Ownable {
         }
 
         if (_amount > 0) {
-          uint amount = convertAmount(token, _amount);
-          marginSupply = marginSupply.add(amount);
-          user.amount = user.amount.add(amount);
+            uint amount = convertAmount(token, _amount);
+            marginSupply = marginSupply.add(amount);
+            user.amount = user.amount.add(amount);
         }
 
         user.rewardDebt = user.amount.mul(accVgsPerShare).div(SCALE);
@@ -158,40 +173,43 @@ contract VGSForMargin is Ownable {
     }
 
     function convertAmount(address token, uint amount) internal view returns (uint) {
-      uint8 d = IERC20(token).decimals();
-      require(d <= 18, "invalid decimal");
+        uint8 d = IERC20(token).decimals();
+        require(d <= 18, "invalid decimal");
 
-      if (d == 18) {
-        return amount;
-      } else {
-        return amount.mul(10** (uint(18) - d));
-      }
+        if (d == 18) {
+            return amount;
+        } else {
+            return amount.mul(10** (uint(18) - d));
+        }
     }
 
-    function settlement() external returns (uint) {
-      updatePool();
-      address userAddr = msg.sender;
-      UserInfo storage user = userInfo[userAddr];
-      uint currEarn = user.amount.mul(accVgsPerShare).div(SCALE);
-      uint pending = currEarn.sub(user.rewardDebt);
-      safeVgsTransfer(userAddr, pending);
-      user.rewardDebt = currEarn;
+    function settlement() public returns (uint) {
+        updatePool();
+        address userAddr = msg.sender;
+        UserInfo storage user = userInfo[userAddr];
+        uint currEarn = user.amount.mul(accVgsPerShare).div(SCALE);
+        uint pending = currEarn.sub(user.rewardDebt);
+        safeVgsTransfer(userAddr, pending);
+        user.rewardDebt = currEarn;
 
-      emit Settlement(userAddr, pending);
-      return pending;
+        emit Settlement(userAddr, pending);
+        return pending;
     }
 
-    function removeMargin(address token, uint256 _amount, address _user) public {
+    function removeMargin(address token, uint256 _amount, address _user) internal {
         require(approvedCh[msg.sender], "must call from approved CH");
         uint amount = convertAmount(token, _amount);
         UserInfo storage user = userInfo[_user];
-        require(user.amount >= amount, "removeMargin: not good");
+        if (amount > user.amount) {
+            amount = user.amount;
+        }
 
         updatePool();
         uint256 pending =
             user.amount.mul(accVgsPerShare).div(SCALE).sub(
                 user.rewardDebt
             );
+
         safeVgsTransfer(_user, pending);
         user.amount = user.amount.sub(amount);
         marginSupply = marginSupply.sub(amount);
@@ -200,7 +218,6 @@ contract VGSForMargin is Ownable {
 
         emit RemoveMargin(_user, token, _amount);
     }
-
 
     // Safe vgs transfer function, just in case if rounding error causes pool to not have enough VGSs.
     function safeVgsTransfer(address _to, uint256 _amount) internal {
