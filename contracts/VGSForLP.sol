@@ -7,7 +7,9 @@ import "./openzeppelin/token/ERC20/SafeERC20.sol";
 import "./openzeppelin/utils/EnumerableSet.sol";
 import "./openzeppelin/math/SafeMath.sol";
 import "./openzeppelin/access/Ownable.sol";
+import "./interface/IAmm.sol";
 
+import "hardhat/console.sol";
 
 contract VGSForLP is Ownable {
     uint constant SCALE = 1e12;
@@ -23,9 +25,9 @@ contract VGSForLP is Ownable {
     // Info of each pool.
     struct PoolInfo {
         address amm; // Address of amm contract.
-        uint256 allocPoint; // How many allocation points assigned to this pool. PFIs to distribute per block.
-        uint256 lastRewardBlock; // Last block number that PFIs distribution occurs.
-        uint256 accVgsPerShare; // Accumulated PFIs per share, times 1e12. See below.
+        uint256 allocPoint; // How many allocation points assigned to this pool. Vgs to distribute per block.
+        uint256 lastRewardBlock; // Last block number that Vgs distribution occurs.
+        uint256 accVgsPerShare; // Accumulated Vgs per share, times 1e12. See below.
     }
 
     IERC20 public vgs;
@@ -40,30 +42,30 @@ contract VGSForLP is Ownable {
     PoolInfo[] public poolInfo;
 
     // Info of each user that stakes LP tokens.
-    mapping(uint => mapping(address => UserInfo)) public userInfo;
+    mapping(uint => mapping(address => UserInfo)) public userInfos;
     // Total allocation poitns. Must be the sum of all allocation points in all pools.
     uint256 public totalAllocPoint = 0;
 
-    event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
-    event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
-    event EmergencyWithdraw(
-        address indexed user,
-        uint256 indexed pid,
-        uint256 amount
-    );
+    event UpdateLpDeposit(address indexed user, uint256 indexed pid, uint256 amount);
 
     constructor(
-        IPFIToken _vgs,
+        IERC20 _vgs,
         uint256 _vgsPerBlock
     ) public {
         vgs = _vgs;
         vgsPerBlock = _vgsPerBlock;
+        add(0, address(0), false); // Just left the first.
     }
 
     function setVgsPerBlock(uint256 _newPerBlock) public onlyOwner {
         massUpdatePools();
         vgsPerBlock = _newPerBlock;
     }
+
+    function upgradeTo(address _to) public onlyOwner {
+        uint256 vgsBal = vgs.balanceOf(address(this));
+        vgs.transfer(_to, vgsBal);
+    } 
 
     function poolLength() external view returns (uint256) {
         return poolInfo.length;
@@ -73,17 +75,19 @@ contract VGSForLP is Ownable {
     // XXX DO NOT add the same Amm more than once. Rewards will be messed up if you do.
     function add(
         uint256 _allocPoint,
-        IERC20 _amm,
+        address _amm,
         bool _withUpdate
     ) public onlyOwner {
-        require(address(_amm) != address(vgs), "Not for Stake PFI");
+        require(IdOfAmm[address(_amm)] == 0, "aleady added");
 
         if (_withUpdate) {
             massUpdatePools();
         }
         uint256 lastRewardBlock = block.number;
-
-        totalAllocPoint = totalAllocPoint.add(_allocPoint);
+        if (_allocPoint > 0) {
+            totalAllocPoint = totalAllocPoint.add(_allocPoint);
+        }
+        
         poolInfo.push(
             PoolInfo({
                 amm: _amm,
@@ -114,7 +118,7 @@ contract VGSForLP is Ownable {
     function allPendingVgs(address _user) external view returns (uint256 vgss) {
         uint256 length = poolInfo.length;
 
-        for (uint256 pid = 0; pid < length; ++pid) {
+        for (uint256 pid = 1; pid < length; ++pid) {
             vgss += getPendingVgs(pid, _user);
         }
     }
@@ -130,9 +134,10 @@ contract VGSForLP is Ownable {
 
     function getPendingVgs(uint _pid, address _user) public view returns (uint256) {
         PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][_user];
+        UserInfo storage user = userInfos[_pid][_user];
         uint256 accVgsPerShare = pool.accVgsPerShare;
-        uint256 lpSupply = pool.amm.balanceOf(address(this));
+
+        uint256 lpSupply = IAmm(pool.amm).totalLiquidity();
 
         if (block.number > pool.lastRewardBlock && lpSupply != 0) {
             uint256 multiplier = block.number.sub(pool.lastRewardBlock);
@@ -150,7 +155,7 @@ contract VGSForLP is Ownable {
     // Update reward vairables for all pools. Be careful of gas spending!
     function massUpdatePools() public {
         uint256 length = poolInfo.length;
-        for (uint256 pid = 0; pid < length; ++pid) {
+        for (uint256 pid = 1; pid < length; ++pid) {
             updatePool(pid);
         }
     }
@@ -161,18 +166,17 @@ contract VGSForLP is Ownable {
         if (block.number <= pool.lastRewardBlock) {
             return;
         }
-        uint256 lpSupply = pool.amm.balanceOf(address(this));
+        uint256 lpSupply = IAmm(pool.amm).totalLiquidity();
         if (lpSupply == 0) {
             pool.lastRewardBlock = block.number;
             return;
         }
+
         uint256 multiplier = block.number.sub(pool.lastRewardBlock);
         uint256 vgsReward =
             multiplier.mul(vgsPerBlock).mul(pool.allocPoint).div(
                 totalAllocPoint
             );
-
-        vgs.mint(address(this), vgsReward);
 
         pool.accVgsPerShare = pool.accVgsPerShare.add(
             vgsReward.mul(SCALE).div(lpSupply)
@@ -181,24 +185,34 @@ contract VGSForLP is Ownable {
     }
 
     function settlementAll() public {
+        address user = msg.sender;
         uint256 length = poolInfo.length;
-        for (uint256 pid = 0; pid < length; ++pid) {
-            doDeposit(pid, 0, msg.sender);
+        for (uint256 pid = 1; pid < length; ++pid) {
+            UserInfo memory userInfo = userInfos[pid][user];
+            doUpdateLP(pid, user, userInfo.amount);
         }
     }
 
-    // Deposit LP tokens to MasterChef for Vgs allocation.
-    function deposit(address _amm, uint256 _amount, address _user) public {
-        uint _pid = IdOfAmm[_amm];
-        doDeposit(_pid, _amount, _user);
+    // call from Amm
+    function updateLpAmount(address _user, uint256 _amount) external {
+        console.log("updateLpAmount");
+
+        uint pid = IdOfAmm[msg.sender];
+        require(pid > 0, "invalid Amm");
+        console.log("pid:", pid);
+        console.log("_amount:", _amount);
+        doUpdateLP(pid,  _user, _amount);
     }
 
-    function doDeposit(uint _pid, uint256 _amount, address _user) internal {
+    function doUpdateLP(uint _pid, address _user, uint256 _amount) internal {
         PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][_user];
+        UserInfo storage user = userInfos[_pid][_user];
         updatePool(_pid);
 
+        console.log("doUpdateLP");
+
         if (user.amount > 0) {
+            console.log("safeVgsTransfer");
             uint256 pending =
                 user.amount.mul(pool.accVgsPerShare).div(SCALE).sub(
                     user.rewardDebt
@@ -206,61 +220,14 @@ contract VGSForLP is Ownable {
             safeVgsTransfer(_user, pending);
         }
 
-        if (_amount > 0) {
-            pool.amm.safeTransferFrom(
-                address(msg.sender),
-                address(this),
-                _amount
-            );
-            user.amount = user.amount.add(_amount);
-        }
+        user.amount = _amount;
 
         user.rewardDebt = user.amount.mul(pool.accVgsPerShare).div(SCALE);
-        emit Deposit(_user, _pid, _amount);
+        emit UpdateLpDeposit(_user, _pid, _amount);
     }
 
-    function withdrawAll() public {
-        uint256 length = poolInfo.length;
-        for (uint256 pid = 0; pid < length; ++pid) {
-            UserInfo memory user = userInfo[pid][msg.sender];
-            doWithdraw(pid, user.amount);
-        }
-    }
 
-    // Withdraw LP tokens from PFIPool.
-    function withdraw(address _amm, uint256 _amount) public {
-        uint _pid = IdOfAmm[_amm];
-        doWithdraw(_pid, _amount);
-    }
-
-    function doWithdraw(uint _pid, uint256 _amount) internal {  
-        PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][msg.sender];
-        require(user.amount >= _amount, "withdraw: not good");
-        updatePool(_pid);
-        uint256 pending =
-            user.amount.mul(pool.accVgsPerShare).div(SCALE).sub(
-                user.rewardDebt
-            );
-        safeVgsTransfer(msg.sender, pending);
-        user.amount = user.amount.sub(_amount);
-        user.rewardDebt = user.amount.mul(pool.accVgsPerShare).div(SCALE);
-        pool.amm.safeTransfer(address(msg.sender), _amount);
-        emit Withdraw(msg.sender, _pid, _amount);
-    }
-
-    // Withdraw without caring about rewards. EMERGENCY ONLY.
-    function emergencyWithdraw(address _amm) public {
-        uint _pid = IdOfAmm[_amm];
-        PoolInfo memory pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][msg.sender];
-        pool.amm.safeTransfer(address(msg.sender), user.amount);
-        emit EmergencyWithdraw(msg.sender, _pid, user.amount);
-        user.amount = 0;
-        user.rewardDebt = 0;
-    }
-
-    // Safe vgs transfer function, just in case if rounding error causes pool to not have enough PFIs.
+    // Safe vgs transfer function, just in case if rounding error causes pool to not have enough Vgs.
     function safeVgsTransfer(address _to, uint256 _amount) internal {
         uint256 vgsBal = vgs.balanceOf(address(this));
         if (_amount > vgsBal) {

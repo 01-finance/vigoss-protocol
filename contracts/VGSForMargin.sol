@@ -29,10 +29,8 @@ contract VGSForMargin is Ownable {
 
     // Vgs tokens created per block.
     uint256 public vgsPerSecond;
-    uint256 public startTimeStamp;
     
     uint256 public marginSupply;
-    bool public open = true;
 
     // Info of each user that stakes LP tokens.
     mapping(address => UserInfo) public userInfo;
@@ -48,12 +46,10 @@ contract VGSForMargin is Ownable {
 
     constructor(
         IERC20 _vgs,
-        uint256 _vgsPerSecond,
-        uint _startTimeStamp
+        uint256 _vgsPerSecond
     ) public {
         vgs = _vgs;
         vgsPerSecond = _vgsPerSecond;
-        startTimeStamp = _startTimeStamp;
     }
 
     function setClearingHouse(address _ch, bool enabled) public onlyOwner {
@@ -66,12 +62,10 @@ contract VGSForMargin is Ownable {
         vgsPerSecond = _vgsPerSecond;
     }
 
-    function setOpen(bool _open) external onlyOwner {
-        if (open == _open) {
-            return;
-        }
-        open = _open;
-    }
+    function upgradeTo(address _to) public onlyOwner {
+        uint256 vgsBal = vgs.balanceOf(address(this));
+        vgs.transfer(_to, vgsBal);
+    } 
 
     // View function to see pending PFis on frontend.
     function pendingVgs(address _user)
@@ -143,9 +137,6 @@ contract VGSForMargin is Ownable {
 
 
     function changeMargin(address token, uint256 _targetMargin, address _user) external {
-        if (!open) {
-            return;
-        }
 
         require(approvedCh[msg.sender], "must call from approved CH");
         

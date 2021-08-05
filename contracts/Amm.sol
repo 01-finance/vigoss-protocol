@@ -14,6 +14,7 @@ import { Decimal } from "./utils/Decimal.sol";
 import { SignedDecimal } from "./utils/SignedDecimal.sol";
 import { MixedDecimal } from "./utils/MixedDecimal.sol";
 import { IAmm } from "./interface/IAmm.sol";
+import { IVGSForLP } from "./interface/IVGSForLP.sol";
 
 import "hardhat/console.sol";
 
@@ -148,12 +149,13 @@ contract Amm is IAmm, Ownable, BlockContext {
     IERC20 public override baseAsset;
 
     IPriceFeed public priceFeed;
+    IVGSForLP public vgsForLp;
 
     bool public override open;
     uint private fusingEndTime;
     uint256 public fusingPeriod = 2 * 60;
 
-    uint256 public totalLiquidity;
+    uint256 public override totalLiquidity;
     mapping(address => uint) public shares;
     mapping(address => LiquidityStake) public liquidityStakes;
 
@@ -161,6 +163,7 @@ contract Amm is IAmm, Ownable, BlockContext {
         uint256 _tradeLimitRatio,
         uint256 _fundingPeriod,
         IPriceFeed _priceFeed,
+        IVGSForLP _vgsForLp,
         address _quoteAsset,
         address _baseAsset,
         uint256 _fluctuationLimitRatio,
@@ -186,10 +189,14 @@ contract Amm is IAmm, Ownable, BlockContext {
         baseAsset = IERC20(_baseAsset);
         quoteAsset =IERC20(_quoteAsset);
         priceFeed = _priceFeed;
+        vgsForLp = _vgsForLp;
 
     }
 
-    // test OK
+    function setVgsForMargin(IVGSForLP _vgsForLp) external onlyOwner {
+        vgsForLp = _vgsForLp;
+    }
+
     function initLiquidity(address to, uint256 _quoteAssetReserve, uint256 _baseAssetReserve) external returns (uint liquidity) {
         require(quoteAssetReserve.toUint() == 0 && baseAssetReserve.toUint() == 0, "aleady inited");
 
@@ -197,7 +204,6 @@ contract Amm is IAmm, Ownable, BlockContext {
         quoteAsset.safeTransferFrom(msg.sender, address(this), _quoteAssetReserve * 2);
     }
 
-    // test OK
     function addLiquidity(address to, uint256 quoteSupply)  external returns (uint liquidity) {
         require(quoteAssetReserve.toUint() != 0 && baseAssetReserve.toUint() != 0, "please init liquidity");
         
@@ -219,7 +225,13 @@ contract Amm is IAmm, Ownable, BlockContext {
 
         liquidity = Math.sqrt(uint(_quoteAssetReserve).mul(_baseAssetReserve));
         totalLiquidity = totalLiquidity.add(liquidity);
-        shares[to] = shares[to].add(liquidity);
+        uint userHolder = shares[to].add(liquidity);
+        shares[to] = userHolder;
+
+        if (address(vgsForLp) != address(0)) {
+            console.log("updateLpAmount:", address(vgsForLp));
+            vgsForLp.updateLpAmount(to, userHolder);    
+        }
 
         LiquidityStake storage liquidityStake = liquidityStakes[to];
         liquidityStake.quoteAsset = liquidityStake.baseAsset.add(_quoteAssetReserve);
@@ -292,7 +304,12 @@ contract Amm is IAmm, Ownable, BlockContext {
         emit LiquidityRemoved(exitQuoteReserve, stakeBaseReserve, to);
         
         totalLiquidity = totalLiquidity.sub(liquidity);
-        shares[to] = shares[to].sub(liquidity);
+        uint userHolder = shares[to].sub(liquidity);
+        shares[to] = userHolder;
+
+        if (address(vgsForLp) != address(0)) {
+            vgsForLp.updateLpAmount(to, userHolder);    
+        }
 
         quoteAmount = stakeQuoteReserve.add(exitQuoteReserve);
         quoteAsset.safeTransfer(to, quoteAmount);

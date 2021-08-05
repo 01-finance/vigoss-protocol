@@ -140,7 +140,7 @@ contract ClearingHouse is
     }
 
     IAmm public immutable amm;
-    IVGSForMargin public immutable vgsForMargin;
+    IVGSForMargin public vgsForMargin;
 
     // only admin
     Decimal.decimal public initMarginRatio;
@@ -185,6 +185,10 @@ contract ClearingHouse is
     //
     // External
     //
+
+    function setVgsForMargin(IVGSForMargin _vgsForMargin) external onlyOwner {
+        vgsForMargin = _vgsForMargin;
+    }
 
     /**
      * @notice set liquidation fee ratio
@@ -682,7 +686,10 @@ contract ClearingHouse is
         positionStorage.lastUpdatedCumulativePremiumFraction = _position.lastUpdatedCumulativePremiumFraction;
         positionStorage.blockNumber = _position.blockNumber;
 
-        vgsForMargin.changeMargin(address(amm.quoteAsset()) , _position.margin.toUint(), _trader);
+        if (address(vgsForMargin) != address(0)) {
+            vgsForMargin.changeMargin(address(amm.quoteAsset()) , _position.margin.toUint(), _trader);
+        }
+        
     }
 
     function clearPosition(address _trader) internal {
@@ -694,7 +701,9 @@ contract ClearingHouse is
             lastUpdatedCumulativePremiumFraction: SignedDecimal.zero(),
             blockNumber: _blockNumber()
         });
-        vgsForMargin.changeMargin(address(amm.quoteAsset()) , 0, _trader);
+        if (address(vgsForMargin) != address(0)) {
+            vgsForMargin.changeMargin(address(amm.quoteAsset()) , 0, _trader);
+        }
     }
 
     // only called from openPosition and closeAndOpenReversePosition. caller need to ensure there's enough marginRatio

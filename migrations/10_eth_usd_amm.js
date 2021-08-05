@@ -2,6 +2,7 @@ const Amm = artifacts.require("Amm");
 const SimpleUSDPriceFeed = artifacts.require("SimpleUSDPriceFeed");
 const ClearingHouse = artifacts.require("ClearingHouse");
 const VGSForMargin = artifacts.require("VGSForMargin");
+const VGSForLP = artifacts.require("VGSForLP");
 const MockToken = artifacts.require("MockToken");
 
 const { writeAbis } = require('./log');
@@ -12,7 +13,7 @@ module.exports = async function(deployer, network, accounts) {
   let USDC = require(`../front/abis/USDC.${network}.json`);
   let WETH = require(`../front/abis/WETH.${network}.json`);
   let vgsForMargin = require(`../front/abis/VGSForMargin.${network}.json`);
-  
+  let vgsForLP = require(`../front/abis/VGSForLP.${network}.json`);
 
   const tradeLimitRatio   = web3.utils.toWei("0.015")    // default 0.015 1.25%
   const fundingPeriod = 3600   // 1 hour
@@ -26,6 +27,7 @@ module.exports = async function(deployer, network, accounts) {
     tradeLimitRatio,
     fundingPeriod,
     feed.address,
+    vgsForLP.address,
     USDC.address,
     WETH.address,
     fluctuationLimitRatio,
@@ -40,6 +42,12 @@ module.exports = async function(deployer, network, accounts) {
 
   const usdc =  await MockToken.at(USDC.address);
   await amm.setOpen(true);
+
+
+  var vgslp = await VGSForLP.at(vgsForLP.address);
+
+  await vgslp.add(10, amm.address, true);
+
 
   await usdc.approve(amm.address, web3.utils.toWei("8000000"));
   await amm.initLiquidity(accounts[0], quoteAssetReserve , baseAssetReserve);
