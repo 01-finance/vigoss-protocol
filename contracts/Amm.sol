@@ -242,7 +242,7 @@ contract Amm is IAmm, Ownable, BlockContext {
     }
 
     function baseReserveEnough(uint stakeBaseReserve) internal view returns (bool) {
-        uint leftBaseAssetReserve = baseAssetReserve.toUint().sub(stakeBaseReserve);
+        uint leftBaseAssetReserve = baseAssetReserve.toUint().sub(stakeBaseReserve, "base reserve too lower");
 
         if (leftBaseAssetReserve >= totalLongPositionSize.abs().toUint() && 
             leftBaseAssetReserve >= totalPositionSize.subD(totalLongPositionSize).abs().toUint()) {
@@ -258,6 +258,9 @@ contract Amm is IAmm, Ownable, BlockContext {
         LiquidityStake storage liquidityStake = liquidityStakes[to];
         uint stakeBaseReserve = liquidityStake.baseAsset;
         uint stakeQuoteReserve = liquidityStake.quoteAsset;
+
+        console.log("shares[msg.sender]:", shares[msg.sender]);
+        console.log("liquidity:", liquidity);
 
         if (shares[msg.sender] > liquidity) {
             stakeBaseReserve = liquidityStake.baseAsset.mul(liquidity).div(shares[msg.sender]);
