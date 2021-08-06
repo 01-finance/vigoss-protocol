@@ -3,7 +3,7 @@ const VGSForMargin = artifacts.require("VGSForMargin");
 const { writeAbis } = require('./log');
 
 module.exports = async function(deployer, network, accounts) {
-  const vgsPerSecond = web3.utils.toWei("1") // 
+  const vgsPerSecond = web3.utils.toWei("0.5") // 
 
   const vgs = await VigossToken.deployed();
 

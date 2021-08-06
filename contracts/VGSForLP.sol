@@ -9,8 +9,6 @@ import "./openzeppelin/math/SafeMath.sol";
 import "./openzeppelin/access/Ownable.sol";
 import "./interface/IAmm.sol";
 
-import "hardhat/console.sol";
-
 contract VGSForLP is Ownable {
     uint constant SCALE = 1e12;
 
@@ -46,7 +44,8 @@ contract VGSForLP is Ownable {
     // Total allocation poitns. Must be the sum of all allocation points in all pools.
     uint256 public totalAllocPoint = 0;
 
-    event UpdateLpDeposit(address indexed user, uint256 indexed pid, uint256 amount);
+    event UpdateLpDeposit(address indexed user, address indexed amm, uint256 amount);
+    event Settlement(address indexed user, uint amount);
 
     constructor(
         IERC20 _vgs,
@@ -186,51 +185,62 @@ contract VGSForLP is Ownable {
 
     function settlement(address _amm) external {
         uint pid = IdOfAmm[_amm];
-        UserInfo memory userInfo = userInfos[pid][msg.sender];
-        doUpdateLP(pid, msg.sender, userInfo.amount);
+        address user = msg.sender;
+        UserInfo memory userInfo = userInfos[pid][user];
+        uint pending = doUpdateLP(pid, user, userInfo.amount);
+        if (pending > 0) {
+            safeVgsTransfer(user, pending);
+            emit Settlement(user, pending);
+        }
     }
     
 
     function settlementAll() external {
         address user = msg.sender;
         uint256 length = poolInfo.length;
+        uint pending;
         for (uint256 pid = 1; pid < length; ++pid) {
             UserInfo memory userInfo = userInfos[pid][user];
-            doUpdateLP(pid, user, userInfo.amount);
+            pending += doUpdateLP(pid, user, userInfo.amount);
+        }
+        
+        if (pending > 0) {
+            safeVgsTransfer(user, pending);
+            emit Settlement(user, pending);
         }
     }
 
     // call from Amm
     function updateLpAmount(address _user, uint256 _amount) external {
-        console.log("updateLpAmount");
-
-        uint pid = IdOfAmm[msg.sender];
+        address amm = msg.sender;
+        uint pid = IdOfAmm[amm];
         require(pid > 0, "invalid Amm");
-        console.log("pid:", pid);
-        console.log("_amount:", _amount);
-        doUpdateLP(pid,  _user, _amount);
+        uint pending = doUpdateLP(pid,  _user, _amount);
+        if (pending > 0) {
+            safeVgsTransfer(_user, pending);
+            emit Settlement(_user, pending);
+        }
+        
     }
 
-    function doUpdateLP(uint _pid, address _user, uint256 _amount) internal {
+    function doUpdateLP(uint _pid, address _user, uint256 _amount) internal returns (uint pending) {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfos[_pid][_user];
         updatePool(_pid);
 
-        console.log("doUpdateLP");
-
         if (user.amount > 0) {
-            console.log("safeVgsTransfer");
-            uint256 pending =
-                user.amount.mul(pool.accVgsPerShare).div(SCALE).sub(
+            pending = user.amount.mul(pool.accVgsPerShare).div(SCALE).sub(
                     user.rewardDebt
                 );
-            safeVgsTransfer(_user, pending);
         }
 
-        user.amount = _amount;
+        if (user.amount != _amount ) {
+            user.amount = _amount;
+            emit UpdateLpDeposit(_user, pool.amm, _amount);
+        }
 
         user.rewardDebt = user.amount.mul(pool.accVgsPerShare).div(SCALE);
-        emit UpdateLpDeposit(_user, _pid, _amount);
+       
     }
 
 

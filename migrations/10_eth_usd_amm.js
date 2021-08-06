@@ -68,8 +68,6 @@ module.exports = async function(deployer, network, accounts) {
 
   await marginMiner.setClearingHouse(house.address, true);
 
-  // await deployer.deploy(ClearingHouseViewer, ClearingHouse.address);
-  // await writeAbis(ClearingHouseViewer, 'ClearingHouseViewer:ETH-USDC', network);
 
   await amm.setCounterParty(house.address);
 

@@ -9,8 +9,6 @@ import "./openzeppelin/utils/EnumerableSet.sol";
 import "./openzeppelin/math/SafeMath.sol";
 import "./openzeppelin/access/Ownable.sol";
 
-import "hardhat/console.sol";
-
 contract VGSForMargin is Ownable {
     uint constant SCALE = 1e12;
 
@@ -40,6 +38,7 @@ contract VGSForMargin is Ownable {
 
     event AddMargin(address indexed user, address token, uint256 amount);
     event RemoveMargin(address indexed user, address token, uint256 amount);
+
     event SetClearingHouse(address indexed ch, bool enabled);
     event Settlement(address indexed user, uint amount);
 
