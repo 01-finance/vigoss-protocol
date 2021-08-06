@@ -20,7 +20,7 @@ contract VGSForMargin is Ownable {
         uint256 rewardDebt; // Reward debt. See explanation below.
     }
 
-    uint256 public lastRewardSecond; // Last block number that VGSs distribution occurs.
+    uint256 public lastRewardSecond; // Last timestamp that VGSs distribution occurs.
     uint256 public accVgsPerShare; // Accumulated VGSs per share, times 1e12. See below.
 
     IERC20 public immutable vgs;

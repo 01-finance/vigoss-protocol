@@ -24,7 +24,7 @@ contract VGSForLP is Ownable {
     struct PoolInfo {
         address amm; // Address of amm contract.
         uint256 allocPoint; // How many allocation points assigned to this pool. Vgs to distribute per block.
-        uint256 lastRewardBlock; // Last block number that Vgs distribution occurs.
+        uint256 lastRewardSecond; // Last timestamp that Vgs distribution occurs.
         uint256 accVgsPerShare; // Accumulated Vgs per share, times 1e12. See below.
     }
 
@@ -82,7 +82,7 @@ contract VGSForLP is Ownable {
         if (_withUpdate) {
             massUpdatePools();
         }
-        uint256 lastRewardBlock = block.number;
+        uint256 lastRewardSecond = block.timestamp;
         if (_allocPoint > 0) {
             totalAllocPoint = totalAllocPoint.add(_allocPoint);
         }
@@ -91,7 +91,7 @@ contract VGSForLP is Ownable {
             PoolInfo({
                 amm: _amm,
                 allocPoint: _allocPoint,
-                lastRewardBlock: lastRewardBlock,
+                lastRewardSecond: lastRewardSecond,
                 accVgsPerShare: 0
             })
         );
@@ -138,8 +138,8 @@ contract VGSForLP is Ownable {
 
         uint256 lpSupply = IAmm(pool.amm).totalLiquidity();
 
-        if (block.number > pool.lastRewardBlock && lpSupply != 0) {
-            uint256 multiplier = block.number.sub(pool.lastRewardBlock);
+        if (block.timestamp > pool.lastRewardSecond && lpSupply != 0) {
+            uint256 multiplier = block.timestamp.sub(pool.lastRewardSecond);
             uint256 vgsReward =
                 multiplier.mul(vgsPerBlock).mul(pool.allocPoint).div(
                     totalAllocPoint
@@ -162,16 +162,16 @@ contract VGSForLP is Ownable {
     // Update reward variables of the given pool to be up-to-date.
     function updatePool(uint256 _pid) public {
         PoolInfo storage pool = poolInfo[_pid];
-        if (block.number <= pool.lastRewardBlock) {
+        if (block.timestamp <= pool.lastRewardSecond) {
             return;
         }
         uint256 lpSupply = IAmm(pool.amm).totalLiquidity();
         if (lpSupply == 0) {
-            pool.lastRewardBlock = block.number;
+            pool.lastRewardSecond = block.timestamp;
             return;
         }
 
-        uint256 multiplier = block.number.sub(pool.lastRewardBlock);
+        uint256 multiplier = block.timestamp.sub(pool.lastRewardSecond);
         uint256 vgsReward =
             multiplier.mul(vgsPerBlock).mul(pool.allocPoint).div(
                 totalAllocPoint
@@ -180,7 +180,7 @@ contract VGSForLP is Ownable {
         pool.accVgsPerShare = pool.accVgsPerShare.add(
             vgsReward.mul(SCALE).div(lpSupply)
         );
-        pool.lastRewardBlock = block.number;
+        pool.lastRewardSecond = block.timestamp;
     }
 
     function settlement(address _amm) external {
