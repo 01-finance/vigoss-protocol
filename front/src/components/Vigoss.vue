@@ -3,8 +3,10 @@
   <h1>Vigoss Demo</h1>
   <span>USDC 余额：{{ usdcBalance }} </span>
   <br>
+  <span>VGS 余额：{{ vgsBalance }} </span>
+  <br>
   <span>当前价：1 ETH = {{ currPrice }} USDC</span>
-  <h3>下单</h3>
+  <h3>开仓</h3>
   <div>
     <input type="radio" id="long" value="0" v-model="longOrShort">
     <label for="long">做多</label>
@@ -28,7 +30,7 @@
     <button @click="openPosition">(后)下单</button>
   </div>
 
-  <h3>我的订单</h3>
+  <h3>我的仓位</h3>
   <div v-if="myPosition">
     <span>保证金: {{ this.myPosition.margin }}</span>
     <br>
@@ -54,6 +56,43 @@
     </div>
   </div>
 
+    <div>
+        保证金挖矿所得待提取 vgs 数量 ：{{  pendingMarginVgs }} 
+        <button @click="settleMarginVgs">提取</button>
+      </div>
+
+  <h3>LP 管理</h3>
+    <div>
+        <input v-model="supplyLP" placeholder="提供 U 的数量">
+        <button @click="approveAmm">(先)授权</button>
+        <button @click="addLp">添加流动性</button>
+    </div> 
+
+    <div>
+      我的 LP ：{{ lpBalance }} ,  总 LP : {{ lpTotal }} 
+      <br>
+      <input v-model="exitLpAmount" placeholder="退出 LP 数量">
+      <button @click="removeLiquidity">退出流动性</button>
+    </div>
+
+    <div>
+      LP 挖矿 待提取的 vgs 数量: {{ pendingLpVgs }}
+      <button @click="settleLpVgs">提取</button>
+    </div>
+
+    <h3>测试备注信息：</h3>
+    AMM LP 地址：{{ ammlpAddr }},
+    <br>
+    AMM LP 挖矿地址: {{ ammVgsLPMinerAddr }}
+    <br>
+    保证金挖矿地址: {{ ammVgsMarginMinerAddr }}
+    <br>
+
+    VGS 地址：{{ vgsAddr }}
+    <br>
+    USDC 地址: {{ usdcAddr }} 
+
+
 
 </div>
 </template>
@@ -75,6 +114,7 @@ export default {
   data() {
     return {
       usdcBalance: null,
+      vgsBalance: null,
       longOrShort: 0,
       baseAmount: null,
       currPrice: null,
@@ -85,6 +125,17 @@ export default {
       myPosition: null,
       adjustAmount: null,
       allowanced: null,
+      supplyLP: null,
+      pendingLpVgs: null,
+      pendingMarginVgs: null,
+      lpBalance: null,
+      lpTotal: null,
+      exitLpAmount: null,
+      ammlpAddr: null,
+      vgsAddr: null,
+      usdcAddr: null,
+      ammVgsLPMinerAddr: null,
+      ammVgsMarginMinerAddr: null,
     }
   },
 
@@ -110,6 +161,12 @@ export default {
     async init() {
       this.usdc = await proxy.getUSDCToken(this.chainid);
       this.decimal = await this.usdc.decimals();
+
+      this.vgs = await proxy.getVgs(this.chainid);
+      this.vgsForLp = await proxy.getVgsForLP(this.chainid);
+      this.vgsForMargin = await proxy.getVgsForMargin(this.chainid);
+
+
       this.balanceOf();
 
       const network = NETWORK_NAME[this.chainid];
@@ -121,14 +178,30 @@ export default {
       let ETHUSDCPair = require(`../../abis/Amm:ETH-USDC.${network}.json`);
       this.ammPair = await proxy.getAmm(ETHUSDCPair.address);
 
+      this.ammlpAddr =  this.ammPair.address;
+      this.vgsAddr = this.vgs.address;
+      this.usdcAddr = this.usdc.address;
+      
+      this.ammVgsLPMinerAddr = this.vgsForLp.address;
+      this.ammVgsMarginMinerAddr = this.vgsForMargin.address;
+
+
       this.getPosition();
       this.getSpotPrice();
+      this.liquidityInfo();
+      this.pendingVsgOnLp();
+      this.pendingVsgOnMargin();
     },
 
     balanceOf() {
       this.usdc.balanceOf(this.account).then(r => {
         this.usdcBalance = fromDec(r.toString(), this.decimal);
       })
+
+      this.vgs.balanceOf(this.account).then(r => {
+        this.vgsBalance = fromDec(r.toString(), 18);
+      })
+
     },
 
     getSpotPrice() {
@@ -206,6 +279,14 @@ export default {
       })
     },
 
+    approveAmm() {
+      this.usdc.approve(this.ammPair.address, MaxUint, {
+        from: this.account
+      }).then(() => {
+
+      })  
+    },
+
     openPosition() {
       let qAmount = toDec(this.margin, this.decimal);
       let lev = toDec(this.leverage, 18);
@@ -272,9 +353,67 @@ export default {
       {from: this.account}).then(() => {
         this.getPosition();
       })
+    },
+
+    addLp() {
+        let amount = this.web3.utils.toWei(this.supplyLP, this.decimal);
+        this.ammPair.addLiquidity(this.account, amount, {from: this.account}).then(() => {
+            this.liquidityInfo();
+        })
+
+    },
+
+    removeLiquidity() {
+        let liquidity = this.web3.utils.toWei(this.exitLpAmount);
+        this.ammPair.removeLiquidity(this.account, liquidity, {from: this.account}).then(() => {
+            this.liquidityInfo();
+        })
+    },
+
+    liquidityInfo() {
+     this.ammPair.totalLiquidity().then((p) => {
+         this.lpTotal = this.web3.utils.fromWei(p.toString())
+     })
+
+     this.ammPair.shares(this.account).then((r) => {
+         this.lpBalance = this.web3.utils.fromWei(r.toString())
+     })
+    
+    },
+
+
+    pendingVsgOnLp() {
+        // 单个 LP 挖矿所得：
+        // this.vgsForLp.pendingVgs(this.ammPair.address, this.account).then((r) => {
+        //     this.pendingLpVgs = this.web3.utils.fromWei(r.toString());
+        // });
+
+        this.vgsForLp.allPendingVgs(this.account).then((r) => {
+            this.pendingLpVgs = this.web3.utils.fromWei(r.toString());
+        });
+    },
+
+    pendingVsgOnMargin() {
+        this.vgsForMargin.pendingVgs(this.account).then((r) => {
+            this.pendingMarginVgs = this.web3.utils.fromWei(r.toString());
+        });
+    },
+
+    settleMarginVgs() {
+         this.vgsForMargin.settlement({from: this.account}).then(() => {
+            this.pendingVsgOnMargin();
+        });
+    },
+
+    settleLpVgs() {
+        this.vgsForLp.settlementAll({from: this.account}).then(() => {
+            this.pendingVsgOnLp();
+            this.balanceOf();
+        });
     }
 
   }
+
 
 }
 </script>

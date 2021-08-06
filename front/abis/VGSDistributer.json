@@ -1,21 +1,21 @@
 {
-  "contractName": "MockToken",
+  "contractName": "VGSDistributer",
   "abi": [
     {
       "inputs": [
         {
-          "internalType": "string",
-          "name": "symbol",
-          "type": "string"
-        },
-        {
-          "internalType": "uint8",
-          "name": "decimals",
-          "type": "uint8"
+          "internalType": "contract IERC20",
+          "name": "_vgs",
+          "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "initSupply",
+          "name": "_vgsPerSecond",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_startTimeStamp",
           "type": "uint256"
         }
       ],
@@ -29,25 +29,25 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "owner",
+          "name": "user",
           "type": "address"
         },
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "address",
-          "name": "spender",
+          "name": "token",
           "type": "address"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "value",
+          "name": "amount",
           "type": "uint256"
         }
       ],
-      "name": "Approval",
+      "name": "AddMargin",
       "type": "event",
-      "signature": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
+      "signature": "0x1faf0eba2d181ecb9ed4b23e555c3eefe36ca290446147fc0c9454bac1f9d382"
     },
     {
       "anonymous": false,
@@ -75,127 +75,90 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "from",
+          "name": "user",
           "type": "address"
         },
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "address",
-          "name": "to",
+          "name": "token",
           "type": "address"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "value",
+          "name": "amount",
           "type": "uint256"
         }
       ],
-      "name": "Transfer",
+      "name": "RemoveMargin",
       "type": "event",
-      "signature": "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+      "signature": "0x37abde5adc5075311f6058b7ac684b86d70727a6d95c7cb07de4df145d645580"
     },
     {
+      "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
           "internalType": "address",
-          "name": "owner",
+          "name": "ch",
           "type": "address"
         },
         {
-          "internalType": "address",
-          "name": "spender",
-          "type": "address"
+          "indexed": false,
+          "internalType": "bool",
+          "name": "enabled",
+          "type": "bool"
         }
       ],
-      "name": "allowance",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0xdd62ed3e"
+      "name": "SetClearingHouse",
+      "type": "event",
+      "signature": "0xbb77862ae4bfe187b81d0da2a2f2b26580d53b18ad6181120a74b09db279a29a"
     },
     {
+      "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
           "internalType": "address",
-          "name": "spender",
+          "name": "user",
           "type": "address"
         },
         {
+          "indexed": false,
           "internalType": "uint256",
           "name": "amount",
           "type": "uint256"
         }
       ],
-      "name": "approve",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x095ea7b3"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
-      ],
-      "name": "balanceOf",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x70a08231"
+      "name": "Settlement",
+      "type": "event",
+      "signature": "0xbddcc4ab73b8e971706360fbdcce2f609328e78217649695ee3ab811ab52d162"
     },
     {
       "inputs": [],
-      "name": "decimals",
+      "name": "accVgsPerShare",
       "outputs": [
         {
-          "internalType": "uint8",
+          "internalType": "uint256",
           "name": "",
-          "type": "uint8"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
       "type": "function",
       "constant": true,
-      "signature": "0x313ce567"
+      "signature": "0xbfec0a3d"
     },
     {
       "inputs": [
         {
           "internalType": "address",
-          "name": "spender",
+          "name": "",
           "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "subtractedValue",
-          "type": "uint256"
         }
       ],
-      "name": "decreaseAllowance",
+      "name": "approvedCh",
       "outputs": [
         {
           "internalType": "bool",
@@ -203,49 +166,40 @@
           "type": "bool"
         }
       ],
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function",
-      "signature": "0xa457c2d7"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "spender",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "addedValue",
-          "type": "uint256"
-        }
-      ],
-      "name": "increaseAllowance",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x39509351"
+      "constant": true,
+      "signature": "0x05d28d33"
     },
     {
       "inputs": [],
-      "name": "name",
+      "name": "lastRewardSecond",
       "outputs": [
         {
-          "internalType": "string",
+          "internalType": "uint256",
           "name": "",
-          "type": "string"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
       "type": "function",
       "constant": true,
-      "signature": "0x06fdde03"
+      "signature": "0x50b6f4d1"
+    },
+    {
+      "inputs": [],
+      "name": "marginSupply",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x19d1cc49"
     },
     {
       "inputs": [],
@@ -272,22 +226,7 @@
     },
     {
       "inputs": [],
-      "name": "symbol",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x95d89b41"
-    },
-    {
-      "inputs": [],
-      "name": "totalSupply",
+      "name": "startTimeStamp",
       "outputs": [
         {
           "internalType": "uint256",
@@ -298,62 +237,7 @@
       "stateMutability": "view",
       "type": "function",
       "constant": true,
-      "signature": "0x18160ddd"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "recipient",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "transfer",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xa9059cbb"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "transferFrom",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x23b872dd"
+      "signature": "0xf38d00f0"
     },
     {
       "inputs": [
@@ -373,26 +257,181 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_to",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "userInfo",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "rewardDebt",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x1959a002"
+    },
+    {
+      "inputs": [],
+      "name": "vgs",
+      "outputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xa00b14d0"
+    },
+    {
+      "inputs": [],
+      "name": "vgsPerSecond",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x98eb2537"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_ch",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "enabled",
+          "type": "bool"
+        }
+      ],
+      "name": "setClearingHouse",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x32ac8aa7"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_vgsPerSecond",
+          "type": "uint256"
+        }
+      ],
+      "name": "setVgsPerSecond",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xf980b69c"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
+        }
+      ],
+      "name": "pendingVgs",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x8becc4be"
+    },
+    {
+      "inputs": [],
+      "name": "updatePool",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xe3161ddd"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
           "type": "address"
         },
         {
           "internalType": "uint256",
           "name": "_amount",
           "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
         }
       ],
-      "name": "mint",
+      "name": "addMargin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x52167dcf"
+    },
+    {
+      "inputs": [],
+      "name": "settlement",
       "outputs": [
         {
-          "internalType": "bool",
+          "internalType": "uint256",
           "name": "",
-          "type": "bool"
+          "type": "uint256"
         }
       ],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0x40c10f19"
+      "signature": "0x51160630"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
+        }
+      ],
+      "name": "removeMargin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xe5ebd43c"
     }
   ]
 }

@@ -4,7 +4,8 @@
     {
       "inputs": [],
       "stateMutability": "nonpayable",
-      "type": "constructor"
+      "type": "constructor",
+      "signature": "constructor"
     },
     {
       "anonymous": false,
@@ -17,7 +18,8 @@
         }
       ],
       "name": "AmmAdded",
-      "type": "event"
+      "type": "event",
+      "signature": "0x10cdbb821aa416c854add806e1d7e8138afe2a538921cebe99b1351362ae38b2"
     },
     {
       "anonymous": false,
@@ -30,7 +32,8 @@
         }
       ],
       "name": "AmmRemoved",
-      "type": "event"
+      "type": "event",
+      "signature": "0xdaad2af263ebb3abf337a324f20752addc3bf170971ce7b80cc3bfea1fcf30ee"
     },
     {
       "anonymous": false,
@@ -49,7 +52,8 @@
         }
       ],
       "name": "OwnershipTransferred",
-      "type": "event"
+      "type": "event",
+      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
     },
     {
       "anonymous": false,
@@ -62,7 +66,8 @@
         }
       ],
       "name": "ShutdownAllAmms",
-      "type": "event"
+      "type": "event",
+      "signature": "0xfc9f9c6cbb93f675af09b9bb43859333114dfa5e4c5abd35297e153f24348101"
     },
     {
       "anonymous": false,
@@ -75,7 +80,8 @@
         }
       ],
       "name": "TokenAdded",
-      "type": "event"
+      "type": "event",
+      "signature": "0x784c8f4dbf0ffedd6e72c76501c545a70f8b203b30a26ce542bf92ba87c248a4"
     },
     {
       "anonymous": false,
@@ -88,7 +94,8 @@
         }
       ],
       "name": "TokenRemoved",
-      "type": "event"
+      "type": "event",
+      "signature": "0x4c910b69fe65a61f7531b9c5042b2329ca7179c77290aa7e2eb3afa3c8511fd3"
     },
     {
       "anonymous": false,
@@ -107,20 +114,8 @@
         }
       ],
       "name": "Withdrawn",
-      "type": "event"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        }
-      ],
-      "name": "addAmm",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "event",
+      "signature": "0x7084f5476618d8e60b11ef0d7d3f06914655adb8793e28ff7f018d4c76d505d5"
     },
     {
       "inputs": [],
@@ -133,65 +128,9 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getAllAmms",
-      "outputs": [
-        {
-          "internalType": "contract IAmm[]",
-          "name": "",
-          "type": "address[]"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getQuoteTokenLength",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        }
-      ],
-      "name": "isExistedAmm",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "minter",
-      "outputs": [
-        {
-          "internalType": "contract IMinter",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true,
+      "signature": "0xd2f7265a"
     },
     {
       "inputs": [],
@@ -204,20 +143,9 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "perpToken",
-      "outputs": [
-        {
-          "internalType": "contract IERC20",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true,
+      "signature": "0x8da5cb5b"
     },
     {
       "inputs": [
@@ -236,91 +164,17 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract IAmm",
-          "name": "_amm",
-          "type": "address"
-        }
-      ],
-      "name": "removeAmm",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract IERC20",
-          "name": "_token",
-          "type": "address"
-        }
-      ],
-      "name": "removeToken",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "constant": true,
+      "signature": "0x2c9115c7"
     },
     {
       "inputs": [],
       "name": "renounceOwnership",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_beneficiary",
-          "type": "address"
-        },
-        {
-          "internalType": "bool",
-          "name": "enable",
-          "type": "bool"
-        }
-      ],
-      "name": "setBeneficiary",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract IExchangeWrapper",
-          "name": "_exchange",
-          "type": "address"
-        }
-      ],
-      "name": "setExchange",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract IMinter",
-          "name": "_minter",
-          "type": "address"
-        }
-      ],
-      "name": "setMinter",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "shutdownAllAmm",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x715018a6"
     },
     {
       "inputs": [
@@ -333,7 +187,73 @@
       "name": "transferOwnership",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xf2fde38b"
+    },
+    {
+      "inputs": [],
+      "name": "vgs",
+      "outputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xa00b14d0"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IAmm",
+          "name": "_amm",
+          "type": "address"
+        }
+      ],
+      "name": "addAmm",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xd926de1c"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IAmm",
+          "name": "_amm",
+          "type": "address"
+        }
+      ],
+      "name": "removeAmm",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xcf230979"
+    },
+    {
+      "inputs": [],
+      "name": "shutdownAllAmm",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x9dd96eb2"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "removeToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x5fa7b584"
     },
     {
       "inputs": [
@@ -371,7 +291,106 @@
         }
       ],
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x252978b8"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IExchangeWrapper",
+          "name": "_exchange",
+          "type": "address"
+        }
+      ],
+      "name": "setExchange",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x67b1f5df"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_beneficiary",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "enable",
+          "type": "bool"
+        }
+      ],
+      "name": "setBeneficiary",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x7eb5da0d"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "_vgs",
+          "type": "address"
+        }
+      ],
+      "name": "setVgs",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xcca09c52"
+    },
+    {
+      "inputs": [],
+      "name": "getQuoteTokenLength",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xbeb0597a"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IAmm",
+          "name": "_amm",
+          "type": "address"
+        }
+      ],
+      "name": "isExistedAmm",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x0774a784"
+    },
+    {
+      "inputs": [],
+      "name": "getAllAmms",
+      "outputs": [
+        {
+          "internalType": "contract IAmm[]",
+          "name": "",
+          "type": "address[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xb7538c62"
     }
   ]
 }

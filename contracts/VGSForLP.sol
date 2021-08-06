@@ -184,7 +184,14 @@ contract VGSForLP is Ownable {
         pool.lastRewardBlock = block.number;
     }
 
-    function settlementAll() public {
+    function settlement(address _amm) external {
+        uint pid = IdOfAmm[_amm];
+        UserInfo memory userInfo = userInfos[pid][msg.sender];
+        doUpdateLP(pid, msg.sender, userInfo.amount);
+    }
+    
+
+    function settlementAll() external {
         address user = msg.sender;
         uint256 length = poolInfo.length;
         for (uint256 pid = 1; pid < length; ++pid) {

@@ -4,9 +4,10 @@ import Web3 from "web3";
 import contract from "@truffle/contract";
 import Amm from "../abis/Amm.json";
 import ClearingHouse from "../abis/ClearingHouse.json";
-import InsuranceFund from "../abis/InsuranceFund.json";
+import VGSForLP from "../abis/VGSForLP.json";
+import VGSForMargin from "../abis/VGSForMargin.json";
 import MockToken from "../abis/MockToken.json";
-import ClearingHouseViewer from "../abis/ClearingHouseViewer.json";
+import VigossToken from "../abis/VigossToken.json";
 import { NETWORK_NAME } from "./constants";
 
 
@@ -76,23 +77,31 @@ export default {
     return proxy.at(addr);
   },
 
-  getClearingHouseViewer(networkId) {
+  getVgs(networkId) {
     const networkName = NETWORK_NAME[networkId];
-    let addrJs = require(`../abis/ClearingHouseViewer.${networkName}.json`);
-    const proxy = contract(ClearingHouseViewer)
+    let addrJs = require(`../abis/VigossToken.${networkName}.json`);
+    const proxy = contract(VigossToken)
     proxy.setProvider(this.provider)
     return proxy.at(addrJs.address);
   },
 
-  getInsuranceFund(networkId) {
+  getVgsForLP(networkId) {
     const networkName = NETWORK_NAME[networkId];
-    let addrJs = require(`../abis/InsuranceFund.${networkName}.json`);
+    let addrJs = require(`../abis/VGSForLP.${networkName}.json`);
     // console.log("InsuranceFund addr:", addrJs)
-    const proxy = contract(InsuranceFund)
+    const proxy = contract(VGSForLP)
     proxy.setProvider(this.provider)
     return proxy.at(addrJs.address);
   },
 
+  getVgsForMargin(networkId) {
+    const networkName = NETWORK_NAME[networkId];
+    let addrJs = require(`../abis/VGSForMargin.${networkName}.json`);
+    // console.log("InsuranceFund addr:", addrJs)
+    const proxy = contract(VGSForMargin)
+    proxy.setProvider(this.provider)
+    return proxy.at(addrJs.address);
+  },
 
 
 }

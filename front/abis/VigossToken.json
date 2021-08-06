@@ -1,22 +1,12 @@
 {
-  "contractName": "MockToken",
+  "contractName": "VigossToken",
   "abi": [
     {
       "inputs": [
         {
-          "internalType": "string",
-          "name": "symbol",
-          "type": "string"
-        },
-        {
-          "internalType": "uint8",
-          "name": "decimals",
-          "type": "uint8"
-        },
-        {
-          "internalType": "uint256",
-          "name": "initSupply",
-          "type": "uint256"
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
         }
       ],
       "stateMutability": "nonpayable",
@@ -55,19 +45,51 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "previousOwner",
+          "name": "delegator",
           "type": "address"
         },
         {
           "indexed": true,
           "internalType": "address",
-          "name": "newOwner",
+          "name": "fromDelegate",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "toDelegate",
           "type": "address"
         }
       ],
-      "name": "OwnershipTransferred",
+      "name": "DelegateChanged",
       "type": "event",
-      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+      "signature": "0x3134e8a2e6d97e929a7e54011ea5485d7d196dd5f0ba4d4ef95803e8e3fc257f"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "delegate",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "previousBalance",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newBalance",
+          "type": "uint256"
+        }
+      ],
+      "name": "DelegateVotesChanged",
+      "type": "event",
+      "signature": "0xdec2bacdd2f05b59de34da9b523dff8be42e5e38e818c82fdb0bae774387a724"
     },
     {
       "anonymous": false,
@@ -94,6 +116,51 @@
       "name": "Transfer",
       "type": "event",
       "signature": "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+    },
+    {
+      "inputs": [],
+      "name": "DELEGATION_TYPEHASH",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xe7a324dc"
+    },
+    {
+      "inputs": [],
+      "name": "DOMAIN_SEPARATOR",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x3644e515"
+    },
+    {
+      "inputs": [],
+      "name": "PERMIT_TYPEHASH",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x30adf81f"
     },
     {
       "inputs": [
@@ -168,6 +235,37 @@
       "signature": "0x70a08231"
     },
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
+        }
+      ],
+      "name": "checkpoints",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "fromBlock",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "votes",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xf1127ed8"
+    },
+    {
       "inputs": [],
       "name": "decimals",
       "outputs": [
@@ -211,6 +309,127 @@
       "inputs": [
         {
           "internalType": "address",
+          "name": "delegatee",
+          "type": "address"
+        }
+      ],
+      "name": "delegate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x5c19a95c"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "delegatee",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "nonce",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "expiry",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint8",
+          "name": "v",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "r",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "s",
+          "type": "bytes32"
+        }
+      ],
+      "name": "delegateBySig",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xc3cda520"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "delegates",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x587cde1e"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "getCurrentVotes",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xb4b5ea57"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "getPriorVotes",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x782d6fe1"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "spender",
           "type": "address"
         },
@@ -248,27 +467,90 @@
       "signature": "0x06fdde03"
     },
     {
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
+      "inputs": [
         {
           "internalType": "address",
           "name": "",
           "type": "address"
         }
       ],
+      "name": "nonces",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "view",
       "type": "function",
       "constant": true,
-      "signature": "0x8da5cb5b"
+      "signature": "0x7ecebe00"
     },
     {
-      "inputs": [],
-      "name": "renounceOwnership",
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "numCheckpoints",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x6fcfff45"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "spender",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "deadline",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint8",
+          "name": "v",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "r",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "s",
+          "type": "bytes32"
+        }
+      ],
+      "name": "permit",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0x715018a6"
+      "signature": "0xd505accf"
     },
     {
       "inputs": [],
@@ -358,31 +640,36 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
         }
       ],
-      "name": "transferOwnership",
+      "name": "burn",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0xf2fde38b"
+      "signature": "0x42966c68"
     },
     {
       "inputs": [
         {
           "internalType": "address",
-          "name": "_to",
+          "name": "recipient",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "_amount",
+          "name": "amount",
           "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "exData",
+          "type": "bytes"
         }
       ],
-      "name": "mint",
+      "name": "send",
       "outputs": [
         {
           "internalType": "bool",
@@ -392,7 +679,7 @@
       ],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0x40c10f19"
+      "signature": "0x9bd9bbc6"
     }
   ]
 }
