@@ -303,6 +303,9 @@ contract Amm is IAmm, Ownable, BlockContext {
 
         baseAssetReserve = baseAssetReserve.subD(Decimal.decimal(stakeBaseReserve));
         quoteAssetReserve = quoteAssetReserve.subD(Decimal.decimal(exitQuoteReserve));
+        reserveSnapshots.push(ReserveSnapshot(quoteAssetReserve, baseAssetReserve, _blockTimestamp(), _blockNumber()));
+        emit ReserveSnapshotted(quoteAssetReserve.toUint(), baseAssetReserve.toUint(), _blockTimestamp());
+
 
         emit LiquidityRemoved(exitQuoteReserve, stakeBaseReserve, to);
         

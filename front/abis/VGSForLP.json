@@ -48,10 +48,30 @@
           "type": "address"
         },
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "uint256",
-          "name": "pid",
+          "name": "amount",
           "type": "uint256"
+        }
+      ],
+      "name": "Settlement",
+      "type": "event",
+      "signature": "0xbddcc4ab73b8e971706360fbdcce2f609328e78217649695ee3ab811ab52d162"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "amm",
+          "type": "address"
         },
         {
           "indexed": false,
@@ -62,7 +82,7 @@
       ],
       "name": "UpdateLpDeposit",
       "type": "event",
-      "signature": "0x620c93a21310cc0991949a20b7c1018b08d3fad6d1a8f0a5c7bb9d893adbab4f"
+      "signature": "0xfd4abd55709084c4aa5b631e47fb5dcdab99b1db8089cb6e01b9833b0b5d6c83"
     },
     {
       "inputs": [
@@ -419,6 +439,20 @@
       "stateMutability": "nonpayable",
       "type": "function",
       "signature": "0x51eb05a6"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_amm",
+          "type": "address"
+        }
+      ],
+      "name": "settlement",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xaba5e742"
     },
     {
       "inputs": [],
