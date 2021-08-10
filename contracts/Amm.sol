@@ -156,6 +156,8 @@ contract Amm is IAmm, Ownable, BlockContext {
     uint256 public fusingPeriod = 2 * 60;
 
     uint256 public override totalLiquidity;
+    uint256 public override totalLiquidityUSD;
+
     mapping(address => uint) public shares;
     mapping(address => LiquidityStake) public liquidityStakes;
 
@@ -216,6 +218,7 @@ contract Amm is IAmm, Ownable, BlockContext {
 
     function implAddLiquidity(address to, uint256 _quoteAssetReserve, uint256 _baseAssetReserve) onlyOpen internal returns (uint liquidity) {
         require(_quoteAssetReserve != 0 && _baseAssetReserve != 0, "invalid reserves");
+        totalLiquidityUSD = totalLiquidityUSD.add(_quoteAssetReserve.mul(2));
 
         quoteAssetReserve = quoteAssetReserve.addD(Decimal.decimal(_quoteAssetReserve));
         baseAssetReserve = baseAssetReserve.addD(Decimal.decimal(_baseAssetReserve));
@@ -318,10 +321,9 @@ contract Amm is IAmm, Ownable, BlockContext {
         }
 
         quoteAmount = stakeQuoteReserve.add(exitQuoteReserve);
+        totalLiquidityUSD = totalLiquidityUSD.sub(quoteAmount);
         quoteAsset.safeTransfer(to, quoteAmount);
     }
-
-
 
 
     function updateLongSize(bool buy, SignedDecimal.signedDecimal memory newSize) external override onlyOpen onlyCounterParty {

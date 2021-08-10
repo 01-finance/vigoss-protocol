@@ -40,6 +40,7 @@ contract ClearingHouse is
         uint256 oldLiquidityIndex,
         uint256 newLiquidityIndex
     );
+    
     event PositionSettled(address indexed trader, uint256 valueTransferred);
     event RestrictionModeEntered(uint256 blockNumber);
 

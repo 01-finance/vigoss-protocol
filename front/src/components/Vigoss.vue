@@ -45,8 +45,6 @@
     <br>
     <span> lastUpdatedCumulativePremiumFraction: {{ this.myPosition.lastUpdatedCumulativePremiumFraction}}</span>
     <br>
-    <span> lastApportionFraction: {{ this.myPosition.lastApportionFraction }} </span>
-    <br>
     <button @click="closePosition">Close</button>
 
     <div>
@@ -319,7 +317,6 @@ export default {
         myPosition.lastUpdatedCumulativePremiumFraction = this.web3.utils.fromWei(position.lastUpdatedCumulativePremiumFraction.toString())
         myPosition.blockNumber = position.blockNumber
         myPosition.marginRate =  this.web3.utils.fromWei(marginRate.toString());
-        myPosition.lastApportionFraction = this.web3.utils.fromWei(position.lastApportionFraction.toString())
         this.myPosition = myPosition;
       
         })

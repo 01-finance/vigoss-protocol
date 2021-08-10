@@ -55,6 +55,8 @@ interface IAmm {
 
     function totalLiquidity() external view returns  (uint256);
 
+    function totalLiquidityUSD() external view returns  (uint256);
+
     function isOverFluctuationLimit(Dir _dirOfBase, Decimal.decimal memory _baseAssetAmount)
         external
         view

@@ -31,7 +31,7 @@ contract VGSForLP is Ownable {
     IERC20 public vgs;
 
     // Vgs tokens created per block.
-    uint256 public vgsPerBlock;
+    uint256 public vgsPerSecond;
 
     // pid corresponding address
     mapping(address => uint256) public IdOfAmm;
@@ -49,22 +49,27 @@ contract VGSForLP is Ownable {
 
     constructor(
         IERC20 _vgs,
-        uint256 _vgsPerBlock
+        uint256 _vgsPerSecond
     ) public {
         vgs = _vgs;
-        vgsPerBlock = _vgsPerBlock;
+        vgsPerSecond = _vgsPerSecond;
         add(0, address(0), false); // Just left the first.
     }
 
-    function setVgsPerBlock(uint256 _newPerBlock) public onlyOwner {
+    function setVgsPerSecond(uint256 _newPerSecond) public onlyOwner {
         massUpdatePools();
-        vgsPerBlock = _newPerBlock;
+        vgsPerSecond = _newPerSecond;
     }
 
     function upgradeTo(address _to) public onlyOwner {
         uint256 vgsBal = vgs.balanceOf(address(this));
         vgs.transfer(_to, vgsBal);
-    } 
+    }
+
+    function getPoolVgs(address _amm, uint during) external view returns (uint256) {
+        uint _pid = IdOfAmm[_amm];
+        return vgsPerSecond.mul(during).mul(poolInfo[_pid].allocPoint).div(totalAllocPoint);
+    }
 
     function poolLength() external view returns (uint256) {
         return poolInfo.length;
@@ -82,6 +87,7 @@ contract VGSForLP is Ownable {
         if (_withUpdate) {
             massUpdatePools();
         }
+
         uint256 lastRewardSecond = block.timestamp;
         if (_allocPoint > 0) {
             totalAllocPoint = totalAllocPoint.add(_allocPoint);
@@ -141,7 +147,7 @@ contract VGSForLP is Ownable {
         if (block.timestamp > pool.lastRewardSecond && lpSupply != 0) {
             uint256 multiplier = block.timestamp.sub(pool.lastRewardSecond);
             uint256 vgsReward =
-                multiplier.mul(vgsPerBlock).mul(pool.allocPoint).div(
+                multiplier.mul(vgsPerSecond).mul(pool.allocPoint).div(
                     totalAllocPoint
                 );
             accVgsPerShare = accVgsPerShare.add(
@@ -173,7 +179,7 @@ contract VGSForLP is Ownable {
 
         uint256 multiplier = block.timestamp.sub(pool.lastRewardSecond);
         uint256 vgsReward =
-            multiplier.mul(vgsPerBlock).mul(pool.allocPoint).div(
+            multiplier.mul(vgsPerSecond).mul(pool.allocPoint).div(
                 totalAllocPoint
             );
 
