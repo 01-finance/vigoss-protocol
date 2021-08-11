@@ -37,7 +37,16 @@
     <span> size(负表示做空) : {{ this.myPosition.baseAsset}}</span>
     <br>
     <span> MarginRate : {{ myPosition.marginRate}}</span>
+
     <br>
+
+    <span> 杠杆(Leverage):  {{ this.myPosition.openNotional / this.myPosition.margin }} </span>
+    <br>
+
+    <span> 建仓价格 </span> {{ this.myPosition.openNotional / this.myPosition.baseAsset }}
+    <br>
+
+    <span> 清算价格: </span> {{   }}
 
     <span> blockNumber: {{ this.myPosition.blockNumber}}</span>
     <br>

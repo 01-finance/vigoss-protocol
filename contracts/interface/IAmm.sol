@@ -52,6 +52,7 @@ interface IAmm {
     //
     // VIEW
     //
+    function fundingPeriod() external view returns  (uint256);
 
     function totalLiquidity() external view returns  (uint256);
 
@@ -115,8 +116,15 @@ interface IAmm {
 
     function withdraw(Decimal.decimal calldata _amount) external;
 
+    
+    function getReserve() external view returns (Decimal.decimal memory, Decimal.decimal memory);
+
     // can not be overridden by state variable due to type `Deciaml.decimal`
-    function getSettlementPrice() external view returns (Decimal.decimal memory);
+    function getTradeLimitRatio() external view returns (Decimal.decimal memory);
+
+    function getTollRatio() external view returns (Decimal.decimal memory);
+
+    function getSpreadRatio() external view returns (Decimal.decimal memory);
 
     function getCumulativeNotional() external view returns (SignedDecimal.signedDecimal memory);
 

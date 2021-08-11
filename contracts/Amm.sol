@@ -122,22 +122,21 @@ contract Amm is IAmm, Ownable, BlockContext {
 
     SignedDecimal.signedDecimal private cumulativeNotional;
 
-    Decimal.decimal private settlementPrice;
-    Decimal.decimal public tradeLimitRatio;
+    Decimal.decimal private tradeLimitRatio;
     Decimal.decimal public quoteAssetReserve;
     Decimal.decimal public baseAssetReserve;
     Decimal.decimal public fluctuationLimitRatio;
 
     // owner can update
-    Decimal.decimal public tollRatio;
-    Decimal.decimal public spreadRatio;
-    Decimal.decimal public tollAmount;
+    Decimal.decimal private tollRatio;
+    Decimal.decimal private spreadRatio;
+
     Decimal.decimal private maxHoldingBaseAsset;
     Decimal.decimal private openInterestNotionalCap;
 
 
     uint256 public spotPriceTwapInterval;
-    uint256 public fundingPeriod;
+    uint256 public override fundingPeriod;
     uint256 public fundingBufferPeriod;
     uint256 public nextFundingTime;
     ReserveSnapshot[] public reserveSnapshots;
@@ -573,16 +572,20 @@ contract Amm is IAmm, Ownable, BlockContext {
         emit PriceFeedUpdated(address(priceFeed));
     }
 
+    function setTradeLimitRatio(Decimal.decimal memory _tradeLimitRatio) public onlyOwner {
+      tradeLimitRatio = _tradeLimitRatio;
+    }
+
+    //
+    // VIEW FUNCTIONS
+    //
+
     function isInFusing() external view override returns (bool) {
         if (block.timestamp <= fusingEndTime) {
             return true;
         }
         return false;
     } 
-
-    //
-    // VIEW FUNCTIONS
-    //
 
     // 
     function isOverFluctuationLimit(Dir _dirOfBase, Decimal.decimal memory _baseAssetAmount)
@@ -707,7 +710,7 @@ contract Amm is IAmm, Ownable, BlockContext {
      * @notice get current quote/base asset reserve.
      * @return (quote asset reserve, base asset reserve)
      */
-    function getReserve() external view returns (Decimal.decimal memory, Decimal.decimal memory) {
+    function getReserve() external view override returns (Decimal.decimal memory, Decimal.decimal memory) {
         return (quoteAssetReserve, baseAssetReserve);
     }
 
@@ -719,10 +722,17 @@ contract Amm is IAmm, Ownable, BlockContext {
         return cumulativeNotional;
     }
 
-    function getSettlementPrice() external view override returns (Decimal.decimal memory) {
-        return settlementPrice;
+    function getTradeLimitRatio() external view override returns (Decimal.decimal memory) {
+      return tradeLimitRatio;
     }
 
+    function getTollRatio() external view override returns (Decimal.decimal memory) {
+      return tollRatio;
+    }
+
+    function getSpreadRatio() external view override returns (Decimal.decimal memory) {
+      return spreadRatio;
+    }
 
     function getMaxHoldingBaseAsset() external view override returns (Decimal.decimal memory) {
         return maxHoldingBaseAsset;

@@ -7,7 +7,7 @@ import { SignedDecimal } from "../utils/SignedDecimal.sol";
 import { IAmm } from "./IAmm.sol";
 
 interface IClearingHouse {
-    enum Side { BUY, SELL }
+    enum PnlCalcOption { SPOT_PRICE, TWAP, ORACLE }
 
     /// @notice This struct records personal position information
     /// @param size denominated in amm.baseAsset
@@ -21,7 +21,6 @@ interface IClearingHouse {
         Decimal.decimal margin;
         Decimal.decimal openNotional;
         SignedDecimal.signedDecimal lastUpdatedCumulativePremiumFraction;
-        uint256 liquidityHistoryIndex;
         uint256 blockNumber;
     }
 
@@ -29,10 +28,8 @@ interface IClearingHouse {
 
     function removeMargin(Decimal.decimal calldata _removedMargin) external;
 
-    function settlePosition() external;
-
     function openPosition(
-        Side _side,
+        IAmm.Side _side,
         Decimal.decimal calldata _quoteAssetAmount,
         Decimal.decimal calldata _leverage,
         Decimal.decimal calldata _baseAssetAmountLimit
@@ -44,8 +41,16 @@ interface IClearingHouse {
 
     function payFunding() external;
 
+    function getMaintenanceMarginRatio() external view returns (Decimal.decimal memory);
+
     // VIEW FUNCTIONS
     function getMarginRatio(address _trader) external view returns (SignedDecimal.signedDecimal memory);
 
     function getPosition(address _trader) external view returns (Position memory);
+
+    function getPositionNotionalAndUnrealizedPnl(
+        address _trader,
+        PnlCalcOption _pnlCalcOption
+    ) external view returns (Decimal.decimal memory positionNotional, SignedDecimal.signedDecimal memory unrealizedPnl);
+    
 }
