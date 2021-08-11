@@ -46,14 +46,15 @@
     <span> 建仓价格 </span> {{ this.myPosition.openNotional / this.myPosition.baseAsset }}
     <br>
 
-    <span> 清算价格: </span> {{   }}
+    <span> 清算价格: </span> {{ this.myPosition.liqPrice  }}
 
-    <span> blockNumber: {{ this.myPosition.blockNumber}}</span>
     <br>
-    <span> openNotional: {{ this.myPosition.openNotional}}</span>
+    <span> openNotional(开仓价值): {{ this.myPosition.openNotional}}</span>
     <br>
-    <span> lastUpdatedCumulativePremiumFraction: {{ this.myPosition.lastUpdatedCumulativePremiumFraction}}</span>
+
+    <span> unPnl(盈亏): {{ this.myPosition.unPnl}}</span>
     <br>
+
     <button @click="closePosition">Close</button>
 
     <div>
@@ -320,36 +321,27 @@ export default {
         this.account,
         0
         ).then( (r) => {
-        // let positionArr = r.pos;
+        let positionArr = r.pos;
         // let pnls = r.pnls;
-        // let unPnls = r.unPnls;
-        // let liqPrices = r.liqPrices;
+        let unPnls = r.unPnls;
+        let liqPrices = r.liqPrices;
         let marginRatios = r.marginRatios;
 
-        let marginRate = this.web3.utils.fromWei(marginRatios[0].toString()); // 
-        console.log("marginRate:" + marginRate);
-      }
-        
-      )
 
-      try {
-        let marginRate = await this.ch.getMarginRatio(this.account);
-        
-        this.ch.getPosition( this.account).then((position) => {
+        let position = positionArr[0];
+
         let myPosition = {};
         myPosition.margin = this.web3.utils.fromWei(position.margin.toString())
         myPosition.baseAsset = this.web3.utils.fromWei(position.size.toString())
         myPosition.openNotional = this.web3.utils.fromWei(position.openNotional.toString())
         myPosition.lastUpdatedCumulativePremiumFraction = this.web3.utils.fromWei(position.lastUpdatedCumulativePremiumFraction.toString())
-        myPosition.blockNumber = position.blockNumber
-        myPosition.marginRate =  this.web3.utils.fromWei(marginRate.toString());
+        myPosition.marginRate =  this.web3.utils.fromWei(marginRatios[0].toString());
+        myPosition.liqPrice = this.web3.utils.fromWei(liqPrices[0].toString());
+        myPosition.unPnl = this.web3.utils.fromWei(unPnls[0].toString());
+        
         this.myPosition = myPosition;
-      
-        })
-      } catch (e) {
-        console.log("getPosition:", e);
       }
-
+      )
 
     },
 

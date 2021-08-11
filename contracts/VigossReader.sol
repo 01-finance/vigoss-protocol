@@ -75,7 +75,7 @@ contract VigossReader  {
         SignedDecimal.signedDecimal memory _size,
         Decimal.decimal memory _mrr) public view returns (Decimal.decimal memory liqPrice) {
           liqPrice = _margin.divD(_size.abs()).divD(_mrr);
-          console.log("liqPrice:" + liqPrice.toUint());
+          console.log("liqPrice:", liqPrice.toUint());
       }
   
 
@@ -92,6 +92,8 @@ contract VigossReader  {
         pos = new IClearingHouse.Position[](len);
         pnls = new Decimal.decimal[](len);
         unPnls = new SignedDecimal.signedDecimal[](len);
+        liqPrices = new Decimal.decimal[](len);
+        marginRatios = new SignedDecimal.signedDecimal[](len);
         console.log("after new");
 
         for (uint256 index = 0; index < len; index++) {
@@ -110,10 +112,9 @@ contract VigossReader  {
             unPnls[index] = unPnl;
             console.log("getLiquidatePrice");
             liqPrices[index] = getLiquidatePrice(p.margin, p.size, mrr);
-            
-            console.log("getLiquidatePrice");
+
+            console.log("getMarginRatio");
             marginRatios[index] = ch.getMarginRatio(_trader);
-            
         }
 
     }
