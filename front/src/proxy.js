@@ -7,6 +7,7 @@ import ClearingHouse from "../abis/ClearingHouse.json";
 import VGSForLP from "../abis/VGSForLP.json";
 import VGSForMargin from "../abis/VGSForMargin.json";
 import MockToken from "../abis/MockToken.json";
+import VigossReader from "../abis/VigossReader.json";
 import VigossToken from "../abis/VigossToken.json";
 import { NETWORK_NAME } from "./constants";
 
@@ -75,6 +76,16 @@ export default {
     const proxy = contract(ClearingHouse)
     proxy.setProvider(this.provider)
     return proxy.at(addr);
+  },
+
+  getVigossReader(networkId) {
+    const networkName = NETWORK_NAME[networkId];
+    let addrJs = require(`../abis/VigossReader.${networkName}.json`);
+
+    const proxy = contract(VigossReader)
+    proxy.setProvider(this.provider)
+    return proxy.at(addrJs.address);
+
   },
 
   getVgs(networkId) {

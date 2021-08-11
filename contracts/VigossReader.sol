@@ -7,6 +7,9 @@ import "./interface/IClearingHouse.sol";
 import "./interface/IAmm.sol";
 import "./interface/IVGSForLP.sol";
 import "./interface/IVGSForMargin.sol";
+
+import "hardhat/console.sol";
+
 import { Decimal } from "./utils/Decimal.sol";
 import { SignedDecimal } from "./utils/SignedDecimal.sol";
 
@@ -72,6 +75,7 @@ contract VigossReader  {
         SignedDecimal.signedDecimal memory _size,
         Decimal.decimal memory _mrr) public view returns (Decimal.decimal memory liqPrice) {
           liqPrice = _margin.divD(_size.abs()).divD(_mrr);
+          console.log("liqPrice:" + liqPrice.toUint());
       }
   
 
@@ -82,24 +86,32 @@ contract VigossReader  {
       Decimal.decimal[] memory liqPrices,
       SignedDecimal.signedDecimal[] memory marginRatios) {
 
+        console.log("traderPosition");
+
         uint len = _clearingHouses.length;
         pos = new IClearingHouse.Position[](len);
         pnls = new Decimal.decimal[](len);
         unPnls = new SignedDecimal.signedDecimal[](len);
+        console.log("after new");
 
         for (uint256 index = 0; index < len; index++) {
             IClearingHouse ch = IClearingHouse(_clearingHouses[index]);
+            console.log("getPosition");
             IClearingHouse.Position memory p = ch.getPosition(_trader);
             pos[index] = p;
+            console.log("getMaintenanceMarginRatio");
             Decimal.decimal memory mrr = ch.getMaintenanceMarginRatio();
 
+            console.log("getPositionNotionalAndUnrealizedPnl");
             (Decimal.decimal memory pnl, SignedDecimal.signedDecimal memory unPnl) =
                 ch.getPositionNotionalAndUnrealizedPnl(_trader, _pnlCalcOption);
 
             pnls[index] = pnl;
             unPnls[index] = unPnl;
-    
+            console.log("getLiquidatePrice");
             liqPrices[index] = getLiquidatePrice(p.margin, p.size, mrr);
+            
+            console.log("getLiquidatePrice");
             marginRatios[index] = ch.getMarginRatio(_trader);
             
         }

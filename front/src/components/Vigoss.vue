@@ -172,6 +172,7 @@ export default {
       this.vgs = await proxy.getVgs(this.chainid);
       this.vgsForLp = await proxy.getVgsForLP(this.chainid);
       this.vgsForMargin = await proxy.getVgsForMargin(this.chainid);
+      this.vgsReader = await proxy.getVigossReader(this.chainid);
 
 
       this.balanceOf();
@@ -183,6 +184,7 @@ export default {
       this.ch = await proxy.getClearingHouse(ETHUSDCHouse.address);
 
       let ETHUSDCPair = require(`../../abis/Amm:ETH-USDC.${network}.json`);
+      console.log(ETHUSDCPair);
       this.ammPair = await proxy.getAmm(ETHUSDCPair.address);
 
       this.ammlpAddr =  this.ammPair.address;
@@ -314,9 +316,24 @@ export default {
     },
 
     async getPosition() {
+      this.vgsReader.traderPosition([this.ch.address],  // 可以传入多个地址
+        this.account,
+        0
+        ).then( (r) => {
+        // let positionArr = r.pos;
+        // let pnls = r.pnls;
+        // let unPnls = r.unPnls;
+        // let liqPrices = r.liqPrices;
+        let marginRatios = r.marginRatios;
+
+        let marginRate = this.web3.utils.fromWei(marginRatios[0].toString()); // 
+        console.log("marginRate:" + marginRate);
+      }
+        
+      )
 
       try {
-        let marginRate = await this.ch.getMarginRatio( this.account);
+        let marginRate = await this.ch.getMarginRatio(this.account);
         
         this.ch.getPosition( this.account).then((position) => {
         let myPosition = {};

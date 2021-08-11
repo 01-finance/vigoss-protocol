@@ -661,51 +661,6 @@
     },
     {
       "inputs": [],
-      "name": "spreadRatio",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "d",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x6febdd50"
-    },
-    {
-      "inputs": [],
-      "name": "tollAmount",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "d",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x2d666e38"
-    },
-    {
-      "inputs": [],
-      "name": "tollRatio",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "d",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x6baccaba"
-    },
-    {
-      "inputs": [],
       "name": "totalLiquidity",
       "outputs": [
         {
@@ -721,6 +676,21 @@
     },
     {
       "inputs": [],
+      "name": "totalLiquidityUSD",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x492ddc9b"
+    },
+    {
+      "inputs": [],
       "name": "totalPositionSize",
       "outputs": [
         {
@@ -733,21 +703,6 @@
       "type": "function",
       "constant": true,
       "signature": "0x4cb876f2"
-    },
-    {
-      "inputs": [],
-      "name": "tradeLimitRatio",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "d",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0x8f40d932"
     },
     {
       "inputs": [
@@ -1320,6 +1275,27 @@
       "signature": "0x724e78da"
     },
     {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "d",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Decimal.decimal",
+          "name": "_tradeLimitRatio",
+          "type": "tuple"
+        }
+      ],
+      "name": "setTradeLimitRatio",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x0aa33fa9"
+    },
+    {
       "inputs": [],
       "name": "isInFusing",
       "outputs": [
@@ -1700,7 +1676,7 @@
     },
     {
       "inputs": [],
-      "name": "getSettlementPrice",
+      "name": "getTradeLimitRatio",
       "outputs": [
         {
           "components": [
@@ -1718,7 +1694,51 @@
       "stateMutability": "view",
       "type": "function",
       "constant": true,
-      "signature": "0xec2c0e63"
+      "signature": "0x89058b7d"
+    },
+    {
+      "inputs": [],
+      "name": "getTollRatio",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "d",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Decimal.decimal",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xfe7d7729"
+    },
+    {
+      "inputs": [],
+      "name": "getSpreadRatio",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "d",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Decimal.decimal",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xee96445e"
     },
     {
       "inputs": [],

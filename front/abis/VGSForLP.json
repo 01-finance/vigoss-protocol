@@ -10,7 +10,7 @@
         },
         {
           "internalType": "uint256",
-          "name": "_vgsPerBlock",
+          "name": "_vgsPerSecond",
           "type": "uint256"
         }
       ],
@@ -142,7 +142,7 @@
         },
         {
           "internalType": "uint256",
-          "name": "lastRewardBlock",
+          "name": "lastRewardSecond",
           "type": "uint256"
         },
         {
@@ -241,7 +241,7 @@
     },
     {
       "inputs": [],
-      "name": "vgsPerBlock",
+      "name": "vgsPerSecond",
       "outputs": [
         {
           "internalType": "uint256",
@@ -252,21 +252,21 @@
       "stateMutability": "view",
       "type": "function",
       "constant": true,
-      "signature": "0x1c2dec84"
+      "signature": "0x98eb2537"
     },
     {
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_newPerBlock",
+          "name": "_newPerSecond",
           "type": "uint256"
         }
       ],
-      "name": "setVgsPerBlock",
+      "name": "setVgsPerSecond",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0x1ab45ad2"
+      "signature": "0xf980b69c"
     },
     {
       "inputs": [
@@ -281,6 +281,32 @@
       "stateMutability": "nonpayable",
       "type": "function",
       "signature": "0x3659cfe6"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_amm",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "during",
+          "type": "uint256"
+        }
+      ],
+      "name": "getPoolVgs",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x0baa0b7e"
     },
     {
       "inputs": [],
