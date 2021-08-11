@@ -1068,7 +1068,7 @@ contract ClearingHouse is
             _marginDelta.subD(fundingPayment).addD(_oldPosition.margin);
 
         // if remain margin is negative, set to zero and leave the rest to bad debt
-        if (signedRemainMargin.toInt() < 0) {
+        if (signedRemainMargin.toInt() < 0 ) {
             badDebt = signedRemainMargin.abs();
         } else {
             remainMargin = signedRemainMargin.abs();

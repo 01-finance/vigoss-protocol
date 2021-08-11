@@ -83,9 +83,16 @@
       <button @click="removeLiquidity">退出流动性</button>
     </div>
 
+
+
     <div>
       LP 挖矿 待提取的 vgs 数量: {{ pendingLpVgs }}
       <button @click="settleLpVgs">提取</button>
+    </div>
+
+    <div>
+      TVL: {{ tvl }}
+      日收益率(ARP): {{ arp }}
     </div>
 
     <h3>测试备注信息：</h3>
@@ -144,6 +151,8 @@ export default {
       usdcAddr: null,
       ammVgsLPMinerAddr: null,
       ammVgsMarginMinerAddr: null,
+      tvl: null,
+      arp: null,
     }
   },
 
@@ -181,9 +190,11 @@ export default {
       const network = NETWORK_NAME[this.chainid];
       console.log(network)
 
+      // 用户交易
       let ETHUSDCHouse = require(`../../abis/ClearingHouse:ETH-USDC.${network}.json`);
       this.ch = await proxy.getClearingHouse(ETHUSDCHouse.address);
 
+      // LP 池
       let ETHUSDCPair = require(`../../abis/Amm:ETH-USDC.${network}.json`);
       console.log(ETHUSDCPair);
       this.ammPair = await proxy.getAmm(ETHUSDCPair.address);
@@ -201,6 +212,7 @@ export default {
       this.liquidityInfo();
       this.pendingVsgOnLp();
       this.pendingVsgOnMargin();
+      this.getPoolsTvlArp()
     },
 
     balanceOf() {
@@ -316,7 +328,20 @@ export default {
         })
     },
 
-    async getPosition() {
+    getPoolsTvlArp() {
+      this.vgsReader.poolsTvlArp([this.ammPair.address] // 如果有多个 LP 池，则传入多个地址
+        ).then((r) => {
+          let tvls = r.tvls;
+          let arps = r.arps;
+
+        this.tvl = this.web3.utils.fromWei(tvls[0].toString())  // 获得第一个LP 池质押的 TVL
+
+        this.arp = this.web3.utils.fromWei(arps[0].toString())
+      })
+    },
+
+
+    getPosition() {
       this.vgsReader.traderPosition([this.ch.address],  // 可以传入多个地址
         this.account,
         0
@@ -336,6 +361,7 @@ export default {
         myPosition.openNotional = this.web3.utils.fromWei(position.openNotional.toString())
         myPosition.lastUpdatedCumulativePremiumFraction = this.web3.utils.fromWei(position.lastUpdatedCumulativePremiumFraction.toString())
         myPosition.marginRate =  this.web3.utils.fromWei(marginRatios[0].toString());
+        // 当前计算有误，但接口不变
         myPosition.liqPrice = this.web3.utils.fromWei(liqPrices[0].toString());
         myPosition.unPnl = this.web3.utils.fromWei(unPnls[0].toString());
         
@@ -413,6 +439,7 @@ export default {
             this.pendingMarginVgs = this.web3.utils.fromWei(r.toString());
         });
     },
+
 
     settleMarginVgs() {
          this.vgsForMargin.settlement({from: this.account}).then(() => {

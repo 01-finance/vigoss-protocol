@@ -68,13 +68,17 @@ contract VigossReader  {
 
     // 预估清算价格(ignore payfunding)
     // mrr: maintenanceMarginRatio
-    // MarginRatio(mrr) = margin / (size * price)
+    // MarginRatio(mrr) = remain margin / (size * price)
+    // remain margin = margin + unPnl
     // LiquidatePrice = margin / mrr / size;
-    
+    // 
     function getLiquidatePrice(Decimal.decimal memory _margin,
         SignedDecimal.signedDecimal memory _size,
         Decimal.decimal memory _mrr) public view returns (Decimal.decimal memory liqPrice) {
+          // if (_size.toInt() < 0) {
           liqPrice = _margin.divD(_size.abs()).divD(_mrr);
+          // }
+          
           console.log("liqPrice:", liqPrice.toUint());
       }
   
