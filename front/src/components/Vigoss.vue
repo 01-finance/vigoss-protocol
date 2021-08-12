@@ -46,7 +46,7 @@
     <span> 建仓价格 </span> {{ this.myPosition.openNotional / this.myPosition.baseAsset }}
     <br>
 
-    <span> 清算价格: </span> {{ this.myPosition.liqPrice  }}
+    <span> 清算价格(待优化): </span> -
 
     <br>
     <span> openNotional(开仓价值): {{ this.myPosition.openNotional}}</span>
@@ -210,7 +210,7 @@ export default {
       this.getPosition();
       this.getSpotPrice();
       this.liquidityInfo();
-      this.pendingVsgOnLp();
+      // this.pendingVsgOnLp();
       this.pendingVsgOnMargin();
       this.getPoolsTvlArp()
     },
@@ -412,13 +412,22 @@ export default {
     },
 
     liquidityInfo() {
-     this.ammPair.totalLiquidity().then((p) => {
-         this.lpTotal = this.web3.utils.fromWei(p.toString())
-     })
 
-     this.ammPair.shares(this.account).then((r) => {
-         this.lpBalance = this.web3.utils.fromWei(r.toString())
-     })
+      this.vgsReader.poolShares([this.ammPair.address],  // 可存入多个 LP 数组
+        this.account).then((r) => {
+        this.lpTotal = this.web3.utils.fromWei(r.totals[0].toString())
+        this.lpBalance = this.web3.utils.fromWei(r.balances[0].toString())
+        this.pendingLpVgs = this.web3.utils.fromWei(r.pendingVgs[0].toString());
+      })
+
+    
+    //  this.ammPair.totalLiquidity().then((p) => {
+    //      this.lpTotal = this.web3.utils.fromWei(p.toString())
+    //  })
+
+    //  this.ammPair.shares(this.account).then((r) => {
+    //      this.lpBalance = this.web3.utils.fromWei(r.toString())
+    //  })
     
     },
 
@@ -426,9 +435,10 @@ export default {
     pendingVsgOnLp() {
         // 单个 LP 挖矿所得：
         // this.vgsForLp.pendingVgs(this.ammPair.address, this.account).then((r) => {
-        //     this.pendingLpVgs = this.web3.utils.fromWei(r.toString());
+        //     
         // });
 
+        // 用户所有 LP 挖矿所得
         this.vgsForLp.allPendingVgs(this.account).then((r) => {
             this.pendingLpVgs = this.web3.utils.fromWei(r.toString());
         });
@@ -449,7 +459,7 @@ export default {
 
     settleLpVgs() {
         this.vgsForLp.settlementAll({from: this.account}).then(() => {
-            this.pendingVsgOnLp();
+            // this.pendingVsgOnLp();
             this.balanceOf();
         });
     }

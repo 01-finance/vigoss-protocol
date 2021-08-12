@@ -66,9 +66,9 @@ contract VGSForLP is Ownable {
         vgs.transfer(_to, vgsBal);
     }
 
-    function getPoolVgs(address _amm, uint during) external view returns (uint256) {
+    function getPoolVgs(address _amm, uint _during) external view returns (uint256) {
         uint _pid = IdOfAmm[_amm];
-        return vgsPerSecond.mul(during).mul(poolInfo[_pid].allocPoint).div(totalAllocPoint);
+        return vgsPerSecond.mul(_during).mul(poolInfo[_pid].allocPoint).div(totalAllocPoint);
     }
 
     function poolLength() external view returns (uint256) {
