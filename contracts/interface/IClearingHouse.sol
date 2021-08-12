@@ -44,6 +44,8 @@ interface IClearingHouse {
     function getMaintenanceMarginRatio() external view returns (Decimal.decimal memory);
 
     // VIEW FUNCTIONS
+
+    function amm() external view returns (IAmm);
     function getMarginRatio(address _trader) external view returns (SignedDecimal.signedDecimal memory);
 
     function getPosition(address _trader) external view returns (Position memory);

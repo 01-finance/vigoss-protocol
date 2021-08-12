@@ -61,10 +61,31 @@ contract VigossReader  {
         }
     }
 
+    function getExitPosition(address _ch, address _trader, IClearingHouse.PnlCalcOption _pnlCalcOption) external view returns (
+        Decimal.decimal memory margin,
+        Decimal.decimal memory pnl,
+        SignedDecimal.signedDecimal memory unPnl,
+        Decimal.decimal memory fee) {
+
+        IClearingHouse ch = IClearingHouse(_ch);
+        IClearingHouse.Position memory p = ch.getPosition(_trader);
+        margin = p.margin;
+        IAmm amm = ch.amm();
+
+        (pnl, unPnl) = ch.getPositionNotionalAndUnrealizedPnl(_trader, _pnlCalcOption);
+
+        // quote = amm.getOutputPrice(p.size.toInt() > 0 ? IAmm.Dir.ADD_TO_AMM : IAmm.Dir.REMOVE_FROM_AMM, p.size.abs());
+        (Decimal.decimal memory toll, Decimal.decimal memory spread) = amm.calcFee(pnl);
+
+        fee = toll.addD(spread);
+    }
+
     // 0.1 USDT
     function getVGSPrice() internal view returns (uint256) {
         return 1e17;
     }
+
+
 
     // 预估清算价格(ignore payfunding)
     // mrr: maintenanceMarginRatio

@@ -130,7 +130,7 @@ contract ClearingHouse is
         mapping(address => Position) positionMap;
     }
 
-    IAmm public immutable amm;
+    IAmm public immutable override amm;
     IVGSForMargin public vgsForMargin;
 
     // only admin
@@ -1045,7 +1045,7 @@ contract ClearingHouse is
         Position memory _oldPosition,
         SignedDecimal.signedDecimal memory _marginDelta
     )
-        private
+        public
         view
         returns (
             Decimal.decimal memory remainMargin,
