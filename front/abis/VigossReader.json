@@ -54,6 +54,42 @@
           "internalType": "address[]",
           "name": "_amms",
           "type": "address[]"
+        },
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "poolShares",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "balances",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "totals",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "pendingVgs",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xfad626dd"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "_amms",
+          "type": "address[]"
         }
       ],
       "name": "poolsTvlArp",

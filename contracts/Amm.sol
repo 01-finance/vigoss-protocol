@@ -63,11 +63,6 @@ contract Amm is IAmm, Ownable, BlockContext {
         _;
     }
 
-    struct LiquidityStake {
-        uint256 quoteAsset;
-        uint256 baseAsset;
-    }
-
     //
     // enum and struct
     //
@@ -157,8 +152,8 @@ contract Amm is IAmm, Ownable, BlockContext {
     uint256 public override totalLiquidity;
     uint256 public override totalLiquidityUSD;
 
-    mapping(address => uint) public shares;
-    mapping(address => LiquidityStake) public liquidityStakes;
+    mapping(address => uint) public override shares;
+    mapping(address => LiquidityStake) private liquidityStakes;
 
     constructor (
         uint256 _tradeLimitRatio,
@@ -704,6 +699,10 @@ contract Amm is IAmm, Ownable, BlockContext {
      */
     function getTwapPrice(uint256 _intervalInSeconds) public view returns (Decimal.decimal memory) {
         return implGetReserveTwapPrice(_intervalInSeconds);
+    }
+
+    function getLiquidityStakes(address user) external view override returns (LiquidityStake memory) {
+      return liquidityStakes[user];
     }
 
     /**

@@ -435,32 +435,6 @@
       "signature": "0x0244accf"
     },
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "liquidityStakes",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "quoteAsset",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "baseAsset",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true,
-      "signature": "0xb9415980"
-    },
-    {
       "inputs": [],
       "name": "maxTwapSpreadRatio",
       "outputs": [
@@ -1602,6 +1576,39 @@
       "type": "function",
       "constant": true,
       "signature": "0xf1b5df86"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "getLiquidityStakes",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "quoteAsset",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "baseAsset",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IAmm.LiquidityStake",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0xaba0d127"
     },
     {
       "inputs": [],

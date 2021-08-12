@@ -39,6 +39,23 @@ contract VigossReader  {
       vgsForMargin = _vgsForMargin;
     }
 
+    function poolShares(address[] memory _amms, address user) external view returns (
+        uint[] memory balances,
+        uint[] memory totals,
+        uint[] memory pendingVgs) {
+        uint len = _amms.length;
+        balances = new uint[](len);
+        totals = new uint[](len);
+        pendingVgs = new uint[](len);
+
+        for (uint256 index = 0; index < len; index++) {
+            IAmm amm = IAmm(_amms[index]);
+            balances[index] = amm.shares(user);
+            totals[index] = amm.totalLiquidity();
+            pendingVgs[index] = vgsForLP.pendingVgs(address(amm), user);
+        }
+    }
+
 
   // 返回 amms 池子的 TVL 及 日收益
   // 日收益率 = VGS产量24小时产量 * VGS价格/ 池子TVL

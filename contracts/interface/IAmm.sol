@@ -8,6 +8,11 @@ import { SignedDecimal } from "../utils/SignedDecimal.sol";
 
 interface IAmm {
 
+    struct LiquidityStake {
+        uint256 quoteAsset;
+        uint256 baseAsset;
+    }
+
     enum Side { BUY, SELL }
 
     /**
@@ -17,15 +22,6 @@ interface IAmm {
      */
     enum Dir { ADD_TO_AMM, REMOVE_FROM_AMM }
 
-    struct LiquidityChangedSnapshot {
-        SignedDecimal.signedDecimal cumulativeNotional;
-        // the base/quote reserve of amm right before liquidity changed
-        Decimal.decimal quoteAssetReserve;
-        Decimal.decimal baseAssetReserve;
-        // total position size owned by amm after last snapshot taken
-        // `totalPositionSize` = currentBaseAssetReserve - lastLiquidityChangedHistoryItem.baseAssetReserve + prevTotalPositionSize
-        SignedDecimal.signedDecimal totalPositionSize;
-    }
 
     function updateLongSize(bool buy,  SignedDecimal.signedDecimal memory newSize) external;
 
@@ -52,7 +48,11 @@ interface IAmm {
     //
     // VIEW
     //
-    function fundingPeriod() external view returns  (uint256);
+    function shares(address user) external view returns (uint256);
+
+    function getLiquidityStakes(address user) external view returns (LiquidityStake memory);
+
+    function fundingPeriod() external view returns (uint256);
 
     function totalLiquidity() external view returns  (uint256);
 
