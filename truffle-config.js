@@ -94,6 +94,16 @@ module.exports = {
       gasPrice: 2000000000,   // 2Gwei
     },
 
+    testmatic: {
+      provider: function() {
+        // https://rpc-mumbai.matic.today
+        return new HDWalletProvider(mnemonic, "https://rpc-mumbai.maticvigil.com/")
+      },
+      network_id: 80001,
+      gas: 7003605,
+      gasPrice: 30000000000,   // 2Gwei
+    },
+    
     testheco: {
       provider: function() {
         return new HDWalletProvider(mnemonic, "https://http-testnet.hecochain.com")
