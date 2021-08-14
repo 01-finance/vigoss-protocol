@@ -46,7 +46,7 @@
     <span> 建仓价格 </span> {{ this.myPosition.openNotional / this.myPosition.baseAsset }}
     <br>
 
-    <span> 清算价格(待优化): </span> -
+    <span> 清算价格(~): </span> {{ this.myPosition.liqPrice }}
 
     <br>
     <span> openNotional(开仓价值): {{ this.myPosition.openNotional}}</span>
@@ -55,6 +55,14 @@
     <span> unPnl(盈亏): {{ this.myPosition.unPnl}}</span>
     <br>
 
+    <span>  退出价值: {{  pnl }} </span>
+    <br>
+
+    <span>  退出价格: {{  pnl / this.myPosition.baseAsset  }} </span>
+    <br>
+
+    <span>  退出费用: {{ exitFee }} </span>    
+    <br>
     <button @click="closePosition">Close</button>
 
     <div>
@@ -153,6 +161,9 @@ export default {
       ammVgsMarginMinerAddr: null,
       tvl: null,
       arp: null,
+
+      pnl: null,
+      exitFee: null,
     }
   },
 
@@ -182,6 +193,9 @@ export default {
       this.vgs = await proxy.getVgs(this.chainid);
       this.vgsForLp = await proxy.getVgsForLP(this.chainid);
       this.vgsForMargin = await proxy.getVgsForMargin(this.chainid);
+
+      // await proxy.getGreeter();
+
       this.vgsReader = await proxy.getVigossReader(this.chainid);
 
 
@@ -208,6 +222,7 @@ export default {
 
 
       this.getPosition();
+      this.getExitPosition();
       this.getSpotPrice();
       this.liquidityInfo();
       // this.pendingVsgOnLp();
@@ -325,6 +340,7 @@ export default {
         { d: minAmount },
         { from: this.account }).then(() => {
           this.getPosition();
+          this.getExitPosition();
         })
     },
 
@@ -340,6 +356,27 @@ export default {
       })
     },
 
+    // 获得退出仓位的信息
+    getExitPosition() {
+      this.vgsReader.getExitPosition(
+        this.ch.address,  
+        this.account,
+        0
+        ).then( (r) => {
+            // 保证金
+            console.log("margin:" + this.web3.utils.fromWei(r.margin.toString()))
+            
+            // 仓位价值(用来计算退出滑点的基数)
+            this.pnl = this.web3.utils.fromWei(r.pnl.toString())
+
+            // 盈亏
+            console.log("unPnl:" +  this.web3.utils.fromWei(r.unPnl.toString()));
+
+            // 退出手续费
+            this.exitFee = this.web3.utils.fromWei(r.fee.toString())
+        });
+
+    },
 
     getPosition() {
       this.vgsReader.traderPosition([this.ch.address],  // 可以传入多个地址
@@ -371,9 +408,13 @@ export default {
 
     },
 
-    // TODO: {d: "0"}
+
     closePosition() {
-      this.ch.closePosition( {d: "0"}, 
+      // let Slippage = 0.01;  // 滑点设置  1%
+
+      let min = toDec(parseFloat(this.pnl) * 0.99, 18);
+
+      this.ch.closePosition( {d: min}, 
         { from : this.account}).then( () => {
         this.getPosition();
       })

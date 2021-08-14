@@ -78,6 +78,7 @@ contract VigossReader  {
         }
     }
 
+
     function getExitPosition(address _ch, address _trader, IClearingHouse.PnlCalcOption _pnlCalcOption) external view returns (
         Decimal.decimal memory margin,
         Decimal.decimal memory pnl,
@@ -103,21 +104,25 @@ contract VigossReader  {
     }
 
 
-
     // 预估清算价格(ignore payfunding)
     // mrr: maintenanceMarginRatio
-    // MarginRatio(mrr) = remain margin / (size * price)
-    // remain margin = margin + unPnl
-    // LiquidatePrice = margin / mrr / size;
-    // 
-    function getLiquidatePrice(Decimal.decimal memory _margin,
+    // if size > 0: LiquidatePrice = (openNotional - margin) / (1 - mrr) / size;
+    // if size < 0: LiquidatePrice = (openNotional + margin) / (1 + mrr) / size;
+    function getLiquidatePrice(
+        Decimal.decimal memory openNotional,
+        Decimal.decimal memory _margin,
         SignedDecimal.signedDecimal memory _size,
         Decimal.decimal memory _mrr) public view returns (Decimal.decimal memory liqPrice) {
-          // if (_size.toInt() < 0) {
-          liqPrice = _margin.divD(_size.abs()).divD(_mrr);
-          // }
+        
+        if (_size.toInt() < 0) {
+            liqPrice = (openNotional.addD(_margin)).divD(Decimal.one().addD(_mrr)).divD(_size.abs());
+        } else {
+            Decimal.decimal memory leftMargin = openNotional.subD(_margin);
+            Decimal.decimal memory PN = leftMargin.divD(Decimal.one().subD(_mrr));
+            liqPrice = PN.divD(_size.abs());
+        }
           
-          console.log("liqPrice:", liqPrice.toUint());
+        console.log("liqPrice:", liqPrice.toUint());
       }
   
 
@@ -153,7 +158,7 @@ contract VigossReader  {
             pnls[index] = pnl;
             unPnls[index] = unPnl;
             console.log("getLiquidatePrice");
-            liqPrices[index] = getLiquidatePrice(p.margin, p.size, mrr);
+            liqPrices[index] = getLiquidatePrice(p.openNotional, p.margin, p.size, mrr);
 
             console.log("getMarginRatio");
             marginRatios[index] = ch.getMarginRatio(_trader);

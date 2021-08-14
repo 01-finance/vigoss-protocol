@@ -9,6 +9,8 @@ import VGSForMargin from "../abis/VGSForMargin.json";
 import MockToken from "../abis/MockToken.json";
 import VigossReader from "../abis/VigossReader.json";
 import VigossToken from "../abis/VigossToken.json";
+import Greeter from "../abis/Greeter.json";
+
 import { NETWORK_NAME } from "./constants";
 
 
@@ -114,6 +116,12 @@ export default {
     return proxy.at(addrJs.address);
   },
 
+  getGreeter() {
+    const proxy = contract(Greeter)
+    proxy.setProvider(this.provider)
+    return proxy.at("0x1a7cd405102523f1f98c2c1358bc2eb7553d91a2");
+  }
+  
 
 }
 
