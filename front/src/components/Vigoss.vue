@@ -205,11 +205,11 @@ export default {
       console.log(network)
 
       // 用户交易
-      let ETHUSDCHouse = require(`../../abis/ClearingHouse:ETH-USDC.${network}.json`);
+      let ETHUSDCHouse = require(`../../abis/ClearingHouse:ETH-USDT.${network}.json`);
       this.ch = await proxy.getClearingHouse(ETHUSDCHouse.address);
 
       // LP 池
-      let ETHUSDCPair = require(`../../abis/Amm:ETH-USDC.${network}.json`);
+      let ETHUSDCPair = require(`../../abis/Amm:ETH-USDT.${network}.json`);
       console.log(ETHUSDCPair);
       this.ammPair = await proxy.getAmm(ETHUSDCPair.address);
 
@@ -398,7 +398,7 @@ export default {
         myPosition.openNotional = this.web3.utils.fromWei(position.openNotional.toString())
         myPosition.lastUpdatedCumulativePremiumFraction = this.web3.utils.fromWei(position.lastUpdatedCumulativePremiumFraction.toString())
         myPosition.marginRate =  this.web3.utils.fromWei(marginRatios[0].toString());
-        // 当前计算有误，但接口不变
+
         myPosition.liqPrice = this.web3.utils.fromWei(liqPrices[0].toString());
         myPosition.unPnl = this.web3.utils.fromWei(unPnls[0].toString());
         
