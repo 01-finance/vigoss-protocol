@@ -98,7 +98,7 @@ contract VigossReader  {
 
     // 0.1 USDT
     function getVGSPrice() internal view returns (uint256) {
-        return 1e17;
+        return 1e5;
     }
 
 

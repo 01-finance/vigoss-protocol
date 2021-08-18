@@ -64,10 +64,10 @@ export default {
     return proxy.at(addr);
   },
 
-  getUSDCToken(networkId) {
+  getUSDTToken(networkId) {
     const networkName = NETWORK_NAME[networkId];
     console.log("usdc networkName:", networkName)
-    let addrJs = require(`../abis/USDC.${networkName}.json`);
+    let addrJs = require(`../abis/USDT.${networkName}.json`);
     // console.log("usdc addr:", addrJs)
     const proxy = contract(MockToken)
     proxy.setProvider(this.provider)

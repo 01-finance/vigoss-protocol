@@ -1,11 +1,15 @@
 <template>
 <div class="hello">
   <h1>Vigoss Demo</h1>
-  <span>USDC 余额：{{ usdcBalance }} </span>
+  <span>USDT 余额：{{ USDTBalance }} </span>
   <br>
   <span>VGS 余额：{{ vgsBalance }} </span>
   <br>
-  <span>当前价：1 ETH = {{ currPrice }} USDC</span>
+  <span>当前价：1 ETH = {{ currPrice }} USDT</span>
+  <br>
+  <span>预言机价：1 ETH = {{ currUnderlyingPrice }} USDT</span>
+
+  
   <h3>开仓</h3>
   <div>
     <input type="radio" id="long" value="0" v-model="longOrShort">
@@ -21,8 +25,8 @@
     <input v-model="leverage" @change="calcFee" placeholder="杠杆倍数">
 
     <br>
-    <span>交易费：{{ transactionFee }} USDC </span>
-    <span>总成本：{{ totalCost }} USDC </span>
+    <span>交易费：{{ transactionFee }} USDT </span>
+    <span>总成本：{{ totalCost }} USDT </span>
     <br>
 
     <button @click="approve">(先)授权</button>
@@ -113,7 +117,7 @@
 
     VGS 地址：{{ vgsAddr }}
     <br>
-    USDC 地址: {{ usdcAddr }} 
+    USDT 地址: {{ USDTAddr }} 
 
 
 
@@ -136,11 +140,12 @@ export default {
   name: 'Vigoss',
   data() {
     return {
-      usdcBalance: null,
+      USDTBalance: null,
       vgsBalance: null,
       longOrShort: 0,
       baseAmount: null,
       currPrice: null,
+      currUnderlyingPrice: null,
       margin: null,
       leverage: null,
       transactionFee: null,
@@ -156,7 +161,7 @@ export default {
       exitLpAmount: null,
       ammlpAddr: null,
       vgsAddr: null,
-      usdcAddr: null,
+      USDTAddr: null,
       ammVgsLPMinerAddr: null,
       ammVgsMarginMinerAddr: null,
       tvl: null,
@@ -187,8 +192,8 @@ export default {
 
   methods: {
     async init() {
-      this.usdc = await proxy.getUSDCToken(this.chainid);
-      this.decimal = await this.usdc.decimals();
+      this.USDT = await proxy.getUSDTToken(this.chainid);
+      this.decimal = await this.USDT.decimals();
 
       this.vgs = await proxy.getVgs(this.chainid);
       this.vgsForLp = await proxy.getVgsForLP(this.chainid);
@@ -205,17 +210,17 @@ export default {
       console.log(network)
 
       // 用户交易
-      let ETHUSDCHouse = require(`../../abis/ClearingHouse:ETH-USDT.${network}.json`);
-      this.ch = await proxy.getClearingHouse(ETHUSDCHouse.address);
+      let ETHUSDTHouse = require(`../../abis/ClearingHouse:ETH-USDT.${network}.json`);
+      this.ch = await proxy.getClearingHouse(ETHUSDTHouse.address);
 
       // LP 池
-      let ETHUSDCPair = require(`../../abis/Amm:ETH-USDT.${network}.json`);
-      console.log(ETHUSDCPair);
-      this.ammPair = await proxy.getAmm(ETHUSDCPair.address);
+      let ETHUSDTPair = require(`../../abis/Amm:ETH-USDT.${network}.json`);
+      console.log(ETHUSDTPair);
+      this.ammPair = await proxy.getAmm(ETHUSDTPair.address);
 
       this.ammlpAddr =  this.ammPair.address;
       this.vgsAddr = this.vgs.address;
-      this.usdcAddr = this.usdc.address;
+      this.USDTAddr = this.USDT.address;
       
       this.ammVgsLPMinerAddr = this.vgsForLp.address;
       this.ammVgsMarginMinerAddr = this.vgsForMargin.address;
@@ -231,8 +236,8 @@ export default {
     },
 
     balanceOf() {
-      this.usdc.balanceOf(this.account).then(r => {
-        this.usdcBalance = fromDec(r.toString(), this.decimal);
+      this.USDT.balanceOf(this.account).then(r => {
+        this.USDTBalance = fromDec(r.toString(), this.decimal);
       })
 
       this.vgs.balanceOf(this.account).then(r => {
@@ -243,7 +248,11 @@ export default {
 
     getSpotPrice() {
       this.ammPair.getSpotPrice().then(r => {
-        this.currPrice = this.web3.utils.fromWei(r.toString());
+        this.currPrice = fromDec(r.toString(), this.decimal);
+      })
+
+      this.ammPair.getUnderlyingPrice().then(r => {
+        this.currUnderlyingPrice = fromDec(r.toString(), this.decimal);
       })
     },
 
@@ -259,7 +268,7 @@ export default {
         let p = await this.ammPair.getOutputPrice(dir, {
           d: bAmount
         })
-        this.margin = formatNum(this.web3.utils.fromWei(p.toString()), 6);
+        this.margin = formatNum(fromDec(p.toString(), this.decimal), 6);
       }
     },
 
@@ -301,7 +310,7 @@ export default {
     },
 
     allowance()  {
-      this.usdc.allowance(this.account, this.ch.address).then((r) => {
+      this.USDT.allowance(this.account, this.ch.address).then((r) => {
         this.allowanced = fromDec(r, this.decimal);
       })
     },
@@ -309,7 +318,7 @@ export default {
     approve() {
       // let qAmount = toDec(this.totalCost, this.decimal);
       // console.log("approve:" + qAmount)
-      this.usdc.approve(this.ch.address, MaxUint, {
+      this.USDT.approve(this.ch.address, MaxUint, {
         from: this.account
       }).then(() => {
 
@@ -317,7 +326,7 @@ export default {
     },
 
     approveAmm() {
-      this.usdc.approve(this.ammPair.address, MaxUint, {
+      this.USDT.approve(this.ammPair.address, MaxUint, {
         from: this.account
       }).then(() => {
 
@@ -350,7 +359,7 @@ export default {
           let tvls = r.tvls;
           let arps = r.arps;
 
-        this.tvl = this.web3.utils.fromWei(tvls[0].toString())  // 获得第一个LP 池质押的 TVL
+        this.tvl = fromDec(tvls[0].toString(), this.decimal)  // 获得第一个LP 池质押的 TVL
 
         this.arp = this.web3.utils.fromWei(arps[0].toString())
       })
@@ -364,16 +373,16 @@ export default {
         0
         ).then( (r) => {
             // 保证金
-            console.log("margin:" + this.web3.utils.fromWei(r.margin.toString()))
+            console.log("margin:" + fromDec(r.margin.toString(), this.decimal))
             
             // 仓位价值(用来计算退出滑点的基数)
-            this.pnl = this.web3.utils.fromWei(r.pnl.toString())
+            this.pnl = fromDec(r.pnl.toString(), this.decimal)
 
             // 盈亏
-            console.log("unPnl:" +  this.web3.utils.fromWei(r.unPnl.toString()));
+            console.log("unPnl:" +  fromDec(r.unPnl.toString(), this.decimal));
 
             // 退出手续费
-            this.exitFee = this.web3.utils.fromWei(r.fee.toString())
+            this.exitFee = fromDec(r.fee.toString(), this.decimal)
         });
 
     },
@@ -393,14 +402,14 @@ export default {
         let position = positionArr[0];
 
         let myPosition = {};
-        myPosition.margin = this.web3.utils.fromWei(position.margin.toString())
+        myPosition.margin = fromDec(position.margin.toString(), this.decimal);
         myPosition.baseAsset = this.web3.utils.fromWei(position.size.toString())
-        myPosition.openNotional = this.web3.utils.fromWei(position.openNotional.toString())
+        myPosition.openNotional = fromDec(position.openNotional.toString(), this.decimal);
         myPosition.lastUpdatedCumulativePremiumFraction = this.web3.utils.fromWei(position.lastUpdatedCumulativePremiumFraction.toString())
         myPosition.marginRate =  this.web3.utils.fromWei(marginRatios[0].toString());
 
-        myPosition.liqPrice = this.web3.utils.fromWei(liqPrices[0].toString());
-        myPosition.unPnl = this.web3.utils.fromWei(unPnls[0].toString());
+        myPosition.liqPrice = fromDec(liqPrices[0].toString(), this.decimal);
+        myPosition.unPnl = fromDec(unPnls[0].toString(), this.decimal);
         
         this.myPosition = myPosition;
       }
@@ -486,7 +495,12 @@ export default {
     },
 
     pendingVsgOnMargin() {
+      this.vgsForMargin.userInfo(this.account).then((r) => {
+        console.log("userInfo amount:" + r.amount.toString())
+      });
+
         this.vgsForMargin.pendingVgs(this.account).then((r) => {
+          console.log("pendingMarginVgs" + r.toString())
             this.pendingMarginVgs = this.web3.utils.fromWei(r.toString());
         });
     },
