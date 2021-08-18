@@ -388,6 +388,10 @@ export default {
     },
 
     getPosition() {
+      this.ch.getPosition(this.account).then( (r) => {
+        console.log(r.size)
+      });
+
       this.vgsReader.traderPosition([this.ch.address],  // 可以传入多个地址
         this.account,
         0
@@ -421,7 +425,7 @@ export default {
     closePosition() {
       // let Slippage = 0.01;  // 滑点设置  1%
 
-      let min = toDec(parseFloat(this.pnl) * 0.99, 18);
+      let min = toDec(formatNum(parseFloat(this.pnl) * 0.99, 6), this.decimal);
 
       this.ch.closePosition( {d: min}, 
         { from : this.account}).then( () => {
@@ -430,7 +434,7 @@ export default {
     },
 
     removeMargin() {
-      let amount = this.web3.utils.toWei(this.adjustAmount);
+      let amount = toDec(this.adjustAmount, this.decimal);
       this.ch.removeMargin( 
       {d: amount}, {from: this.account}).then(() => {
         this.getPosition();
@@ -438,7 +442,7 @@ export default {
     },
 
     addMargin() {
-      let amount = this.web3.utils.toWei(this.adjustAmount);
+      let amount = toDec(this.adjustAmount, this.decimal);
       this.ch.addMargin(
       {d: amount}, 
       {from: this.account}).then(() => {
@@ -447,7 +451,7 @@ export default {
     },
 
     addLp() {
-        let amount = this.web3.utils.toWei(this.supplyLP, this.decimal);
+        let amount = toDec(this.supplyLP, this.decimal);
         this.ammPair.addLiquidity(this.account, amount, {from: this.account}).then(() => {
             this.liquidityInfo();
         })

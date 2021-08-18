@@ -18,7 +18,7 @@ module.exports = async function(callback) {
     accounts = await web3.eth.getAccounts()
     feed = await SimpleUSDPriceFeed.deployed()
 
-    let WETH = require(`../front/abis/WETH.hardhat.json`);
+    let WETH = require(`../front/abis/WETH.testmatic.json`);
 
     ethMock = await MockToken.at(WETH.address)
 
@@ -27,8 +27,8 @@ module.exports = async function(callback) {
   }
 
   try {
-    await feed.setPrice(ethMock.address, "3189000000");
-    await delay(10);
+    await feed.setPrice(ethMock.address, "3089000000");
+    // await delay(10);
   } catch (e) {
     console.log(e)
   }
