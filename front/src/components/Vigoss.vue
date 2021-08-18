@@ -67,14 +67,18 @@
 
     <span>  退出费用: {{ exitFee }} </span>    
     <br>
-    <button @click="closePosition">Close</button>
+
 
     <div>
       <input v-model="adjustAmount" placeholder="调整的保证金数量">
       <button @click="removeMargin">减少保证金</button>
       <button @click="addMargin">增加保证金</button>
     </div>
+
+        
   </div>
+
+<button @click="closePosition">Close</button>
 
     <div>
         保证金挖矿所得待提取 vgs 数量 ：{{  pendingMarginVgs }} 
@@ -425,9 +429,9 @@ export default {
     closePosition() {
       // let Slippage = 0.01;  // 滑点设置  1%
 
-      let min = toDec(formatNum(parseFloat(this.pnl) * 0.99, 6), this.decimal);
+      // let min = toDec(formatNum(parseFloat(this.pnl) * 0.99, 6), this.decimal);
 
-      this.ch.closePosition( {d: min}, 
+      this.ch.closePosition( {d: "0"}, 
         { from : this.account}).then( () => {
         this.getPosition();
       })
