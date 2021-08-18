@@ -7,6 +7,7 @@ module.exports = async function(deployer, network, accounts) {
 
   const vgs = await VigossToken.deployed();
 
+
   // 100000000 * 0.52 * 0.4 = 20800000
 
   await deployer.deploy(VGSForMargin, vgs.address, vgsPerSecond);

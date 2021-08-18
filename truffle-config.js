@@ -96,12 +96,13 @@ module.exports = {
 
     testmatic: {
       provider: function() {
-        // https://rpc-mumbai.matic.today
-        return new HDWalletProvider(mnemonic, "https://rpc-mumbai.maticvigil.com/")
+        // https://rpc-mumbai.matic.today  
+        // https://rpc-mumbai.maticvigil.com/
+        return new HDWalletProvider(mnemonic, "https://rpc-mumbai.matic.today")
       },
       network_id: 80001,
       gas: 7003605,
-      gasPrice: 30000000000,   // 2Gwei
+      gasPrice: 10000000000,   // 2Gwei
     },
     
     testheco: {
