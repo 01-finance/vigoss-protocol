@@ -18,7 +18,16 @@ module.exports = async function(callback) {
     accounts = await web3.eth.getAccounts()
     feed = await SimpleUSDPriceFeed.deployed()
 
+    console.log("feed Addr:" + feed.address)
+
     let WETH = require(`../front/abis/WETH.testmatic.json`);
+    console.log("WETH Address:" + WETH.address);
+
+    let WBTC = require(`../front/abis/WBTC.testmatic.json`);
+
+    console.log("WBTC Address:" + WBTC.address);
+    
+
 
     ethMock = await MockToken.at(WETH.address)
 

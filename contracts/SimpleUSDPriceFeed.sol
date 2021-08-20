@@ -3,7 +3,7 @@ pragma solidity 0.6.9;
 
 import { IPriceFeed } from "./interface/IPriceFeed.sol";
 import { Decimal, SafeMath } from "./utils/Decimal.sol";
-import { SimplePriceOracle } from "./PriceOracle.sol";
+import { SimplePriceOracle } from "./SimplePriceOracle.sol";
 
 contract SimpleUSDPriceFeed is SimplePriceOracle {
 

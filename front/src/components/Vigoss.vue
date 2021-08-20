@@ -262,16 +262,18 @@ export default {
 
     async getOutPrice() {
       if (this.leverage != null && this.baseAmount != null) {
-        let bAmount = toDec(parseFloat(this.baseAmount) / parseFloat(this.leverage), this.decimal);
+        let bAmount = toDec(parseFloat(this.baseAmount) / parseFloat(this.leverage), 18);
 
         let dir = 0;
         if (this.longOrShort == 0) {
           dir = 1
         }
 
+
         let p = await this.ammPair.getOutputPrice(dir, {
           d: bAmount
         })
+        console.log("output:" + p);
         this.margin = formatNum(fromDec(p.toString(), this.decimal), 6);
       }
     },
@@ -294,7 +296,9 @@ export default {
 
 
     calcFee() {
-      let qAmount = toDec(parseFloat(this.margin) * parseFloat(this.leverage), this.decimal);
+      console.log("calcFee");
+
+      let qAmount = toDec(formatNum(parseFloat(this.margin) * parseFloat(this.leverage), 6), this.decimal);
       this.ammPair.calcFee({
         d: qAmount
       }).then(fee => {
@@ -392,9 +396,9 @@ export default {
     },
 
     getPosition() {
-      this.ch.getPosition(this.account).then( (r) => {
-        console.log(r.size)
-      });
+      // this.ch.getPosition(this.account).then( (r) => {
+      //   console.log(r.size)
+      // });
 
       this.vgsReader.traderPosition([this.ch.address],  // 可以传入多个地址
         this.account,
@@ -429,9 +433,9 @@ export default {
     closePosition() {
       // let Slippage = 0.01;  // 滑点设置  1%
 
-      // let min = toDec(formatNum(parseFloat(this.pnl) * 0.99, 6), this.decimal);
+      let min = toDec(formatNum(parseFloat(this.pnl) * 0.99, 6), this.decimal);
 
-      this.ch.closePosition( {d: "0"}, 
+      this.ch.closePosition( {d: min}, 
         { from : this.account}).then( () => {
         this.getPosition();
       })

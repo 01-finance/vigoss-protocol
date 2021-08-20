@@ -11,6 +11,7 @@ import "./interface/IVGSForMargin.sol";
 import { Decimal } from "./utils/Decimal.sol";
 import { SignedDecimal } from "./utils/SignedDecimal.sol";
 
+
 contract VigossReader  {
     using Decimal for Decimal.decimal;
     using SignedDecimal for SignedDecimal.signedDecimal;
@@ -115,9 +116,13 @@ contract VigossReader  {
         if (_size.toInt() < 0) {
             liqPrice = (openNotional.addD(_margin)).divD(Decimal.one().addD(_mrr)).divD(_size.abs());
         } else {
-            Decimal.decimal memory leftMargin = openNotional.subD(_margin);
-            Decimal.decimal memory PN = leftMargin.divD(Decimal.one().subD(_mrr));
-            liqPrice = PN.divD(_size.abs());
+            if (openNotional.toUint() <  _margin.toUint()) {
+              liqPrice  = Decimal.zero();
+            } else {
+              Decimal.decimal memory leftMargin = openNotional.subD(_margin);
+              Decimal.decimal memory PN = leftMargin.divD(Decimal.one().subD(_mrr));
+              liqPrice = PN.divD(_size.abs());
+            }
         }
       }
   
@@ -138,20 +143,26 @@ contract VigossReader  {
 
         for (uint256 index = 0; index < len; index++) {
             IClearingHouse ch = IClearingHouse(_clearingHouses[index]);
-            IClearingHouse.Position memory p = ch.getPosition(_trader);
-            pos[index] = p;
-            Decimal.decimal memory mrr = ch.getMaintenanceMarginRatio();
+            try ch.getPosition(_trader) returns (IClearingHouse.Position memory p) {
+              
+              pos[index] = p;
 
-            (Decimal.decimal memory pnl, SignedDecimal.signedDecimal memory unPnl) =
-                ch.getPositionNotionalAndUnrealizedPnl(_trader, _pnlCalcOption);
+              if (p.size.toInt() != 0) {
+                Decimal.decimal memory mrr = ch.getMaintenanceMarginRatio();
 
-            pnls[index] = pnl;
-            unPnls[index] = unPnl;
-            liqPrices[index] = getLiquidatePrice(p.openNotional, p.margin, p.size, mrr);
+                (Decimal.decimal memory pnl, SignedDecimal.signedDecimal memory unPnl) =
+                    ch.getPositionNotionalAndUnrealizedPnl(_trader, _pnlCalcOption);
 
-            marginRatios[index] = ch.getMarginRatio(_trader);
+                pnls[index] = pnl;
+                unPnls[index] = unPnl;
+                liqPrices[index] = getLiquidatePrice(p.openNotional, p.margin, p.size, mrr);
+
+                marginRatios[index] = ch.getMarginRatio(_trader);
+              }
+            } catch Error(string memory /*reason*/) {
+            } catch (bytes memory /*lowLevelData*/) {
+            }
         }
-
     }
 
 
