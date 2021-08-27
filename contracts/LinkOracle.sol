@@ -1,7 +1,7 @@
 pragma solidity 0.6.9;
 
 import "./chainlink/v0.6/interfaces/AggregatorV3Interface.sol";
-import "./PriceOracle.sol";
+import "./SimplePriceOracle.sol";
 import { Ownable } from "./openzeppelin/access/Ownable.sol";
 
 contract LinkOracle is IPriceOracle, Ownable {
