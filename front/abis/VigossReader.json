@@ -87,6 +87,39 @@
     {
       "inputs": [
         {
+          "internalType": "contract IClearingHouse",
+          "name": "ch",
+          "type": "address"
+        },
+        {
+          "internalType": "address[]",
+          "name": "_traders",
+          "type": "address[]"
+        }
+      ],
+      "name": "getUsersMarginRatio",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "int256",
+              "name": "d",
+              "type": "int256"
+            }
+          ],
+          "internalType": "struct SignedDecimal.signedDecimal[]",
+          "name": "mrs",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x93398ef7"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address[]",
           "name": "_amms",
           "type": "address[]"
