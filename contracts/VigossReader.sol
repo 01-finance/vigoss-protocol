@@ -55,6 +55,21 @@ contract VigossReader  {
         }
     }
 
+    function getUsersMarginRatio(IClearingHouse ch, address[] memory _traders) external view returns(SignedDecimal.signedDecimal[] memory mrs) {
+      uint len = _traders.length;
+      mrs = new SignedDecimal.signedDecimal[](len);
+
+      for (uint256 index = 0; index < len; index++) {
+        try ch.getMarginRatio(_traders[index]) returns (SignedDecimal.signedDecimal memory mr) {
+          mrs[index] = mr;
+        } catch Error(string memory /*reason*/) {
+        
+        } catch (bytes memory /*lowLevelData*/) {
+        
+        }
+      }
+    }
+
 
   // 返回 amms 池子的 TVL 及 日收益
   // 日收益率 = VGS产量24小时产量 * VGS价格/ 池子TVL
@@ -164,6 +179,8 @@ contract VigossReader  {
             }
         }
     }
+
+
 
 
     function getAmmStates(address _amm) external view returns (AmmStates memory) {
