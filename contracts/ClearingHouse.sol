@@ -8,7 +8,6 @@ import { Decimal } from "./utils/Decimal.sol";
 import { SignedDecimal } from "./utils/SignedDecimal.sol";
 import { MixedDecimal } from "./utils/MixedDecimal.sol";
 import { DecimalERC20 } from "./utils/DecimalERC20.sol";
-import { Context } from "./openzeppelin/GSN/Context.sol";
 // prettier-ignore
 // solhint-disable-next-line
 import { ReentrancyGuard } from "./openzeppelin/utils/ReentrancyGuard.sol";
@@ -16,8 +15,6 @@ import { OwnerPausable } from "./OwnerPausable.sol";
 import { IAmm } from "./interface/IAmm.sol";
 import { IClearingHouse } from "./interface/IClearingHouse.sol";
 import { IVGSForMargin } from "./interface/IVGSForMargin.sol";
-
-import "hardhat/console.sol";
 
 contract ClearingHouse is
     DecimalERC20,
@@ -228,7 +225,7 @@ contract ClearingHouse is
         requireAmm(true);
         requireNonZeroInput(_addedMargin);
         // update margin part in personal position
-        address trader = _msgSender();
+        address trader = msg.sender;
         Position memory position = getPosition(trader);
         position.margin = position.margin.addD(_addedMargin);
         setPosition(trader, position);
@@ -248,7 +245,7 @@ contract ClearingHouse is
         requireAmm(true);
         requireNonZeroInput(_removedMargin);
         // update margin part in personal position
-        address trader = _msgSender();
+        address trader = msg.sender;
         Position memory position = getPosition(trader);
         // realize funding payment if there's no bad debt
         SignedDecimal.signedDecimal memory marginDelta = MixedDecimal.fromDecimal(_removedMargin).mulScalar(-1);
@@ -321,7 +318,7 @@ contract ClearingHouse is
         requireMoreMarginRatio(MixedDecimal.fromDecimal(Decimal.one()).divD(_leverage), initMarginRatio, true);
         requireNotRestrictionMode();
 
-        address trader = _msgSender();
+        address trader = msg.sender;
         PositionResp memory positionResp;
         {
             // add scope for stack too deep error
@@ -346,7 +343,6 @@ contract ClearingHouse is
                     false
                 );
             }
-            console.log("CH:openPosition:setPosition");
             // update the position state
             setPosition(trader, positionResp.position);
             // if opening the exact position size as the existing one == closePosition, can skip the margin ratio check
@@ -362,10 +358,7 @@ contract ClearingHouse is
             // transfer the actual token between trader and vault
             IERC20 quoteToken = amm.quoteAsset();
 
-            console.log("CH:openPosition:quoteToken:", address(quoteToken));
-
             if (positionResp.marginToVault.toInt() > 0) {
-                console.log("CH:openPosition:tranferQuote:", _toUint(quoteToken, positionResp.marginToVault.abs()));
                 _transferFrom(quoteToken, trader, address(this), positionResp.marginToVault.abs());
             } else if (positionResp.marginToVault.toInt() < 0) {
                 withdraw(trader, positionResp.marginToVault.abs());
@@ -410,7 +403,7 @@ contract ClearingHouse is
         requireNotRestrictionMode();
 
         // update position
-        address trader = _msgSender();
+        address trader = msg.sender;
 
         PositionResp memory positionResp;
         {
@@ -458,7 +451,6 @@ contract ClearingHouse is
 
         // including oracle-based margin ratio as reference price when amm is over spread limit
         if (amm.isOverSpreadLimit()) {
-            console.log("liquidate:isOverSpreadLimit");
             SignedDecimal.signedDecimal memory marginRatioBasedOnOracle = _getMarginRatioBasedOnOracle(_trader);
             if (marginRatioBasedOnOracle.subD(marginRatio).toInt() > 0) {
                 marginRatio = marginRatioBasedOnOracle;
@@ -499,7 +491,7 @@ contract ClearingHouse is
             if (feeToAmmLpFund.toUint() > 0) {
                 transferToAmmLpFund(feeToAmmLpFund);
             }
-            withdraw(_msgSender(), feeToLiquidator);
+            withdraw(msg.sender, feeToLiquidator);
             enterRestrictionMode();
 
             emit PositionLiquidated(
@@ -507,7 +499,7 @@ contract ClearingHouse is
                 positionResp.exchangedQuoteAssetAmount.toUint(),
                 positionResp.exchangedPositionSize.toUint(),
                 feeToLiquidator.toUint(),
-                _msgSender(),
+                msg.sender,
                 liquidationBadDebt.toUint()
             );
         }
@@ -708,7 +700,7 @@ contract ClearingHouse is
         Decimal.decimal memory _minPositionSize,
         Decimal.decimal memory _leverage
     ) internal returns (PositionResp memory positionResp) {
-        address trader = _msgSender();
+        address trader = msg.sender;
         Position memory oldPosition = getUnadjustedPosition(trader);
         
         positionResp.exchangedPositionSize = swapInput(_side, _openNotional, _minPositionSize, false);
@@ -912,8 +904,6 @@ contract ClearingHouse is
         positionResp.realizedPnl = unrealizedPnl;
         positionResp.badDebt = badDebt;  // >0
 
-        console.log("badDebt:", badDebt.toUint());
-
         positionResp.fundingPayment = fundingPayment;
         positionResp.marginToVault = MixedDecimal.fromDecimal(remainMargin).mulScalar(-1);
 
@@ -955,21 +945,16 @@ contract ClearingHouse is
         bool hasToll = toll.toUint() > 0;
         bool hasSpread = spread.toUint() > 0;
 
-        console.log("CH:transferFee", hasToll, hasSpread);
-
         if (hasToll || hasSpread) {
             IERC20 quoteAsset = amm.quoteAsset();
 
             // transfer spread to amm lp fund
             if (hasSpread) {
-                console.log("CH:transferFee:spread:",  _toUint(quoteAsset, spread));
                 _transferFrom(quoteAsset, _from, address(amm), spread);
             }
 
             // transfer toll to feePool
             if (hasToll) {
-                console.log("CH:transferFee:feePool:", address(feePool));
-                console.log("CH:transferFee:toll:",  _toUint(quoteAsset, toll));
                 require(address(feePool) != address(0), "Invalid feePool");
                 _transferFrom(quoteAsset, _from, address(feePool), toll);
             }
@@ -1035,7 +1020,7 @@ contract ClearingHouse is
             }
             if (_amount.toInt() > 0) {
                 // whitelist won't be restrict by open interest cap
-                require(updatedOpenInterestNotional.toUint() <= cap || _msgSender() == whitelist, "over limit");
+                require(updatedOpenInterestNotional.toUint() <= cap || msg.sender == whitelist, "over limit");
             }
             aopenInterestNotional = updatedOpenInterestNotional.abs();
         }
@@ -1101,7 +1086,7 @@ contract ClearingHouse is
     function requireNotRestrictionMode() private view {
         uint256 currentBlock = _blockNumber();
         if (currentBlock == ammMap.lastRestrictionBlock) {
-            require(getUnadjustedPosition(_msgSender()).blockNumber != currentBlock, "only one action allowed");
+            require(getUnadjustedPosition(msg.sender).blockNumber != currentBlock, "only one action allowed");
         }
     }
 

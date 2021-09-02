@@ -16,8 +16,6 @@ import { MixedDecimal } from "./utils/MixedDecimal.sol";
 import { IAmm } from "./interface/IAmm.sol";
 import { IVGSForLP } from "./interface/IVGSForLP.sol";
 
-import "hardhat/console.sol";
-
 contract Amm is IAmm, Ownable, BlockContext {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
@@ -226,7 +224,6 @@ contract Amm is IAmm, Ownable, BlockContext {
         shares[to] = userHolder;
 
         if (address(vgsForLp) != address(0)) {
-            console.log("updateLpAmount:", address(vgsForLp));
             vgsForLp.updateLpAmount(to, userHolder);    
         }
 
@@ -256,9 +253,6 @@ contract Amm is IAmm, Ownable, BlockContext {
         uint stakeBaseReserve = liquidityStake.baseAsset;
         uint stakeQuoteReserve = liquidityStake.quoteAsset;
 
-        console.log("shares[msg.sender]:", shares[msg.sender]);
-        console.log("liquidity:", liquidity);
-
         if (shares[msg.sender] > liquidity) {
             stakeBaseReserve = liquidityStake.baseAsset.mul(liquidity).div(shares[msg.sender]);
             liquidityStake.baseAsset = liquidityStake.baseAsset.sub(stakeBaseReserve);
@@ -273,29 +267,19 @@ contract Amm is IAmm, Ownable, BlockContext {
 
         uint exitQuoteReserve = liquidity.mul(quoteAssetReserve.toUint()).div(totalLiquidity);
         uint exitBaseReserve = liquidity.mul(baseAssetReserve.toUint()).div(totalLiquidity);
-        console.log("exitQuoteReserve:", exitQuoteReserve);
-        console.log("exitBaseReserve:", exitBaseReserve);
-
 
         if (exitBaseReserve > stakeBaseReserve) { // sell vBase
             uint sellBase = exitBaseReserve.sub(stakeBaseReserve);
-            console.log("sellBase:", sellBase);
             
             Decimal.decimal memory qReserve = getOutputPrice(Dir.ADD_TO_AMM, Decimal.decimal(sellBase));
-            console.log("qReserve:", qReserve.toUint());
 
             exitQuoteReserve = exitQuoteReserve.add(qReserve.toUint());
-            console.log("exitQuoteReserve:", exitQuoteReserve);
 
         } else if (exitBaseReserve < stakeBaseReserve) {  // buy vBase
             uint buyBase = stakeBaseReserve.sub(exitBaseReserve);
-            console.log("buyBase:", buyBase);
-
             Decimal.decimal memory qReserve = getOutputPrice(Dir.REMOVE_FROM_AMM, Decimal.decimal(buyBase));
-            console.log("qReserve:", qReserve.toUint());
 
             exitQuoteReserve = exitQuoteReserve.sub(qReserve.toUint());
-            console.log("exitQuoteReserve:", exitQuoteReserve);
         }
 
         baseAssetReserve = baseAssetReserve.subD(Decimal.decimal(stakeBaseReserve));
