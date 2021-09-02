@@ -43,10 +43,10 @@ module.exports = async function(callback) {
   try {
     var accounts = await web3.eth.getAccounts()
     var house = await ClearingHouse.deployed();
-    var fund = await InsuranceFund.deployed();
+
     var feed = await SimpleUSDPriceFeed.deployed();
 
-    let USDC = require(`../front/abis/USDC.${network}.json`);
+    let USDC = require(`../front/abis/USDT.${network}.json`);
     console.log("USDC addr:" + USDC.address)
 
     var usdcMock = await MockToken.at(USDC.address)

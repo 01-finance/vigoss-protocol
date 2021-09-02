@@ -3,7 +3,6 @@ pragma solidity 0.6.9;
 pragma experimental ABIEncoderV2;
 
 import { Math } from './utils/Math.sol';
-import { BlockContext } from "./utils/BlockContext.sol";
 import { IPriceFeed } from "./interface/IPriceFeed.sol";
 import { SafeMath } from "./openzeppelin/math/SafeMath.sol";
 
@@ -16,7 +15,7 @@ import { MixedDecimal } from "./utils/MixedDecimal.sol";
 import { IAmm } from "./interface/IAmm.sol";
 import { IVGSForLP } from "./interface/IVGSForLP.sol";
 
-contract Amm is IAmm, Ownable, BlockContext {
+contract Amm is IAmm, Ownable {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     using Decimal for Decimal.decimal;
@@ -215,8 +214,8 @@ contract Amm is IAmm, Ownable, BlockContext {
         quoteAssetReserve = quoteAssetReserve.addD(Decimal.decimal(_quoteAssetReserve));
         baseAssetReserve = baseAssetReserve.addD(Decimal.decimal(_baseAssetReserve));
 
-        reserveSnapshots.push(ReserveSnapshot(quoteAssetReserve, baseAssetReserve, _blockTimestamp(), _blockNumber()));
-        emit ReserveSnapshotted(quoteAssetReserve.toUint(), baseAssetReserve.toUint(), _blockTimestamp());
+        reserveSnapshots.push(ReserveSnapshot(quoteAssetReserve, baseAssetReserve, block.timestamp, block.number));
+        emit ReserveSnapshotted(quoteAssetReserve.toUint(), baseAssetReserve.toUint(), block.timestamp);
 
         liquidity = Math.sqrt(uint(_quoteAssetReserve).mul(_baseAssetReserve));
         totalLiquidity = totalLiquidity.add(liquidity);
@@ -284,8 +283,8 @@ contract Amm is IAmm, Ownable, BlockContext {
 
         baseAssetReserve = baseAssetReserve.subD(Decimal.decimal(stakeBaseReserve));
         quoteAssetReserve = quoteAssetReserve.subD(Decimal.decimal(exitQuoteReserve));
-        reserveSnapshots.push(ReserveSnapshot(quoteAssetReserve, baseAssetReserve, _blockTimestamp(), _blockNumber()));
-        emit ReserveSnapshotted(quoteAssetReserve.toUint(), baseAssetReserve.toUint(), _blockTimestamp());
+        reserveSnapshots.push(ReserveSnapshot(quoteAssetReserve, baseAssetReserve, block.timestamp, block.number));
+        emit ReserveSnapshotted(quoteAssetReserve.toUint(), baseAssetReserve.toUint(), block.timestamp);
 
 
         emit LiquidityRemoved(exitQuoteReserve, stakeBaseReserve, to);
@@ -376,7 +375,7 @@ contract Amm is IAmm, Ownable, BlockContext {
      * @return premium fraction of this period in 18 digits
      */
     function settleFunding() external override onlyOpen onlyCounterParty returns (SignedDecimal.signedDecimal memory) {
-        require(_blockTimestamp() >= nextFundingTime, "settle funding too early");
+        require(block.timestamp >= nextFundingTime, "settle funding too early");
 
         // premium = twapMarketPrice - twapIndexPrice
         // timeFraction = fundingPeriod(1 hour) / 1 day
@@ -390,7 +389,7 @@ contract Amm is IAmm, Ownable, BlockContext {
         updateFundingRate(premiumFraction, underlyingPrice);
 
         // in order to prevent multiple funding settlement during very short time after network congestion
-        uint256 minNextValidFundingTime = _blockTimestamp().add(fundingBufferPeriod);
+        uint256 minNextValidFundingTime = block.timestamp.add(fundingBufferPeriod);
 
         // floor((nextFundingTime + fundingPeriod) / 3600) * 3600
         uint256 nextFundingTimeOnHourStart = nextFundingTime.add(fundingPeriod).div(1 hours).mul(1 hours);
@@ -494,7 +493,7 @@ contract Amm is IAmm, Ownable, BlockContext {
 
         open = _open;
         if (_open) {
-            nextFundingTime = _blockTimestamp().add(fundingPeriod).div(1 hours).mul(1 hours);
+            nextFundingTime = block.timestamp.add(fundingPeriod).div(1 hours).mul(1 hours);
         }
     }
 
@@ -866,7 +865,7 @@ contract Amm is IAmm, Ownable, BlockContext {
     }
 
     function addReserveSnapshot() internal {
-        uint256 currentBlock = _blockNumber();
+        uint256 currentBlock = block.number;
         ReserveSnapshot storage latestSnapshot = reserveSnapshots[reserveSnapshots.length - 1];
         // update values in snapshot if in the same block
         if (currentBlock == latestSnapshot.blockNumber) {
@@ -874,10 +873,10 @@ contract Amm is IAmm, Ownable, BlockContext {
             latestSnapshot.baseAssetReserve = baseAssetReserve;
         } else {
             reserveSnapshots.push(
-                ReserveSnapshot(quoteAssetReserve, baseAssetReserve, _blockTimestamp(), currentBlock)
+                ReserveSnapshot(quoteAssetReserve, baseAssetReserve, block.timestamp, currentBlock)
             );
         }
-        emit ReserveSnapshotted(quoteAssetReserve.toUint(), baseAssetReserve.toUint(), _blockTimestamp());
+        emit ReserveSnapshotted(quoteAssetReserve.toUint(), baseAssetReserve.toUint(), block.timestamp);
     }
 
     function implSwapOutput(
@@ -978,7 +977,7 @@ contract Amm is IAmm, Ownable, BlockContext {
             return currentPrice;
         }
 
-        uint256 baseTimestamp = _blockTimestamp().sub(_interval);
+        uint256 baseTimestamp = block.timestamp.sub(_interval);
         ReserveSnapshot memory currentSnapshot = reserveSnapshots[_params.snapshotIndex];
         // return the latest snapshot price directly
         // if only one snapshot or the timestamp of latest snapshot is earlier than asking for
@@ -987,7 +986,7 @@ contract Amm is IAmm, Ownable, BlockContext {
         }
 
         uint256 previousTimestamp = currentSnapshot.timestamp;
-        uint256 period = _blockTimestamp().sub(previousTimestamp);
+        uint256 period = block.timestamp.sub(previousTimestamp);
         Decimal.decimal memory weightedPrice = currentPrice.mulScalar(period);
         while (true) {
             // if snapshot history is too short
@@ -1059,7 +1058,7 @@ contract Amm is IAmm, Ownable, BlockContext {
         uint256 len = reserveSnapshots.length;
         ReserveSnapshot memory latestSnapshot = reserveSnapshots[len.sub(1)];
         // if the latest snapshot is the same as current block, get the previous one
-        if (latestSnapshot.blockNumber == _blockNumber() && len > 1) {
+        if (latestSnapshot.blockNumber == block.number && len > 1) {
             latestSnapshot = reserveSnapshots[len.sub(2)];
         }
 

@@ -2,7 +2,6 @@
 pragma solidity 0.6.9;
 pragma experimental ABIEncoderV2;
 
-import { BlockContext } from "./utils/BlockContext.sol";
 import { IERC20 } from "./openzeppelin/token/ERC20/IERC20.sol";
 import { Decimal } from "./utils/Decimal.sol";
 import { SignedDecimal } from "./utils/SignedDecimal.sol";
@@ -20,7 +19,6 @@ contract ClearingHouse is
     DecimalERC20,
     OwnerPausable,
     ReentrancyGuard,
-    BlockContext,
     IClearingHouse
 {
     using Decimal for Decimal.decimal;
@@ -657,7 +655,7 @@ contract ClearingHouse is
     //
 
     function enterRestrictionMode() internal {
-        uint256 blockNumber = _blockNumber();
+        uint256 blockNumber = block.number;
         ammMap.lastRestrictionBlock = blockNumber;
         emit RestrictionModeEntered(blockNumber);
     }
@@ -686,7 +684,7 @@ contract ClearingHouse is
             margin: Decimal.zero(),
             openNotional: Decimal.zero(),
             lastUpdatedCumulativePremiumFraction: SignedDecimal.zero(),
-            blockNumber: _blockNumber()
+            blockNumber: block.number
         });
         if (address(vgsForMargin) != address(0)) {
             vgsForMargin.changeMargin(address(amm.quoteAsset()) , 0, _trader);
@@ -747,7 +745,7 @@ contract ClearingHouse is
             remainMargin,
             oldPosition.openNotional.addD(positionResp.exchangedQuoteAssetAmount),
             latestCumulativePremiumFraction,
-            _blockNumber()
+            block.number
         );
         
     }
@@ -823,7 +821,7 @@ contract ClearingHouse is
                 remainMargin,
                 remainOpenNotional.abs(),
                 latestCumulativePremiumFraction,
-                _blockNumber()
+                block.number
             );
             return positionResp;
         }
@@ -1084,7 +1082,7 @@ contract ClearingHouse is
     }
 
     function requireNotRestrictionMode() private view {
-        uint256 currentBlock = _blockNumber();
+        uint256 currentBlock = block.number;
         if (currentBlock == ammMap.lastRestrictionBlock) {
             require(getUnadjustedPosition(msg.sender).blockNumber != currentBlock, "only one action allowed");
         }
