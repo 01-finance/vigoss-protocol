@@ -20,10 +20,10 @@ module.exports = async function(callback) {
 
     console.log("feed Addr:" + feed.address)
 
-    let WETH = require(`../front/abis/WETH.testmatic.json`);
+    let WETH = require(`../front/abis/WETH.testbsc.json`);
     console.log("WETH Address:" + WETH.address);
 
-    let WBTC = require(`../front/abis/WBTC.testmatic.json`);
+    let WBTC = require(`../front/abis/WBTC.testbsc.json`);
 
     console.log("WBTC Address:" + WBTC.address);
     
@@ -36,14 +36,15 @@ module.exports = async function(callback) {
   }
 
   try {
-    await feed.setPrice(ethMock.address, "3089000000");
+    await feed.approveFeeder("0xd830C50dbfa92B296C55Ef30AD3B0C6F7f344aec");
+    console.log("approveFeeder")
     // await delay(10);
   } catch (e) {
     console.log(e)
   }
     
-  const currPrice = await feed.getPrice(ethMock.address)
-  console.log("currPrice:" + web3.utils.fromWei(currPrice));
+  const fe = await feed.feeders("0xd830C50dbfa92B296C55Ef30AD3B0C6F7f344aec")
+  console.log("fe:" + fe);
 
   // await feed.setPrice(ethMock.address, web3.utils.toWei("220"));
   // await delay(10);

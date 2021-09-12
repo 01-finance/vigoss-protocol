@@ -77,8 +77,8 @@ module.exports = {
     },
 
     testbsc: {
-      provider: function() {   // link ok 
-        return new HDWalletProvider(mnemonic, "https://data-seed-prebsc-1-s2.binance.org:8545/")
+      provider: function() {   // link ok https://data-seed-prebsc-2-s1.binance.org:8545/
+        return new HDWalletProvider(mnemonic, "https://data-seed-prebsc-2-s3.binance.org:8545/")
       },
       network_id: 97,
       gas: 7003605,

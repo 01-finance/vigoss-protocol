@@ -5,7 +5,6 @@ pragma solidity 0.6.9;
 
 import { Ownable } from "./openzeppelin/access/Ownable.sol";
 import { SafeMath } from "./openzeppelin/math/SafeMath.sol";
-import "hardhat/console.sol";
 
 /**
     @title 价格预言机
@@ -50,11 +49,9 @@ contract SimplePriceOracle is IPriceOracle, Ownable {
      */
     function getPriceMan(address token) public view override returns (uint256) {
         uint round = rounds[token];
-        console.log("round:", round);
         if(round == 0) {
-          return 0;
+            return 0;
         }
-        console.log("round - 1:", round.sub(1));
         return roundPrices[token][round.sub(1)].lastPriceMan;
     }
 
