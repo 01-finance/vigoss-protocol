@@ -4,8 +4,6 @@
 pragma solidity 0.6.9;
 
 import "./openzeppelin/token/ERC20/IERC20.sol";
-import "./openzeppelin/token/ERC20/SafeERC20.sol";
-import "./openzeppelin/utils/EnumerableSet.sol";
 import "./openzeppelin/math/SafeMath.sol";
 import "./openzeppelin/access/Ownable.sol";
 
@@ -13,7 +11,7 @@ contract VGSForMargin is Ownable {
     uint constant SCALE = 1e12;
 
     using SafeMath for uint256;
-    using SafeERC20 for IERC20;
+
     // Info of each user.
     struct UserInfo {
         uint256 amount; // How many Stable tokens the user has provided.
