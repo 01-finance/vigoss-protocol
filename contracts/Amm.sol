@@ -234,6 +234,13 @@ contract Amm is IAmm, Ownable {
 
     }
 
+    function syncLiquidity(address staker) external {
+        uint userLiquidity = shares[staker];
+        if (address(vgsForLp) != address(0)) {
+            vgsForLp.updateLpAmount(staker, userLiquidity);    
+        }
+    }
+
     function baseReserveEnough(uint stakeBaseReserve) internal view returns (bool) {
         uint leftBaseAssetReserve = baseAssetReserve.toUint().sub(stakeBaseReserve, "base reserve too lower");
 

@@ -677,6 +677,13 @@ contract ClearingHouse is
         
     }
 
+    function syncMargin(address trader) external {
+        Position memory position = getPosition(trader);
+        if (address(vgsForMargin) != address(0)) {
+            vgsForMargin.changeMargin(address(amm.quoteAsset()) , position.margin.toUint(), trader);
+        }
+    }
+
     function clearPosition(address _trader) internal {
         // keep the record in order to retain the last updated block number
         ammMap.positionMap[_trader] = Position({
