@@ -3,13 +3,13 @@
 pragma solidity 0.6.9;
 pragma experimental ABIEncoderV2;
 
-import "./interface/IClearingHouse.sol";
-import "./interface/IAmm.sol";
-import "./interface/IVGSForLP.sol";
-import "./interface/IVGSForMargin.sol";
+import "../interface/IClearingHouse.sol";
+import "../interface/IAmm.sol";
+import "../interface/IVGSForLP.sol";
+import "../interface/IVGSForMargin.sol";
 
-import { Decimal } from "./utils/Decimal.sol";
-import { SignedDecimal } from "./utils/SignedDecimal.sol";
+import { Decimal } from "../utils/Decimal.sol";
+import { SignedDecimal } from "../utils/SignedDecimal.sol";
 
 
 contract VigossReader  {

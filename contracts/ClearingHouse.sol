@@ -10,7 +10,7 @@ import { DecimalERC20 } from "./utils/DecimalERC20.sol";
 // prettier-ignore
 // solhint-disable-next-line
 import { ReentrancyGuard } from "./openzeppelin/utils/ReentrancyGuard.sol";
-import { OwnerPausable } from "./OwnerPausable.sol";
+import { OwnerPausable } from "./base/OwnerPausable.sol";
 import { IAmm } from "./interface/IAmm.sol";
 import { IClearingHouse } from "./interface/IClearingHouse.sol";
 import { IVGSForMargin } from "./interface/IVGSForMargin.sol";

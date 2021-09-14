@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.9;
 
-import './openzeppelin/token/ERC20/ERC20.sol';
-import "./interface/IERC2612.sol";
+import '../openzeppelin/token/ERC20/ERC20.sol';
+import "../interface/IERC2612.sol";
 
 
 abstract contract ERC20Permit is ERC20, IERC2612 {

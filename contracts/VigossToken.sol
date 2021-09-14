@@ -2,7 +2,7 @@
 pragma solidity 0.6.9;
 
 import "./openzeppelin/utils/Address.sol";
-import "./DelegateERC20.sol";
+import "./base/DelegateERC20.sol";
 
 interface TokenRecipient {
   // must return ture

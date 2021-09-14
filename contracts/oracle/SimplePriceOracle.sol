@@ -3,8 +3,8 @@
 
 pragma solidity 0.6.9;
 
-import { Ownable } from "./openzeppelin/access/Ownable.sol";
-import { SafeMath } from "./openzeppelin/math/SafeMath.sol";
+import { Ownable } from "../openzeppelin/access/Ownable.sol";
+import { SafeMath } from "../openzeppelin/math/SafeMath.sol";
 
 /**
     @title 价格预言机
