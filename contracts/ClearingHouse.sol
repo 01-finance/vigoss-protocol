@@ -10,7 +10,7 @@ import { DecimalERC20 } from "./utils/DecimalERC20.sol";
 // prettier-ignore
 // solhint-disable-next-line
 import { ReentrancyGuard } from "./openzeppelin/utils/ReentrancyGuard.sol";
-import { OwnerPausable } from "./OwnerPausable.sol";
+import { OwnerPausable } from "./base/OwnerPausable.sol";
 import { IAmm } from "./interface/IAmm.sol";
 import { IClearingHouse } from "./interface/IClearingHouse.sol";
 import { IVGSForMargin } from "./interface/IVGSForMargin.sol";
@@ -675,6 +675,13 @@ contract ClearingHouse is
             vgsForMargin.changeMargin(address(amm.quoteAsset()) , _position.margin.toUint(), _trader);
         }
         
+    }
+
+    function syncMargin(address trader) external {
+        Position memory position = getPosition(trader);
+        if (address(vgsForMargin) != address(0)) {
+            vgsForMargin.changeMargin(address(amm.quoteAsset()) , position.margin.toUint(), trader);
+        }
     }
 
     function clearPosition(address _trader) internal {
