@@ -431,9 +431,13 @@ export default {
 
 
     closePosition() {
-      // let Slippage = 0.01;  // 滑点设置  1%
+      let Slippage = 0.01;  // 滑点设置  1%
 
-      let min = toDec(formatNum(parseFloat(this.pnl) * 0.99, 6), this.decimal);
+      let offSet = this.myPosition.baseAsset < 0 ?  1 + Slippage :  1 - Slippage
+      
+      let minBase = formatNum(parseFloat(this.pnl) * offSet, 6).replace(',', '')
+      
+      let min = toDec(minBase, this.decimal);
 
       this.ch.closePosition( {d: min}, 
         { from : this.account}).then( () => {

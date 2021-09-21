@@ -97,7 +97,8 @@ contract VigossReader  {
         Decimal.decimal memory margin,
         Decimal.decimal memory pnl,
         SignedDecimal.signedDecimal memory unPnl,
-        Decimal.decimal memory fee) {
+        Decimal.decimal memory fee,
+        Decimal.decimal memory quote) {
 
         IClearingHouse ch = IClearingHouse(_ch);
         IClearingHouse.Position memory p = ch.getPosition(_trader);
@@ -106,10 +107,12 @@ contract VigossReader  {
 
         (pnl, unPnl) = ch.getPositionNotionalAndUnrealizedPnl(_trader, _pnlCalcOption);
 
-        // quote = amm.getOutputPrice(p.size.toInt() > 0 ? IAmm.Dir.ADD_TO_AMM : IAmm.Dir.REMOVE_FROM_AMM, p.size.abs());
+        
         (Decimal.decimal memory toll, Decimal.decimal memory spread) = amm.calcFee(pnl);
 
         fee = toll.addD(spread);
+
+        quote = amm.getOutputPrice(p.size.toInt() > 0 ? IAmm.Dir.ADD_TO_AMM : IAmm.Dir.REMOVE_FROM_AMM, p.size.abs());
     }
 
     // 0.1 USDT
