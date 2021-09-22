@@ -34,14 +34,6 @@ async function liquidate(house, amm, trader, user) {
   }
 }
 
-async function partialLiquidationRatio(house, web3) {
-  try {
-    let plr = await house.partialLiquidationRatio()
-      console.log("partialLiquidationRatio:" +  web3.utils.fromWei(plr.toString()));
-  } catch (e) {
-    console.log("liquidate error", e)
-  }
-}
 
 async function addMargin(house, addmargin, user) {
   try {
@@ -69,10 +61,9 @@ async function removeMargin(house, amm, margin, user) {
 function printPosition(position, web3) {
   
   console.log("Pos baseAsset:" + web3.utils.fromWei(position.size.toString()))
-  console.log("Pos margin:" + web3.utils.fromWei(position.margin.toString()))
-  console.log("Pos openNotional:" + web3.utils.fromWei(position.openNotional.toString()))
+  console.log("Pos margin:" + position.margin.toString())
+  console.log("Pos openNotional:" +  position.openNotional.toString())
   console.log("Pos lastUpdatedCumulativePremiumFraction:" + web3.utils.fromWei(position.lastUpdatedCumulativePremiumFraction.toString()))
-  console.log("Pos lastApportion:" + web3.utils.fromWei(position.lastApportionFraction.toString()))
   console.log("Pos blockNumber:" +position.blockNumber)
 }
 
@@ -151,7 +142,6 @@ module.exports = {
   payFunding,
   getMarginRatio,
   getUnadjustedPosition,
-  partialLiquidationRatio,
   getPersonalPositionWithFundingPayment,
   getLatestCumulativePremiumFraction
 }
