@@ -41,11 +41,12 @@ module.exports = async function(callback) {
 
   console.log("\n  ===  user0 openPosition  === \n");
   await transfer(usdcMock, accounts[0], accounts[1], "11000000000");
-  await approve(usdcMock, accounts[1], house.address, "1000000000");
+  await approve(usdcMock, accounts[1], house.address, "1100000000");
 
   // getInputPrice 预测数量 min
   // await getInputPrice(ETHUSDCAmm, ADD_TO_AMM, web3.utils.toWei("200"), web3)
 
+  await balanceOf(usdcMock, accounts[1], web3, "openPosition before ");
 
   await openPosition(house, 
     ETHUSDCAmm.address, 

@@ -907,6 +907,20 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "trader",
+          "type": "address"
+        }
+      ],
+      "name": "syncMargin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xce810a1b"
+    },
+    {
+      "inputs": [
+        {
           "components": [
             {
               "components": [

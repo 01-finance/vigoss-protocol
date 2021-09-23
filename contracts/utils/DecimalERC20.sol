@@ -5,6 +5,8 @@ import { IERC20 } from "../openzeppelin/token/ERC20/IERC20.sol";
 import { SafeMath } from "../openzeppelin/math/SafeMath.sol";
 import { Decimal } from "./Decimal.sol";
 
+import "hardhat/console.sol";
+
 abstract contract DecimalERC20 {
     using SafeMath for uint256;
     using Decimal for Decimal.decimal;
@@ -22,8 +24,12 @@ abstract contract DecimalERC20 {
         Decimal.decimal memory _value
     ) internal {
         _updateDecimal(address(_token));
+
+        console.log("_transfer value", _value.toUint());
         Decimal.decimal memory balanceBefore = _balanceOf(_token, _to);
         uint256 roundedDownValue = _toUint(_token, _value);
+
+        console.log("roundedDownValue", roundedDownValue);
 
         // solhint-disable avoid-low-level-calls
         (bool success, bytes memory data) =
@@ -40,8 +46,13 @@ abstract contract DecimalERC20 {
         Decimal.decimal memory _value
     ) internal {
         _updateDecimal(address(_token));
+
+        console.log("_transferFrom value", _value.toUint());
         Decimal.decimal memory balanceBefore = _balanceOf(_token, _to);
         uint256 roundedDownValue = _toUint(_token, _value);
+
+
+        console.log("roundedDownValue", roundedDownValue);
 
         // solhint-disable avoid-low-level-calls
         (bool success, bytes memory data) =

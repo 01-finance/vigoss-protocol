@@ -780,6 +780,20 @@
       "inputs": [
         {
           "internalType": "address",
+          "name": "staker",
+          "type": "address"
+        }
+      ],
+      "name": "syncLiquidity",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xbab78b6c"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "to",
           "type": "address"
         },

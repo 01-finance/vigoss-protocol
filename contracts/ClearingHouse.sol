@@ -6,7 +6,7 @@ import { IERC20 } from "./openzeppelin/token/ERC20/IERC20.sol";
 import { Decimal } from "./utils/Decimal.sol";
 import { SignedDecimal } from "./utils/SignedDecimal.sol";
 import { MixedDecimal } from "./utils/MixedDecimal.sol";
-import { DecimalERC20 } from "./utils/DecimalERC20.sol";
+import { SafeERC20 } from "./openzeppelin/token/ERC20/SafeERC20.sol";
 // prettier-ignore
 // solhint-disable-next-line
 import { ReentrancyGuard } from "./openzeppelin/utils/ReentrancyGuard.sol";
@@ -16,11 +16,11 @@ import { IClearingHouse } from "./interface/IClearingHouse.sol";
 import { IVGSForMargin } from "./interface/IVGSForMargin.sol";
 
 contract ClearingHouse is
-    DecimalERC20,
     OwnerPausable,
     ReentrancyGuard,
     IClearingHouse
 {
+    using SafeERC20 for IERC20;
     using Decimal for Decimal.decimal;
     using SignedDecimal for SignedDecimal.signedDecimal;
     using MixedDecimal for SignedDecimal.signedDecimal;
@@ -229,7 +229,7 @@ contract ClearingHouse is
         setPosition(trader, position);
 
         // transfer token from trader
-        _transferFrom(amm.quoteAsset(), trader, address(this), _addedMargin);
+        amm.quoteAsset().safeTransferFrom(trader, address(this), _addedMargin.toUint());
 
         emit MarginChanged(trader, int256(_addedMargin.toUint()), 0);
     }
@@ -357,7 +357,7 @@ contract ClearingHouse is
             IERC20 quoteToken = amm.quoteAsset();
 
             if (positionResp.marginToVault.toInt() > 0) {
-                _transferFrom(quoteToken, trader, address(this), positionResp.marginToVault.abs());
+                quoteToken.safeTransferFrom(trader, address(this), positionResp.marginToVault.abs().toUint());
             } else if (positionResp.marginToVault.toInt() < 0) {
                 withdraw(trader, positionResp.marginToVault.abs());
             }
@@ -905,6 +905,7 @@ contract ClearingHouse is
             SignedDecimal.signedDecimal memory fundingPayment,
         ) = calcRemainMarginWithFundingPayment(oldPosition, unrealizedPnl);
 
+
         positionResp.exchangedPositionSize = oldPosition.size.mulScalar(-1);
         positionResp.realizedPnl = unrealizedPnl;
         positionResp.badDebt = badDebt;  // >0
@@ -955,13 +956,13 @@ contract ClearingHouse is
 
             // transfer spread to amm lp fund
             if (hasSpread) {
-                _transferFrom(quoteAsset, _from, address(amm), spread);
+                quoteAsset.safeTransferFrom(_from, address(amm), spread.toUint());
             }
 
             // transfer toll to feePool
             if (hasToll) {
                 require(address(feePool) != address(0), "Invalid feePool");
-                _transferFrom(quoteAsset, _from, address(feePool), toll);
+                quoteAsset.safeTransferFrom(_from, address(feePool), toll.toUint());
             }
 
             // fee = spread + toll
@@ -979,14 +980,14 @@ contract ClearingHouse is
         // need money from amm lp vault to pay first, and record this prepaidBadDebt
         // in this case, amm lp vault loss must be zero
         IERC20 quoteAsset = amm.quoteAsset();
-        Decimal.decimal memory totalTokenBalance = _balanceOf(quoteAsset, address(this));
+        Decimal.decimal memory totalTokenBalance = Decimal.decimal(quoteAsset.balanceOf(address(this)));
         if (totalTokenBalance.toUint() < _amount.toUint()) {
             Decimal.decimal memory balanceShortage = _amount.subD(totalTokenBalance);
             prepaidBadDebt = prepaidBadDebt.addD(balanceShortage);
             amm.withdraw(balanceShortage);
         }
 
-        _transfer(quoteAsset, _receiver, _amount);
+        quoteAsset.safeTransfer(_receiver, _amount.toUint());
     }
 
     function realizeBadDebt(Decimal.decimal memory _badDebt) internal {
@@ -1002,11 +1003,10 @@ contract ClearingHouse is
 
     function transferToAmmLpFund(Decimal.decimal memory _amount) internal {
         IERC20 token = amm.quoteAsset();
-        Decimal.decimal memory totalTokenBalance = _balanceOf(token, address(this));
-        _transfer(
-            token,
+        uint totalTokenBalance = token.balanceOf(address(this));
+        token.safeTransfer(
             address(amm),
-            totalTokenBalance.toUint() < _amount.toUint() ? totalTokenBalance : _amount
+            totalTokenBalance < _amount.toUint() ? totalTokenBalance : _amount.toUint()
         );
     }
 
