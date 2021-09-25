@@ -145,6 +145,12 @@ contract VigossReader  {
       }
   
 
+    function getRemainMarginWithFundingPayment(address _trader, address ch, SignedDecimal.signedDecimal memory marginDelta) external view returns (Decimal.decimal memory remainMargin,
+            Decimal.decimal memory badDebt, SignedDecimal.signedDecimal memory fundingPayment) {
+        IClearingHouse.Position memory p = IClearingHouse(ch).getPosition(_trader);
+        (remainMargin, badDebt, fundingPayment, ) = IClearingHouse(ch).calcRemainMarginWithFundingPayment(p, marginDelta);
+    } 
+
     function traderPosition(address[] memory _clearingHouses, address _trader, IClearingHouse.PnlCalcOption _pnlCalcOption) external view returns (
       IClearingHouse.Position[] memory pos,
       Decimal.decimal[] memory pnls,
@@ -192,7 +198,7 @@ contract VigossReader  {
             address(amm.quoteAsset()).staticcall(abi.encodeWithSignature("symbol()"));
 
         (bool getBaseSymbolSuccess, bytes memory baseAssetSymbolData) =
-            address(amm.quoteAsset()).staticcall(abi.encodeWithSignature("symbol()"));
+            address(amm.baseAsset()).staticcall(abi.encodeWithSignature("symbol()"));
 
         (Decimal.decimal memory quoteAssetReserve, Decimal.decimal memory baseAssetReserve) = amm.getReserve();
 

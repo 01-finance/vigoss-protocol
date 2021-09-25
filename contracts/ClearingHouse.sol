@@ -1034,9 +1034,8 @@ contract ClearingHouse is
     function calcRemainMarginWithFundingPayment(
         Position memory _oldPosition,
         SignedDecimal.signedDecimal memory _marginDelta
-    )
-        public
-        view
+    ) public
+        view override
         returns (
             Decimal.decimal memory remainMargin,
             Decimal.decimal memory badDebt,

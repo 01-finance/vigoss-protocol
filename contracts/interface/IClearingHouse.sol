@@ -55,4 +55,12 @@ interface IClearingHouse {
         PnlCalcOption _pnlCalcOption
     ) external view returns (Decimal.decimal memory positionNotional, SignedDecimal.signedDecimal memory unrealizedPnl);
     
+    function calcRemainMarginWithFundingPayment(
+        Position memory _oldPosition,
+        SignedDecimal.signedDecimal memory _marginDelta
+    ) external view returns (
+            Decimal.decimal memory remainMargin,
+            Decimal.decimal memory badDebt,
+            SignedDecimal.signedDecimal memory fundingPayment,
+            SignedDecimal.signedDecimal memory latestCumulativePremiumFraction);
 }
