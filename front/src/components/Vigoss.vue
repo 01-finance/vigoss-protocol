@@ -198,6 +198,7 @@ export default {
     async init() {
       this.USDT = await proxy.getUSDTToken(this.chainid);
       this.decimal = await this.USDT.decimals();
+      console.log("USDT decimal:" + this.decimal)
 
       this.vgs = await proxy.getVgs(this.chainid);
       this.vgsForLp = await proxy.getVgsForLP(this.chainid);
