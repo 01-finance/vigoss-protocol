@@ -227,7 +227,7 @@ contract Amm is IAmm, Ownable {
         }
 
         LiquidityStake storage liquidityStake = liquidityStakes[to];
-        liquidityStake.quoteAsset = liquidityStake.baseAsset.add(_quoteAssetReserve);
+        liquidityStake.quoteAsset = liquidityStake.quoteAsset.add(_quoteAssetReserve);
         liquidityStake.baseAsset = liquidityStake.baseAsset.add(_baseAssetReserve);
 
         emit LiquidityAdded(_quoteAssetReserve, _baseAssetReserve, to);
