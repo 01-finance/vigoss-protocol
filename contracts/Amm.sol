@@ -143,6 +143,7 @@ contract Amm is IAmm, Ownable {
     IVGSForLP public vgsForLp;
 
     bool public override open;
+    address public beneficiary;
     uint private fusingEndTime;
     uint256 public fusingPeriod = 2 * 60;
 
@@ -183,7 +184,12 @@ contract Amm is IAmm, Ownable {
         quoteAsset =IERC20(_quoteAsset);
         priceFeed = _priceFeed;
         vgsForLp = _vgsForLp;
+        beneficiary = msg.sender;
 
+    }
+
+    function setBeneficiary(address _beneficiary) external onlyOwner {
+      beneficiary = _beneficiary;
     }
 
     function setVgsForMargin(IVGSForLP _vgsForLp) external onlyOwner {
@@ -363,7 +369,7 @@ contract Amm is IAmm, Ownable {
     /**
      * @notice swap your base asset to quote asset; NOTE it is only used during close/liquidate positions so it always allows going over fluctuation limit
      * @dev only clearingHouse can call this function
-     * @param _dirOfBase ADD_TO_AMM for short, REMOVE_FROM_AMM for long, opposite direction from swapInput
+     * @param _dirOfBase ADD_TO_AMM for short(close Long position), REMOVE_FROM_AMM for long, opposite direction from swapInput
      * @param _baseAssetAmount base asset amount
      * @param _quoteAssetAmountLimit limit of quote asset amount; for slippage protection
      * @return quote asset amount
@@ -447,7 +453,9 @@ contract Amm is IAmm, Ownable {
      * @notice withdraw token to caller
      * @param _amount the amount of quoteToken caller want to withdraw
      */
-    function withdrawBenefit(address to, uint _amount) onlyOwner external {
+    function withdrawBenefit(address to, uint _amount) external {
+        require(beneficiary == msg.sender, "only beneficiary can call");
+
         quoteAsset.safeTransfer(to, _amount);
         require(quoteAsset.balanceOf(address(this)) >= quoteAssetReserve.mulScalar(2).toUint(), "low balance");
         emit Withdraw(to, _amount);
@@ -905,10 +913,10 @@ contract Amm is IAmm, Ownable {
         // In the SHORT case, more quote assets means more payment so should not be more than _quoteAssetAmountLimit
         if (_quoteAssetAmountLimit.toUint() != 0) {
             if (dirOfQuote == Dir.REMOVE_FROM_AMM) {
-                // SHORT
+                // Close Long position
                 require(quoteAssetAmount.toUint() >= _quoteAssetAmountLimit.toUint(), "Less than minimal quote token");
             } else {
-                // LONG
+                // Close Short position
                 require(quoteAssetAmount.toUint() <= _quoteAssetAmountLimit.toUint(), "More than maximal quote token");
             }
         }
