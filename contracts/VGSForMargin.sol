@@ -198,7 +198,6 @@ contract VGSForMargin is Ownable {
     }
 
     function removeMargin(address token, uint256 _amount, address _user) internal {
-        require(approvedCh[msg.sender], "must call from approved CH");
         uint amount = convertAmount(token, _amount);
         UserInfo storage user = userInfo[_user];
         if (amount > user.amount) {

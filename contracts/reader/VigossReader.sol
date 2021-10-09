@@ -97,7 +97,8 @@ contract VigossReader  {
         Decimal.decimal memory margin,
         Decimal.decimal memory pnl,
         SignedDecimal.signedDecimal memory unPnl,
-        Decimal.decimal memory fee) {
+        Decimal.decimal memory fee,
+        Decimal.decimal memory quote) {
 
         IClearingHouse ch = IClearingHouse(_ch);
         IClearingHouse.Position memory p = ch.getPosition(_trader);
@@ -106,10 +107,12 @@ contract VigossReader  {
 
         (pnl, unPnl) = ch.getPositionNotionalAndUnrealizedPnl(_trader, _pnlCalcOption);
 
-        // quote = amm.getOutputPrice(p.size.toInt() > 0 ? IAmm.Dir.ADD_TO_AMM : IAmm.Dir.REMOVE_FROM_AMM, p.size.abs());
+        
         (Decimal.decimal memory toll, Decimal.decimal memory spread) = amm.calcFee(pnl);
 
         fee = toll.addD(spread);
+
+        quote = amm.getOutputPrice(p.size.toInt() > 0 ? IAmm.Dir.ADD_TO_AMM : IAmm.Dir.REMOVE_FROM_AMM, p.size.abs());
     }
 
     // 0.1 USDT
@@ -141,6 +144,12 @@ contract VigossReader  {
         }
       }
   
+
+    function getRemainMarginWithFundingPayment(address _trader, address ch, SignedDecimal.signedDecimal memory marginDelta) external view returns (Decimal.decimal memory remainMargin,
+            Decimal.decimal memory badDebt, SignedDecimal.signedDecimal memory fundingPayment) {
+        IClearingHouse.Position memory p = IClearingHouse(ch).getPosition(_trader);
+        (remainMargin, badDebt, fundingPayment, ) = IClearingHouse(ch).calcRemainMarginWithFundingPayment(p, marginDelta);
+    } 
 
     function traderPosition(address[] memory _clearingHouses, address _trader, IClearingHouse.PnlCalcOption _pnlCalcOption) external view returns (
       IClearingHouse.Position[] memory pos,
@@ -189,7 +198,7 @@ contract VigossReader  {
             address(amm.quoteAsset()).staticcall(abi.encodeWithSignature("symbol()"));
 
         (bool getBaseSymbolSuccess, bytes memory baseAssetSymbolData) =
-            address(amm.quoteAsset()).staticcall(abi.encodeWithSignature("symbol()"));
+            address(amm.baseAsset()).staticcall(abi.encodeWithSignature("symbol()"));
 
         (Decimal.decimal memory quoteAssetReserve, Decimal.decimal memory baseAssetReserve) = amm.getReserve();
 

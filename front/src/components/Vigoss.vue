@@ -198,6 +198,7 @@ export default {
     async init() {
       this.USDT = await proxy.getUSDTToken(this.chainid);
       this.decimal = await this.USDT.decimals();
+      console.log("USDT decimal:" + this.decimal)
 
       this.vgs = await proxy.getVgs(this.chainid);
       this.vgsForLp = await proxy.getVgsForLP(this.chainid);
@@ -431,9 +432,13 @@ export default {
 
 
     closePosition() {
-      // let Slippage = 0.01;  // 滑点设置  1%
+      let Slippage = 0.01;  // 滑点设置  1%
 
-      let min = toDec(formatNum(parseFloat(this.pnl) * 0.99, 6), this.decimal);
+      let offSet = this.myPosition.baseAsset < 0 ?  1 + Slippage :  1 - Slippage
+      
+      let minBase = formatNum(parseFloat(this.pnl) * offSet, 6).replace(',', '')
+      
+      let min = toDec(minBase, this.decimal);
 
       this.ch.closePosition( {d: min}, 
         { from : this.account}).then( () => {

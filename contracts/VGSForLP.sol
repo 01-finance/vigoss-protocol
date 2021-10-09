@@ -73,7 +73,6 @@ contract VGSForLP is Ownable {
     }
 
     // Add a new amm lp to the pool. Can only be called by the owner.
-    // XXX DO NOT add the same Amm more than once. Rewards will be messed up if you do.
     function add(
         uint256 _allocPoint,
         address _amm,
