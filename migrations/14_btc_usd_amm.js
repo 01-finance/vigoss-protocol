@@ -1,23 +1,19 @@
 const Amm = artifacts.require("Amm");
-const SimpleUSDPriceFeed = artifacts.require("SimpleUSDPriceFeed");
+const USDLinkOracle = artifacts.require("USDLinkOracle");
 const ClearingHouse = artifacts.require("ClearingHouse");
-const VGSForMargin = artifacts.require("VGSForMargin");
-const VGSForLP = artifacts.require("VGSForLP");
 const MockToken = artifacts.require("MockToken");
 
 const { writeAbis } = require('./log');
 const { toDec }  = require("./decUtil.js");
 
 module.exports = async function(deployer, network, accounts) {
-  let FEED = require(`../front/abis/SimpleUSDPriceFeed.${network}.json`);
-  const feed = await  SimpleUSDPriceFeed.at(FEED.address)
+  let FEED = require(`../front/abis/USDLinkOracle.${network}.json`);
+  const feed = await  USDLinkOracle.at(FEED.address)
 
-  let USDT = require(`../front/abis/USDT.${network}.json`);
-  let WBTC = require(`../front/abis/WBTC.${network}.json`);
-  let vgsForMargin = require(`../front/abis/VGSForMargin.${network}.json`);
-  let vgsForLP = require(`../front/abis/VGSForLP.${network}.json`);
+  let USDTAddr = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f";;
+  let WBTCAddr = "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6";
 
-  const tradeLimitRatio   = web3.utils.toWei("0.015")    // default 0.015 1.25%
+  const tradeLimitRatio   = web3.utils.toWei("0.0125")    // default 0.015 1.25%
   const fundingPeriod = 3600   // 1 hour
   
   const fluctuationLimitRatio = web3.utils.toWei("0.012") // default 0.012 1.2%
@@ -29,9 +25,9 @@ module.exports = async function(deployer, network, accounts) {
     tradeLimitRatio,
     fundingPeriod,
     feed.address,
-    vgsForLP.address,
-    USDT.address,
-    WBTC.address,
+    "0x0000000000000000000000000000000000000000",
+    USDTAddr,
+    WBTCAddr,
     fluctuationLimitRatio,
     tollRatio,
     spreadRatio);
@@ -39,19 +35,13 @@ module.exports = async function(deployer, network, accounts) {
   await writeAbis(Amm, 'Amm:BTC-USDT', network);
 
 
-  const quoteAssetReserve = toDec("4667200", 6); 
-  const baseAssetReserve  =  web3.utils.toWei("100") // 
+  const quoteAssetReserve = toDec("62.7", 6);  
+  const baseAssetReserve  = toDec("0.001", 8) // 
 
-  const usdt =  await MockToken.at(USDT.address);
+  const usdt =  await MockToken.at(USDTAddr);
   await amm.setOpen(true);
 
-
-  var vgslp = await VGSForLP.at(vgsForLP.address);
-
-  await vgslp.add(10, amm.address, true);
-
-
-  await usdt.approve(amm.address, toDec("9334400", 6));
+  await usdt.approve(amm.address, toDec("125.4", 6));
   await amm.initLiquidity(accounts[0], quoteAssetReserve , baseAssetReserve);
 
   const initMarginRatio = web3.utils.toWei("0.1") // 10% -> 10x
@@ -60,17 +50,11 @@ module.exports = async function(deployer, network, accounts) {
   
   let house = await deployer.deploy(ClearingHouse, 
       amm.address, 
-      vgsForMargin.address,
+      "0x0000000000000000000000000000000000000000",
       initMarginRatio , maintenanceMarginRatio, liquidationFeeRatio
       );
 
   await writeAbis(ClearingHouse, 'ClearingHouse:BTC-USDT', network);
-
-  var marginMiner = await VGSForMargin.at(vgsForMargin.address);
-
-  await marginMiner.setClearingHouse(house.address, true);
-
-
   await amm.setCounterParty(house.address);
 
 }

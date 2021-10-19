@@ -102,7 +102,16 @@ module.exports = {
       },
       network_id: 80001,
       gas: 7003605,
-      gasPrice: 10000000000,   // 2Gwei
+      gasPrice: 10000000000,   // 10Gwei
+    },
+
+    polygon: {
+      provider: function() {
+        return new HDWalletProvider(mnemonic, "https://rpc-mainnet.matic.network")
+      },
+      network_id: 137,
+      gas: 7003605,
+      gasPrice: 30000000000,   // 30Gwei
     },
     
     testheco: {
