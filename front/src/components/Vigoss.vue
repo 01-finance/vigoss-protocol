@@ -263,7 +263,7 @@ export default {
 
     async getOutPrice() {
       if (this.leverage != null && this.baseAmount != null) {
-        let bAmount = toDec(parseFloat(this.baseAmount) / parseFloat(this.leverage), 18);
+        let bAmount = toDec(parseFloat(this.baseAmount) , 18);
 
         let dir = 0;
         if (this.longOrShort == 0) {
@@ -275,7 +275,7 @@ export default {
           d: bAmount
         })
         console.log("output:" + p);
-        this.margin = formatNum(fromDec(p.toString(), this.decimal), 6);
+        this.margin = formatNum(fromDec(p.toString(), this.decimal) / parseFloat(this.leverage), 6);
       }
     },
 
@@ -432,13 +432,16 @@ export default {
 
 
     closePosition() {
-      let Slippage = 0.01;  // 滑点设置  1%
+      let Slippage = 0.001;  // 滑点设置  1%
 
       let offSet = this.myPosition.baseAsset < 0 ?  1 + Slippage :  1 - Slippage
-      
+
+
+      console.log("pnl:" + this.pnl);
       let minBase = formatNum(parseFloat(this.pnl) * offSet, 6).replace(',', '')
       
       let min = toDec(minBase, this.decimal);
+      console.log("min:" + min);
 
       this.ch.closePosition( {d: min}, 
         { from : this.account}).then( () => {
