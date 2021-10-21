@@ -108,11 +108,11 @@ module.exports = {
     polygon: {
       provider: function() {
         // return new HDWalletProvider(mnemonic, "https://rpc-mainnet.matic.network")
-        return new HDWalletProvider(mnemonic, "https://polygon-rpc.com")
+        return new HDWalletProvider(mnemonic, "https://matic-mainnet.chainstacklabs.com")
       },
       network_id: 137,
       gas: 7003605,
-      gasPrice: 50000000000,   // 30Gwei
+      gasPrice: 60000000000,   // 30Gwei
     },
     
     testheco: {
