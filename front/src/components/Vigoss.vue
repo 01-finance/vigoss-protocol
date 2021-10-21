@@ -200,9 +200,9 @@ export default {
       this.decimal = await this.USDT.decimals();
       console.log("USDT decimal:" + this.decimal)
 
-      this.vgs = await proxy.getVgs(this.chainid);
-      this.vgsForLp = await proxy.getVgsForLP(this.chainid);
-      this.vgsForMargin = await proxy.getVgsForMargin(this.chainid);
+      // this.vgs = await proxy.getVgs(this.chainid);
+      // this.vgsForLp = await proxy.getVgsForLP(this.chainid);
+      // this.vgsForMargin = await proxy.getVgsForMargin(this.chainid);
 
       // await proxy.getGreeter();
 
@@ -219,16 +219,16 @@ export default {
       this.ch = await proxy.getClearingHouse(ETHUSDTHouse.address);
 
       // LP 池
-      let ETHUSDTPair = require(`../../abis/Amm:ETH-USDT.${network}.json`);
+      let ETHUSDTPair = require(`../../abis/Amm:BTC-USDT.${network}.json`);
       console.log(ETHUSDTPair);
       this.ammPair = await proxy.getAmm(ETHUSDTPair.address);
 
       this.ammlpAddr =  this.ammPair.address;
-      this.vgsAddr = this.vgs.address;
+      // this.vgsAddr = this.vgs.address;
       this.USDTAddr = this.USDT.address;
       
-      this.ammVgsLPMinerAddr = this.vgsForLp.address;
-      this.ammVgsMarginMinerAddr = this.vgsForMargin.address;
+      // this.ammVgsLPMinerAddr = this.vgsForLp.address;
+      // this.ammVgsMarginMinerAddr = this.vgsForMargin.address;
 
 
       this.getPosition();
@@ -245,14 +245,20 @@ export default {
         this.USDTBalance = fromDec(r.toString(), this.decimal);
       })
 
-      this.vgs.balanceOf(this.account).then(r => {
-        this.vgsBalance = fromDec(r.toString(), 18);
-      })
+      // this.vgs.balanceOf(this.account).then(r => {
+      //   this.vgsBalance = fromDec(r.toString(), 18);
+      // })
 
     },
 
     getSpotPrice() {
+      this.ammPair.getReserve().then(r => {
+        console.log("quote:" + r[0].d.toString());
+        console.log("base:" + r[1].d.toString());
+      })
+
       this.ammPair.getSpotPrice().then(r => {
+        console.log("spot price:" + r.toString());
         this.currPrice = fromDec(r.toString(), this.decimal);
       })
 
