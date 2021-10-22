@@ -26,12 +26,15 @@ module.exports = async function(deployer, network, accounts) {
   const tollRatio   = web3.utils.toWei("0");
   const spreadRatio = web3.utils.toWei("0.001"); // 0.1%
 
+ 
+
   let amm = await deployer.deploy(Amm, 
 
     tradeLimitRatio,
     fundingPeriod,
     feed.address,
-    vgsForLP.address,
+    // vgsForLP.address,
+    "0x0000000000000000000000000000000000000000",
     USDT.address,
     WETH.address,
     fluctuationLimitRatio,
@@ -41,16 +44,19 @@ module.exports = async function(deployer, network, accounts) {
   await writeAbis(Amm, 'Amm:ETH-USDT', network);
 
 
-  const quoteAssetReserve =  toDec("3187000", 6); // $3187 
-  const baseAssetReserve  =  web3.utils.toWei("1000") // 
+  // const quoteAssetReserve =  toDec("3187000", 6); // $3187 
+  // const baseAssetReserve  =  web3.utils.toWei("1000") // 
+
+  const quoteAssetReserve =  toDec("38.1", 6); //  $38.1
+  const baseAssetReserve  =  toDec("0.01",18) //    0.01 个 ETH
 
   let usdt =  await MockToken.at(USDT.address);
   await amm.setOpen(true);
 
 
-  var vgslp = await VGSForLP.at(vgsForLP.address);
+  // var vgslp = await VGSForLP.at(vgsForLP.address);
 
-  await vgslp.add(10, amm.address, true);
+  // await vgslp.add(10, amm.address, true);
 
 
   await usdt.approve(amm.address, toDec("6374000", 6));
@@ -62,17 +68,20 @@ module.exports = async function(deployer, network, accounts) {
   
   let house = await deployer.deploy(ClearingHouse, 
       amm.address, 
-      vgsForMargin.address,
+      // vgsForMargin.address,
+      "0x0000000000000000000000000000000000000000",
       initMarginRatio , maintenanceMarginRatio, liquidationFeeRatio
       );
 
   await writeAbis(ClearingHouse, 'ClearingHouse:ETH-USDT', network);
 
-  var marginMiner = await VGSForMargin.at(vgsForMargin.address);
+  // var marginMiner = await VGSForMargin.at(vgsForMargin.address);
 
-  await marginMiner.setClearingHouse(house.address, true);
+  // await marginMiner.setClearingHouse(house.address, true);
 
 
   await amm.setCounterParty(house.address);
+
+  console.log(accounts[0])
 
 }

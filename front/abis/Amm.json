@@ -331,6 +331,21 @@
     },
     {
       "inputs": [],
+      "name": "beneficiary",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true,
+      "signature": "0x38af3eed"
+    },
+    {
+      "inputs": [],
       "name": "counterParty",
       "outputs": [
         {
@@ -706,6 +721,20 @@
       "type": "function",
       "constant": true,
       "signature": "0x576fb713"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_beneficiary",
+          "type": "address"
+        }
+      ],
+      "name": "setBeneficiary",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x1c31f710"
     },
     {
       "inputs": [
