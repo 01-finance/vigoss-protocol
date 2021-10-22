@@ -38,6 +38,7 @@ contract VigossReader  {
       vgsForMargin = _vgsForMargin;
     }
 
+
     function poolShares(address[] memory _amms, address user) external view returns (
         uint[] memory balances,
         uint[] memory totals,
@@ -51,7 +52,11 @@ contract VigossReader  {
             IAmm amm = IAmm(_amms[index]);
             balances[index] = amm.shares(user);
             totals[index] = amm.totalLiquidity();
-            pendingVgs[index] = vgsForLP.pendingVgs(address(amm), user);
+  
+            if (address(vgsForLP) != address(0)) {
+              pendingVgs[index] = vgsForLP.pendingVgs(address(amm), user);
+            }
+            
         }
     }
 
@@ -80,14 +85,18 @@ contract VigossReader  {
         arps = new uint[](len);
         
         uint tvl;
-        uint arp;
+        uint arp = 0;
 
         for (uint256 index = 0; index < len; index++) {
             tvl = IAmm(_amms[index]).totalLiquidityUSD();
             tvls[index] = tvl;
 
-            uint vgsAmmount = vgsForLP.getPoolVgs(_amms[index], 1 days);
-            arp = vgsAmmount * getVGSPrice() / tvl;
+            if (address(vgsForLP) != address(0)) {
+                  uint vgsAmmount = vgsForLP.getPoolVgs(_amms[index], 1 days);
+                  arp = vgsAmmount * getVGSPrice() / tvl;    
+            }
+
+           
             arps[index] = arp;
         }
     }
