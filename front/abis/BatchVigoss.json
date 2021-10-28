@@ -1,0 +1,44 @@
+{
+  "contractName": "BatchVigoss",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor",
+      "signature": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "_chs",
+          "type": "address[]"
+        }
+      ],
+      "name": "batchPayFunding",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x1cb775a0"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "chAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address[]",
+          "name": "arrs",
+          "type": "address[]"
+        }
+      ],
+      "name": "batchLiquidate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xa3f794df"
+    }
+  ]
+}
