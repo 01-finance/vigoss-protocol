@@ -10,7 +10,7 @@ module.exports = async function(deployer, network, accounts) {
   let FEED = require(`../front/abis/USDLinkOracle.${network}.json`);
   const feed = await  USDLinkOracle.at(FEED.address)
 
-  let USDTAddr = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f";;
+  let USDCAddr = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";;
   let WBTCAddr = "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6";
 
   const tradeLimitRatio   = web3.utils.toWei("0.0125")    // default 0.015 1.25%
@@ -26,19 +26,19 @@ module.exports = async function(deployer, network, accounts) {
     fundingPeriod,
     feed.address,
     "0x0000000000000000000000000000000000000000",
-    USDTAddr,
+    USDCAddr,
     WBTCAddr,
     fluctuationLimitRatio,
     tollRatio,
     spreadRatio);
 
-  await writeAbis(Amm, 'Amm:BTC-USDT', network);
+  await writeAbis(Amm, 'Amm:BTC-USDC', network);
 
 
   const quoteAssetReserve = toDec("64.7", 6);  
   const baseAssetReserve  = web3.utils.toWei("0.001") // 
 
-  const usdt =  await MockToken.at(USDTAddr);
+  const usdt =  await MockToken.at(USDCAddr);
   await amm.setOpen(true);
 
   await usdt.approve(amm.address, toDec("129.4", 6));
@@ -54,7 +54,7 @@ module.exports = async function(deployer, network, accounts) {
       initMarginRatio , maintenanceMarginRatio, liquidationFeeRatio
       );
 
-  await writeAbis(ClearingHouse, 'ClearingHouse:BTC-USDT', network);
+  await writeAbis(ClearingHouse, 'ClearingHouse:BTC-USDC', network);
   await amm.setCounterParty(house.address);
 
 }
