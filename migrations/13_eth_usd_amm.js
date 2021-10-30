@@ -33,8 +33,8 @@ module.exports = async function(deployer, network, accounts) {
     tradeLimitRatio,
     fundingPeriod,
     feed.address,
-    vgsForLP.address,
-    // "0x0000000000000000000000000000000000000000",
+    // vgsForLP.address,
+    "0x0000000000000000000000000000000000000000",
     USDC.address,
     WETH.address,
     fluctuationLimitRatio,
@@ -68,8 +68,8 @@ module.exports = async function(deployer, network, accounts) {
   
   let house = await deployer.deploy(ClearingHouse, 
       amm.address, 
-      vgsForMargin.address,
-      // "0x0000000000000000000000000000000000000000",
+      // vgsForMargin.address,
+      "0x0000000000000000000000000000000000000000",
       initMarginRatio , maintenanceMarginRatio, liquidationFeeRatio
       );
 
