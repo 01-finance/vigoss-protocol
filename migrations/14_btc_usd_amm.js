@@ -12,7 +12,7 @@ module.exports = async function(deployer, network, accounts) {
   let FEED = require(`../front/abis/SimpleUSDPriceFeed.${network}.json`);
   const feed = await  SimpleUSDPriceFeed.at(FEED.address)
 
-  let USDT = require(`../front/abis/USDT.${network}.json`);
+  let USDC = require(`../front/abis/USDC.${network}.json`);
   let WBTC = require(`../front/abis/WBTC.${network}.json`);
   let vgsForMargin = require(`../front/abis/VGSForMargin.${network}.json`);
   let vgsForLP = require(`../front/abis/VGSForLP.${network}.json`);
@@ -30,19 +30,19 @@ module.exports = async function(deployer, network, accounts) {
     fundingPeriod,
     feed.address,
     vgsForLP.address,
-    USDT.address,
+    USDC.address,
     WBTC.address,
     fluctuationLimitRatio,
     tollRatio,
     spreadRatio);
 
-  await writeAbis(Amm, 'Amm:BTC-USDT', network);
+  await writeAbis(Amm, 'Amm:BTC-USDC', network);
 
 
   const quoteAssetReserve = toDec("4667200", 6); 
   const baseAssetReserve  =  web3.utils.toWei("100") // 
 
-  const usdt =  await MockToken.at(USDT.address);
+  const usdc =  await MockToken.at(USDC.address);
   await amm.setOpen(true);
 
 
@@ -51,7 +51,7 @@ module.exports = async function(deployer, network, accounts) {
   await vgslp.add(10, amm.address, true);
 
 
-  await usdt.approve(amm.address, toDec("9334400", 6));
+  await usdc.approve(amm.address, toDec("9334400", 6));
   await amm.initLiquidity(accounts[0], quoteAssetReserve , baseAssetReserve);
 
   const initMarginRatio = web3.utils.toWei("0.1") // 10% -> 10x
@@ -64,7 +64,7 @@ module.exports = async function(deployer, network, accounts) {
       initMarginRatio , maintenanceMarginRatio, liquidationFeeRatio
       );
 
-  await writeAbis(ClearingHouse, 'ClearingHouse:BTC-USDT', network);
+  await writeAbis(ClearingHouse, 'ClearingHouse:BTC-USDC', network);
 
   var marginMiner = await VGSForMargin.at(vgsForMargin.address);
 
