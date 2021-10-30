@@ -37,14 +37,14 @@ module.exports = async function(deployer, network, accounts) {
   await writeAbis(Amm, 'Amm:ETH-USDC', network);
 
   // 流动性价格设置  $3810
-  const quoteAssetReserve =  toDec("38.1", 6); //  $38.1
+  const quoteAssetReserve =  toDec("43.1", 6); //  $38.1
   const baseAssetReserve  =  web3.utils.toWei("0.01") //    0.01 个 ETH
 
   let usdc =  await MockToken.at(USDCAddr);
   await amm.setOpen(true);
 
 
-  await usdc.approve(amm.address, toDec("76.2", 6));   // 单边流动性： $381 的两倍
+  await usdc.approve(amm.address, toDec("86.2", 6));   // 单边流动性： $381 的两倍
   await amm.initLiquidity(accounts[0], quoteAssetReserve , baseAssetReserve);
 
   const initMarginRatio = web3.utils.toWei("0.1") // 10% -> 10x
