@@ -6,14 +6,16 @@ const VGSForLP = artifacts.require("VGSForLP");
 const MockToken = artifacts.require("MockToken");
 
 const { writeAbis } = require('./log');
-const { toDec }  = require("./decUtil.js");
+
+const { toDec } = require('./decUtil');
+
 
 module.exports = async function(deployer, network, accounts) {
   let FEED = require(`../front/abis/SimpleUSDPriceFeed.${network}.json`);
   const feed = await  SimpleUSDPriceFeed.at(FEED.address)
 
-  let USDC = require(`../front/abis/USDC.${network}.json`);
-  let WBTC = require(`../front/abis/WBTC.${network}.json`);
+  let DAI = require(`../front/abis/DAI.${network}.json`);
+  let WETH = require(`../front/abis/WETH.${network}.json`);
   let vgsForMargin = require(`../front/abis/VGSForMargin.${network}.json`);
   let vgsForLP = require(`../front/abis/VGSForLP.${network}.json`);
 
@@ -24,6 +26,8 @@ module.exports = async function(deployer, network, accounts) {
   const tollRatio   = web3.utils.toWei("0");
   const spreadRatio = web3.utils.toWei("0.001"); // 0.1%
 
+ 
+
   let amm = await deployer.deploy(Amm, 
 
     tradeLimitRatio,
@@ -31,32 +35,34 @@ module.exports = async function(deployer, network, accounts) {
     feed.address,
     // vgsForLP.address,
     "0x0000000000000000000000000000000000000000",
-    USDC.address,
-    WBTC.address,
+    DAI.address,
+    WETH.address,
     fluctuationLimitRatio,
     tollRatio,
     spreadRatio);
 
-  await writeAbis(Amm, 'Amm:BTC-USDC', network);
+  // await writeAbis(Amm, 'Amm:ETH-DAI', network);
 
 
-  // const quoteAssetReserve = toDec("4667200", 6); 
-  // const baseAssetReserve  =  web3.utils.toWei("100") // 
+  // const quoteAssetReserve =  toDec("3187000", 6); // $3187 
+  // const baseAssetReserve  =  web3.utils.toWei("1000") // 
 
-  const quoteAssetReserve = toDec("64.7", 6);  
-  const baseAssetReserve  = web3.utils.toWei("0.001") // 
+  const quoteAssetReserve =  toDec("38.1", 18); //  $38.1
+  const baseAssetReserve  =  toDec("0.01",18) //    0.01 个 ETH
 
-  const usdc =  await MockToken.at(USDC.address);
+  let dai =  await MockToken.at(DAI.address);
   await amm.setOpen(true);
 
 
-  var vgslp = await VGSForLP.at(vgsForLP.address);
+  // var vgslp = await VGSForLP.at(vgsForLP.address);
 
-  await vgslp.add(10, amm.address, true);
+  // await vgslp.add(10, amm.address, true);
 
 
-  await usdc.approve(amm.address, toDec("9334400", 6));
+  await dai.approve(amm.address, toDec("6374000", 18));
   await amm.initLiquidity(accounts[0], quoteAssetReserve , baseAssetReserve);
+
+  await writeAbis(Amm, 'Amm:ETH-DAI', network);
 
   const initMarginRatio = web3.utils.toWei("0.1") // 10% -> 10x
   const maintenanceMarginRatio = web3.utils.toWei("0.0625") // 6.25% -> 16x
@@ -69,7 +75,7 @@ module.exports = async function(deployer, network, accounts) {
       initMarginRatio , maintenanceMarginRatio, liquidationFeeRatio
       );
 
-  await writeAbis(ClearingHouse, 'ClearingHouse:BTC-USDC', network);
+  await writeAbis(ClearingHouse, 'ClearingHouse:ETH-DAI', network);
 
   var marginMiner = await VGSForMargin.at(vgsForMargin.address);
 
@@ -77,5 +83,7 @@ module.exports = async function(deployer, network, accounts) {
 
 
   await amm.setCounterParty(house.address);
+
+  console.log(accounts[0])
 
 }
