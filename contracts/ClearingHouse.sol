@@ -253,7 +253,7 @@ contract ClearingHouse is
             SignedDecimal.signedDecimal memory fundingPayment,
             SignedDecimal.signedDecimal memory latestCumulativePremiumFraction
         ) = calcRemainMarginWithFundingPayment(position, marginDelta);
-        require(badDebt.toUint() == 0, "margin is not enough");
+        require(badDebt.toUint() == 0, "B001：margin is not enough");
         position.margin = remainMargin;
         position.lastUpdatedCumulativePremiumFraction = latestCumulativePremiumFraction;
         setPosition(trader, position);
@@ -724,7 +724,7 @@ contract ClearingHouse is
             Decimal.decimal memory maxHoldingBaseAsset = amm.getMaxHoldingBaseAsset();
             if (maxHoldingBaseAsset.toUint() > 0) {
                 // total position size should be less than `positionUpperBound`
-                require(newSize.abs().cmp(maxHoldingBaseAsset) <= 0, "hit position size upper bound");
+                require(newSize.abs().cmp(maxHoldingBaseAsset) <= 0, "B002：hit position size upper bound");
             }
         }
 
@@ -821,7 +821,7 @@ contract ClearingHouse is
                     : positionResp.unrealizedPnlAfter.addD(oldPositionNotional).subD(
                         positionResp.exchangedQuoteAssetAmount
                     );
-            require(remainOpenNotional.toInt() > 0, "value of openNotional <= 0");
+            require(remainOpenNotional.toInt() > 0, "B003：value of openNotional <= 0");
 
             positionResp.position = Position(
                 oldPosition.size.addD(positionResp.exchangedPositionSize),
@@ -848,7 +848,7 @@ contract ClearingHouse is
         PositionResp memory closePositionResp = internalClosePosition(_trader, Decimal.zero());
 
         // the old position is underwater. trader should close a position first
-        require(closePositionResp.badDebt.toUint() == 0, "reduce an underwater position");
+        require(closePositionResp.badDebt.toUint() == 0, "B004：reduce an underwater position");
 
         // update open notional after closing position
         Decimal.decimal memory openNotional =
@@ -1025,7 +1025,7 @@ contract ClearingHouse is
             }
             if (_amount.toInt() > 0) {
                 // whitelist won't be restrict by open interest cap
-                require(updatedOpenInterestNotional.toUint() <= cap || msg.sender == whitelist, "over limit");
+                require(updatedOpenInterestNotional.toUint() <= cap || msg.sender == whitelist, "B005：over limit");
             }
             aopenInterestNotional = updatedOpenInterestNotional.abs();
         }
@@ -1076,21 +1076,21 @@ contract ClearingHouse is
     }
 
     function requireAmmNoInFusing() private view {
-        require(!amm.isInFusing(), "amm in fusing");
+        require(!amm.isInFusing(), "B006：amm in fusing");
     }
 
     function requireNonZeroInput(Decimal.decimal memory _decimal) private pure {
-        require(_decimal.toUint() != 0, "input is 0");
+        require(_decimal.toUint() != 0, "B007：input is 0");
     }
 
     function requirePositionSize(SignedDecimal.signedDecimal memory _size) private pure {
-        require(_size.toInt() != 0, "positionSize is 0");
+        require(_size.toInt() != 0, "B008:positionSize is 0");
     }
 
     function requireNotRestrictionMode() private view {
         uint256 currentBlock = block.number;
         if (currentBlock == ammMap.lastRestrictionBlock) {
-            require(getUnadjustedPosition(msg.sender).blockNumber != currentBlock, "only one action allowed");
+            require(getUnadjustedPosition(msg.sender).blockNumber != currentBlock, "B009：only one action allowed");
         }
     }
 
@@ -1103,7 +1103,7 @@ contract ClearingHouse is
         int256 remainingMarginRatio = _marginRatio.subD(_baseMarginRatio).toInt();
         require(
             _largerThanOrEqualTo ? remainingMarginRatio >= 0 : remainingMarginRatio < 0,
-            "Margin ratio not meet criteria"
+            "B010：Margin ratio not meet criteria"
         );
     }
 

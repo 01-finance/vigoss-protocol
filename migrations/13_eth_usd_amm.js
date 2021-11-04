@@ -41,7 +41,7 @@ module.exports = async function(deployer, network, accounts) {
     tollRatio,
     spreadRatio);
 
-  await writeAbis(Amm, 'Amm:ETH-USDC', network);
+  // await writeAbis(Amm, 'Amm:ETH-USDC', network);
 
 
   // const quoteAssetReserve =  toDec("3187000", 6); // $3187 
@@ -54,13 +54,15 @@ module.exports = async function(deployer, network, accounts) {
   await amm.setOpen(true);
 
 
-  var vgslp = await VGSForLP.at(vgsForLP.address);
+  // var vgslp = await VGSForLP.at(vgsForLP.address);
 
-  await vgslp.add(10, amm.address, true);
+  // await vgslp.add(10, amm.address, true);
 
 
   await usdc.approve(amm.address, toDec("6374000", 6));
   await amm.initLiquidity(accounts[0], quoteAssetReserve , baseAssetReserve);
+
+  await writeAbis(Amm, 'Amm:ETH-USDC', network);
 
   const initMarginRatio = web3.utils.toWei("0.1") // 10% -> 10x
   const maintenanceMarginRatio = web3.utils.toWei("0.0625") // 6.25% -> 16x

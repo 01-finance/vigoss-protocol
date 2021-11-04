@@ -51,12 +51,12 @@ contract Amm is IAmm, Ownable {
     // MODIFIERS
     //
     modifier onlyOpen() {
-        require(open, "amm was closed");
+        require(open, "A002:amm was closed");
         _;
     }
 
     modifier onlyCounterParty() {
-        require(counterParty == _msgSender(), "caller is not counterParty");
+        require(counterParty == _msgSender(), "A001:caller is not counterParty");
         _;
     }
 
@@ -197,14 +197,14 @@ contract Amm is IAmm, Ownable {
     }
 
     function initLiquidity(address to, uint256 _quoteAssetReserve, uint256 _baseAssetReserve) external returns (uint liquidity) {
-        require(quoteAssetReserve.toUint() == 0 && baseAssetReserve.toUint() == 0, "aleady inited");
+        require(quoteAssetReserve.toUint() == 0 && baseAssetReserve.toUint() == 0, "A003：aleady inited");
 
         liquidity = implAddLiquidity(to, _quoteAssetReserve, _baseAssetReserve);
         quoteAsset.safeTransferFrom(msg.sender, address(this), _quoteAssetReserve * 2);
     }
 
     function addLiquidity(address to, uint256 quoteSupply)  external returns (uint liquidity) {
-        require(quoteAssetReserve.toUint() != 0 && baseAssetReserve.toUint() != 0, "please init liquidity");
+        require(quoteAssetReserve.toUint() != 0 && baseAssetReserve.toUint() != 0, "A004：please init liquidity");
         
         uint256 _quoteAssetReserve = quoteSupply / 2;
         uint256 _baseAssetReserve = baseAssetReserve.toUint().mul(_quoteAssetReserve).div(quoteAssetReserve.toUint());
@@ -214,7 +214,7 @@ contract Amm is IAmm, Ownable {
     }
 
     function implAddLiquidity(address to, uint256 _quoteAssetReserve, uint256 _baseAssetReserve) onlyOpen internal returns (uint liquidity) {
-        require(_quoteAssetReserve != 0 && _baseAssetReserve != 0, "invalid reserves");
+        require(_quoteAssetReserve != 0 && _baseAssetReserve != 0, "A005：invalid reserves");
         totalLiquidityUSD = totalLiquidityUSD.add(_quoteAssetReserve.mul(2));
 
         quoteAssetReserve = quoteAssetReserve.addD(Decimal.decimal(_quoteAssetReserve));
@@ -259,7 +259,7 @@ contract Amm is IAmm, Ownable {
     }
 
     function removeLiquidity(address to, uint liquidity) external returns (uint quoteAmount) {
-        require(shares[msg.sender] >= liquidity, "Too big");
+        require(shares[msg.sender] >= liquidity, "A006：Too big");
         
         LiquidityStake storage liquidityStake = liquidityStakes[to];
         uint stakeBaseReserve = liquidityStake.baseAsset;
@@ -275,7 +275,7 @@ contract Amm is IAmm, Ownable {
             delete liquidityStakes[to];
         }
 
-        require(baseReserveEnough(stakeBaseReserve), "too low liquidity");
+        require(baseReserveEnough(stakeBaseReserve), "A007：too low liquidity");
 
         uint exitQuoteReserve = liquidity.mul(quoteAssetReserve.toUint()).div(totalLiquidity);
         uint exitBaseReserve = liquidity.mul(baseAssetReserve.toUint()).div(totalLiquidity);
@@ -345,7 +345,7 @@ contract Amm is IAmm, Ownable {
         if (_dirOfQuote == Dir.REMOVE_FROM_AMM) {
             require(
                 quoteAssetReserve.mulD(tradeLimitRatio).toUint() >= _quoteAssetAmount.toUint(),
-                "over trading limit"
+                "A008：over trading limit"
             );
         }
 
@@ -355,9 +355,9 @@ contract Amm is IAmm, Ownable {
         // In SHORT case, more position means more debt so should not be larger than _baseAssetAmountLimit
         if (_baseAssetAmountLimit.toUint() != 0) {
             if (_dirOfQuote == Dir.ADD_TO_AMM) {
-                require(baseAssetAmount.toUint() >= _baseAssetAmountLimit.toUint(), "Less than minimal base token");
+                require(baseAssetAmount.toUint() >= _baseAssetAmountLimit.toUint(), "A009：Less than minimal base token");
             } else {
-                require(baseAssetAmount.toUint() <= _baseAssetAmountLimit.toUint(), "More than maximal base token");
+                require(baseAssetAmount.toUint() <= _baseAssetAmountLimit.toUint(), "A0010：More than maximal base token");
             }
         }
 
@@ -750,7 +750,7 @@ contract Amm is IAmm, Ownable {
     // 系统价格是否比 Oracle 相差10% 
     function isOverSpreadLimit() external view override returns (bool) {
         Decimal.decimal memory oraclePrice = getUnderlyingPrice();
-        require(oraclePrice.toUint() > 0, "underlying price is 0");
+        require(oraclePrice.toUint() > 0, "A011：underlying price is 0");
         Decimal.decimal memory marketPrice = getSpotPrice();
         Decimal.decimal memory oracleSpreadRatioAbs =
             MixedDecimal.fromDecimal(marketPrice).subD(oraclePrice).divD(oraclePrice).abs();
@@ -811,7 +811,7 @@ contract Amm is IAmm, Ownable {
         } else {
             quoteAssetAfter = _quoteAssetPoolAmount.subD(_quoteAssetAmount);
         }
-        require(quoteAssetAfter.toUint() != 0, "quote asset after is 0");
+        require(quoteAssetAfter.toUint() != 0, "A012:quote asset after is 0");
 
         baseAssetAfter = invariant.divD(quoteAssetAfter);
         baseAssetBought = baseAssetAfter.subD(_baseAssetPoolAmount).abs();
@@ -850,7 +850,7 @@ contract Amm is IAmm, Ownable {
         } else {
             baseAssetAfter = _baseAssetPoolAmount.subD(_baseAssetAmount);
         }
-        require(baseAssetAfter.toUint() != 0, "base asset after is 0");
+        require(baseAssetAfter.toUint() != 0, "A013:base asset after is 0");
 
         quoteAssetAfter = invariant.divD(baseAssetAfter);
         quoteAssetSold = quoteAssetAfter.subD(_quoteAssetPoolAmount).abs();
@@ -903,7 +903,7 @@ contract Amm is IAmm, Ownable {
             return Decimal.zero();
         }
         if (_dirOfBase == Dir.REMOVE_FROM_AMM) {
-            require(baseAssetReserve.mulD(tradeLimitRatio).toUint() >= _baseAssetAmount.toUint(), "over trading limit");
+            require(baseAssetReserve.mulD(tradeLimitRatio).toUint() >= _baseAssetAmount.toUint(), "A008：over trading limit");
         }
 
         Decimal.decimal memory quoteAssetAmount = getOutputPrice(_dirOfBase, _baseAssetAmount);
@@ -914,10 +914,10 @@ contract Amm is IAmm, Ownable {
         if (_quoteAssetAmountLimit.toUint() != 0) {
             if (dirOfQuote == Dir.REMOVE_FROM_AMM) {
                 // Close Long position
-                require(quoteAssetAmount.toUint() >= _quoteAssetAmountLimit.toUint(), "Less than minimal quote token");
+                require(quoteAssetAmount.toUint() >= _quoteAssetAmountLimit.toUint(), "A014：Less than minimal quote token");
             } else {
                 // Close Short position
-                require(quoteAssetAmount.toUint() <= _quoteAssetAmountLimit.toUint(), "More than maximal quote token");
+                require(quoteAssetAmount.toUint() <= _quoteAssetAmountLimit.toUint(), "A015：More than maximal quote token");
             }
         }
 
@@ -1125,13 +1125,13 @@ contract Amm is IAmm, Ownable {
         (Decimal.decimal memory upperLimit, Decimal.decimal memory lowerLimit) = getPriceBoundariesOfLastBlock();
 
         Decimal.decimal memory price = quoteAssetReserve.divD(baseAssetReserve);
-        require(price.cmp(upperLimit) <= 0 && price.cmp(lowerLimit) >= 0, "price is already over fluctuation limit");
+        require(price.cmp(upperLimit) <= 0 && price.cmp(lowerLimit) >= 0, "A016：price is already over fluctuation limit");
 
         if (!_canOverFluctuationLimit) {
             price = (_dirOfQuote == Dir.ADD_TO_AMM)
                 ? quoteAssetReserve.addD(_quoteAssetAmount).divD(baseAssetReserve.subD(_baseAssetAmount))
                 : quoteAssetReserve.subD(_quoteAssetAmount).divD(baseAssetReserve.addD(_baseAssetAmount));
-            require(price.cmp(upperLimit) <= 0 && price.cmp(lowerLimit) >= 0, "price is over fluctuation limit");
+            require(price.cmp(upperLimit) <= 0 && price.cmp(lowerLimit) >= 0, "A016：price is over fluctuation limit");
         }
     }
 
