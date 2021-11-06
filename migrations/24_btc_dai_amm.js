@@ -37,13 +37,13 @@ module.exports = async function(deployer, network, accounts) {
   // await writeAbis(Amm, 'Amm:BTC-DAI', network);
 
 
-  const quoteAssetReserve = toDec("60.7", 18);  
+  const quoteAssetReserve = toDec("61.7", 18);  
   const baseAssetReserve  = web3.utils.toWei("0.001") // 
 
   const dai =  await MockToken.at(DAIAddr);
   await amm.setOpen(true);
 
-  await dai.approve(amm.address, toDec("121.4", 18));
+  await dai.approve(amm.address, toDec("123.4", 18));
   await amm.initLiquidity(accounts[0], quoteAssetReserve , baseAssetReserve);
 
 

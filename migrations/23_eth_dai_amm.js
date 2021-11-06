@@ -39,14 +39,14 @@ module.exports = async function(deployer, network, accounts) {
   // await writeAbis(Amm, 'Amm:ETH-DAI', network);
 
   // 流动性价格设置  $3810
-  const quoteAssetReserve =  toDec("43.1", 18); //  $38.1
+  const quoteAssetReserve =  toDec("45.1", 18); //  $38.1
   const baseAssetReserve  =  web3.utils.toWei("0.01") //    0.01 个 ETH
 
   let dai =  await MockToken.at(DAIAddr);
   await amm.setOpen(true);
 
 
-  await dai.approve(amm.address, toDec("86.2", 18));   // 单边流动性： $381 的两倍
+  await dai.approve(amm.address, toDec("90.2", 18));   // 单边流动性： $381 的两倍
   await amm.initLiquidity(accounts[0], quoteAssetReserve , baseAssetReserve);
 
   await writeAbis(Amm, 'Amm:ETH-DAI', network);

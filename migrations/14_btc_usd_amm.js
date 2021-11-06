@@ -38,13 +38,13 @@ module.exports = async function(deployer, network, accounts) {
   // await writeAbis(Amm, 'Amm:BTC-USDC', network);
 
 
-  const quoteAssetReserve = toDec("60.7", 6);  
+  const quoteAssetReserve = toDec("61.7", 6);  
   const baseAssetReserve  = web3.utils.toWei("0.001") // 
 
   const usdc =  await MockToken.at(USDCAddr);
   await amm.setOpen(true);
 
-  await usdc.approve(amm.address, toDec("121.4", 6));
+  await usdc.approve(amm.address, toDec("123.4", 6));
   await amm.initLiquidity(accounts[0], quoteAssetReserve , baseAssetReserve);
 
   const initMarginRatio = web3.utils.toWei("0.1") // 10% -> 10x
